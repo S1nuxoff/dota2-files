@@ -9,6 +9,7 @@ import { findDir, search } from "../lib/lists.js";
 import { navigate } from "../lib/route.js";
 import { startJob } from "../lib/jobs.js";
 import { canSaveToFolder } from "../lib/download.js";
+import { heroPortrait, imageUrl } from "../lib/catalog.js";
 import { Check, EntryIcon } from "./icons.jsx";
 import CopyButton from "./CopyButton.jsx";
 
@@ -24,7 +25,7 @@ function readView() {
 }
 
 // One dataset's folders and files (ds), or search results across every dataset (ds null)
-export default function Browser({ ds, route, index, error, indexes, withCopies, setWithCopies, selection, toggle, resolve }) {
+export default function Browser({ ds, route, index, error, indexes, catalog, withCopies, setWithCopies, selection, toggle, resolve }) {
   const [view, setView] = useState(readView);
   const [sort, setSort] = useState({ key: "name", desc: false });
   const changeView = (v) => {
@@ -58,6 +59,19 @@ export default function Browser({ ds, route, index, error, indexes, withCopies, 
     const files = dir.files.filter((f) => !kind || f.kind === kind).sort(order).map((entry) => ({ entry }));
     return { rows: [...dirs, ...files], total: dirs.length + files.length };
   }, [ready, searching, allMode, indexes, index, dir, route.q, route.dir, kind, withCopies, sort]);
+
+  // Across every dataset, the heroes and items of that name come first
+  const named = useMemo(() => {
+    if (!allMode || !searching || !catalog) return [];
+    const words = route.q.toLowerCase().split(/\s+/).filter(Boolean);
+    const hit = (name) => words.every((w) => name.toLowerCase().includes(w));
+    const heroes = catalog.heroes.filter((h) => hit(h.name)).map((h) => ({ key: h.id, href: `#/hero/${h.key}`, name: h.name, sub: "Hero", icon: heroPortrait(h) }));
+    const items = Object.values(catalog.items)
+      .filter((i) => hit(i.name))
+      .slice(0, 40)
+      .map((i) => ({ key: i.id, href: `#/item/${i.id}`, name: i.name, sub: i.type || i.slot, icon: imageUrl(i.icon) }));
+    return [...heroes, ...items];
+  }, [allMode, searching, catalog, route.q]);
 
   const scroller = useRef(null);
   const [width, setWidth] = useState(800);
@@ -145,6 +159,21 @@ export default function Browser({ ds, route, index, error, indexes, withCopies, 
             </div>
           )}
         </div>
+        {named.length > 0 && (
+          <div className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-1">
+            {named.map((n) => (
+              <a key={n.key} href={n.href} className="flex w-44 shrink-0 items-center gap-2.5 rounded-lg border border-ink-800 bg-ink-900 p-1.5 pr-3 hover:border-ink-600">
+                <span className="h-9 w-12 shrink-0 overflow-hidden rounded bg-ink-850">
+                  {n.icon && <img src={n.icon} alt="" loading="lazy" className="h-full w-full object-cover" />}
+                </span>
+                <span className="min-w-0 leading-tight">
+                  <span className="block truncate text-xs">{n.name}</span>
+                  <span className="block truncate text-[11px] text-ink-400">{n.sub}</span>
+                </span>
+              </a>
+            ))}
+          </div>
+        )}
         <div className="flex items-center gap-1.5">
           <Chip active={!kind} onClick={() => navigate({ ...route, kind: "", file: "" }, true)}>
             All

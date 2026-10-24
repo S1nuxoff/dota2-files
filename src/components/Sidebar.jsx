@@ -1,23 +1,32 @@
-import { House, Search } from "lucide-react";
+import { HardDrive, Search, Shirt, Swords } from "lucide-react";
 import { DATASETS } from "../datasets.js";
 import { formatCount } from "../lib/format.js";
 
 export default function Sidebar({ route, indexes }) {
   const item = (active) =>
     `flex h-9 items-center gap-3 rounded-md px-3 text-sm transition ${active ? "bg-ink-850 text-ink-100" : "text-ink-300 hover:bg-ink-900 hover:text-ink-100"}`;
+  const heading = "mt-5 mb-1.5 px-3 text-[11px] font-medium tracking-wider text-ink-400 uppercase";
   return (
     <nav className="flex w-56 shrink-0 flex-col gap-0.5 overflow-y-auto border-r border-ink-800 p-3">
-      <a href="#/" className={item(!route.ds)}>
-        <House size={16} strokeWidth={1.75} />
-        Overview
+      <a href="#/" className={item(!route.ds || route.ds === "hero")}>
+        <Swords size={16} strokeWidth={1.75} />
+        Heroes
+      </a>
+      <a href="#/cosmetics" className={item(route.ds === "cosmetics" || route.ds === "item")}>
+        <Shirt size={16} strokeWidth={1.75} />
+        Cosmetics
       </a>
       {route.ds === "all" && (
         <span className={item(true)}>
           <Search size={16} strokeWidth={1.75} />
-          All datasets
+          Search
         </span>
       )}
-      <div className="mt-4 mb-1.5 px-3 text-[11px] font-medium tracking-wider text-ink-400 uppercase">Datasets</div>
+      <div className={heading}>Files</div>
+      <a href="#/files" className={item(route.ds === "files")}>
+        <HardDrive size={16} strokeWidth={1.75} />
+        All datasets
+      </a>
       {DATASETS.map((ds) => {
         const Icon = ds.icon;
         const index = indexes[ds.id];

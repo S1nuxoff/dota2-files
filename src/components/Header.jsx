@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Search, X } from "lucide-react";
 import { navigate } from "../lib/route.js";
+import { datasetById } from "../datasets.js";
 
 export default function Header({ route, ds }) {
   const [text, setText] = useState(route.q);
@@ -10,7 +11,7 @@ export default function Header({ route, ds }) {
   // Search follows typing; the history keeps one entry per search, not one per letter
   useEffect(() => {
     if (text === route.q) return;
-    const inDataset = route.ds && route.ds !== "all";
+    const inDataset = !!datasetById(route.ds);
     // Search from the overview covers every dataset; cleared there, it goes back to the overview
     const next = inDataset ? { ds: route.ds, dir: route.dir, q: text, kind: route.kind } : text ? { ds: "all", q: text, kind: route.kind } : {};
     const t = setTimeout(() => navigate(next, !!route.q), 200);
@@ -40,7 +41,7 @@ export default function Header({ route, ds }) {
           ref={input}
           value={text}
           onChange={(e) => setText(e.target.value)}
-          placeholder={ds ? `Search ${ds.title.toLowerCase()} by name or path` : "Search every file by name or path"}
+          placeholder={ds ? `Search ${ds.title.toLowerCase()} by name or path` : "Search heroes, items and every file"}
           className="min-w-0 flex-1 bg-transparent text-sm outline-none placeholder:text-ink-400"
         />
         {text ? (
