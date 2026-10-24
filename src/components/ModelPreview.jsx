@@ -53,16 +53,16 @@ export default function ModelPreview({ url, gz }) {
     }
   }, [animation]);
 
-  if (error) return <div className="flex h-full items-center justify-center text-sm text-ink-400">{error}</div>;
+  if (error) return <div className="flex h-full w-full items-center justify-center text-sm text-ink-400">{error}</div>;
   if (!src) {
     return (
-      <div className="flex h-full items-center justify-center text-ink-400">
+      <div className="flex h-full w-full items-center justify-center text-ink-400">
         <LoaderCircle size={18} className="animate-spin" />
       </div>
     );
   }
   return (
-    <div className="relative h-full">
+    <div className="relative h-full w-full">
       <model-viewer ref={viewer} src={src} camera-controls="" shadow-intensity="0.6" exposure="1.1" environment-image="neutral" interaction-prompt="none" />
       {animations.length > 0 && (
         <select
