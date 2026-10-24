@@ -84,6 +84,8 @@ export function heroFiles(hero, catalog, indexes, withCopies) {
     for (const e of index.entries) {
       if (e.copy && !withCopies) continue;
       const p = e.path;
+      // The tracker's pictures of models are the site's, not the hero's files
+      if (p.startsWith("previews/")) continue;
       const cut = p.lastIndexOf("/");
       const file = p.slice(cut + 1);
       let hit = false;

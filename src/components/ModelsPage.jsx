@@ -51,10 +51,11 @@ export default function ModelsPage({ catalog, indexes, route }) {
     }
     const byToken = new Map();
     for (const hero of catalog.heroes) for (const t of hero.tokens) byToken.set(t, hero);
+    const previews = new Set(indexes.models.entries.filter((e) => e.path.startsWith("previews/")).map((e) => e.path));
     const out = [];
     for (const ds of ["models", "maps"]) {
       for (const e of indexes[ds].entries) {
-        if (e.ext !== "glb") continue;
+        if (e.ext !== "glb" || e.path.startsWith("previews/")) continue;
         const item = byStem.get(e.path.slice(0, -3));
         const seg = e.path.split("/");
         const hero =
@@ -69,7 +70,15 @@ export default function ModelsPage({ catalog, indexes, route }) {
           kind: k,
           group: e.tag || item ? "" : group,
           hero,
-          icon: item?.icon ? imageUrl(item.icon) : k === "hero" && hero ? heroPortrait(hero) : "",
+          // The tracker's picture of the model itself (previews/<path>.webp), else its item's icon
+          icon: previews.has(`previews/${e.path.slice(0, -4)}.webp`)
+            ? fileUrl(datasetById(e.ds), `previews/${e.path.slice(0, -4)}.webp`)
+            : item?.icon
+              ? imageUrl(item.icon)
+              : k === "hero" && hero
+                ? heroPortrait(hero)
+                : "",
+          preview: previews.has(`previews/${e.path.slice(0, -4)}.webp`),
           hay: `${e.title} ${item?.name || ""} ${e.path} ${hero?.name || ""}`.toLowerCase(),
         });
       }
@@ -228,7 +237,13 @@ function Card({ m, active, onOpen }) {
     >
       <div className="relative flex min-h-0 flex-1 items-center justify-center overflow-hidden bg-ink-850">
         {m.icon ? (
-          <img src={m.icon} loading="lazy" decoding="async" alt="" className="h-full w-full object-cover transition duration-300 group-hover:scale-105" />
+          <img
+            src={m.icon}
+            loading="lazy"
+            decoding="async"
+            alt=""
+            className={`h-full w-full transition duration-300 group-hover:scale-105 ${m.preview ? "object-contain p-2" : "object-cover"}`}
+          />
         ) : (
           <Box size={30} strokeWidth={1.25} className="text-ink-600 transition group-hover:text-ink-400" />
         )}
