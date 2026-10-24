@@ -27,7 +27,9 @@ export default function FileTable({ entries, route, grid, height = "100%" }) {
     estimateSize: () => (grid ? CELL + 8 : ROW),
     overscan: 6,
   });
-  useEffect(() => virtual.measure(), [grid, columns]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    virtual.measure();
+  }, [grid, columns]); // eslint-disable-line react-hooks/exhaustive-deps
   const keyOf = (e) => `${e.ds}:${e.path}`;
   const open = (e) => navigate({ ...route, file: keyOf(e) });
 

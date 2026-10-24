@@ -121,8 +121,12 @@ export default function ModelsPage({ catalog, indexes, route }) {
     estimateSize: () => CARD_H + 12,
     overscan: 4,
   });
-  useEffect(() => virtual.measure(), [columns]); // eslint-disable-line react-hooks/exhaustive-deps
-  useEffect(() => scroller.current?.scrollTo(0, 0), [filter, kind, group, heroKey, sort]);
+  useEffect(() => {
+    virtual.measure();
+  }, [columns]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    scroller.current?.scrollTo(0, 0);
+  }, [filter, kind, group, heroKey, sort]);
 
   if (!ready) {
     return (

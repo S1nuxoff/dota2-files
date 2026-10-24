@@ -88,7 +88,9 @@ export default function Browser({ ds, route, index, error, indexes, catalog, wit
   useEffect(() => {
     scroller.current?.scrollTo(0, 0);
   }, [route.ds, route.dir, route.q, kind]);
-  useEffect(() => virtual.measure(), [view, columns]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    virtual.measure();
+  }, [view, columns]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const open = (row) => {
     if (row.node) navigate({ ds: ds.id, dir: row.node.path, kind });

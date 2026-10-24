@@ -6,7 +6,9 @@ import { datasetById } from "../datasets.js";
 export default function Header({ route, ds }) {
   const [text, setText] = useState(route.q);
   const input = useRef(null);
-  useEffect(() => setText(route.q), [route.q]);
+  useEffect(() => {
+    setText(route.q);
+  }, [route.q]);
 
   // Search follows typing; the history keeps one entry per search, not one per letter
   useEffect(() => {

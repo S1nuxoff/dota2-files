@@ -15,6 +15,7 @@ import ModelsPage from "./components/ModelsPage.jsx";
 import Preview from "./components/Preview.jsx";
 import SelectionBar from "./components/SelectionBar.jsx";
 import Tray from "./components/Tray.jsx";
+import ErrorBoundary from "./components/ErrorBoundary.jsx";
 
 // Pages by the route's first part: the catalog's (heroes, items, kinds of items), the folders of a
 // dataset, search across every dataset
@@ -122,7 +123,9 @@ export default function App() {
       <Header route={route} ds={ds} />
       <div className="flex min-h-0 flex-1">
         <Sidebar route={route} indexes={indexes} />
-        <main className="flex min-w-0 flex-1 flex-col">{page}</main>
+        <main className="flex min-w-0 flex-1 flex-col">
+          <ErrorBoundary page={`${route.ds}/${route.dir}`}>{page}</ErrorBoundary>
+        </main>
         {previewEntry && <Preview entry={previewEntry} ds={datasetById(previewEntry.ds)} onClose={() => navigate({ ...route, file: "" })} />}
       </div>
       <SelectionBar selection={selection} clear={() => setSelection(new Map())} resolve={resolve} route={route} />
