@@ -1,4 +1,4 @@
-import { HardDrive, Search, Shirt, Swords } from "lucide-react";
+import { Box, HardDrive, Search, Shirt, Swords } from "lucide-react";
 import { DATASETS } from "../datasets.js";
 import { formatCount } from "../lib/format.js";
 
@@ -15,6 +15,10 @@ export default function Sidebar({ route, indexes }) {
       <a href="#/cosmetics" className={item(route.ds === "cosmetics" || route.ds === "item")}>
         <Shirt size={16} strokeWidth={1.75} />
         Cosmetics
+      </a>
+      <a href="#/3d" className={item(route.ds === "3d")}>
+        <Box size={16} strokeWidth={1.75} />
+        3D models
       </a>
       {route.ds === "all" && (
         <span className={item(true)}>

@@ -11,6 +11,7 @@ import HeroesPage from "./components/HeroesPage.jsx";
 import HeroPage from "./components/HeroPage.jsx";
 import ItemPage from "./components/ItemPage.jsx";
 import CosmeticsPage from "./components/CosmeticsPage.jsx";
+import ModelsPage from "./components/ModelsPage.jsx";
 import Preview from "./components/Preview.jsx";
 import SelectionBar from "./components/SelectionBar.jsx";
 import Tray from "./components/Tray.jsx";
@@ -46,7 +47,9 @@ export default function App() {
         ? hero.name
         : item
           ? item.name
-          : route.ds === "cosmetics" && route.dir
+          : route.ds === "3d"
+            ? "3D models"
+            : route.ds === "cosmetics" && route.dir
             ? prefabTitle(route.dir)
             : "";
     document.title = page ? `${page} - Dotadex Files` : "Dotadex Files";
@@ -110,6 +113,7 @@ export default function App() {
   } else if (route.ds === "hero") page = <HeroPage key={route.dir} heroKey={route.dir} {...common} />;
   else if (route.ds === "item") page = <ItemPage key={route.dir} itemId={route.dir} {...common} />;
   else if (route.ds === "cosmetics") page = <CosmeticsPage key={route.dir} prefab={route.dir} catalog={catalog} />;
+  else if (route.ds === "3d") page = <ModelsPage catalog={catalog} indexes={indexes} route={route} />;
   else if (route.ds === "files") page = <Home indexes={indexes} errors={errors} />;
   else page = <HeroesPage catalog={catalog} error={catalogError} />;
 

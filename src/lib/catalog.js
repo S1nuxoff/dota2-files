@@ -42,7 +42,6 @@ export function useCatalog() {
 }
 
 export const heroPortrait = (hero) => fileUrl(datasetById("images"), `panorama/images/heroes/${hero.id}_png.png`);
-export const heroVideo = (hero) => fileUrl(datasetById("videos"), `panorama/videos/heroes/${hero.id}.webm`);
 export const imageUrl = (path) => (path ? fileUrl(datasetById("images"), path) : "");
 
 function lowerBound(entries, prefix) {
