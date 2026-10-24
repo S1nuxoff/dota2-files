@@ -8,7 +8,20 @@ import { canSaveToFolder } from "../lib/download.js";
 import FileTable from "./FileTable.jsx";
 import ItemCard from "./ItemCard.jsx";
 
-const ModelPreview = lazy(() => import("./ModelPreview.jsx"));
+const HeroViewer = lazy(() => import("./HeroViewer.jsx"));
+
+function DownloadRow({ title, sub, href, onClick }) {
+  const Tag = href ? "a" : "button";
+  return (
+    <Tag href={href} onClick={onClick} className="group flex w-full items-center gap-4 px-4 py-3 text-left transition first:rounded-t-xl last:rounded-b-xl hover:bg-ink-900">
+      <div className="min-w-0 flex-1">
+        <div className="text-sm">{title}</div>
+        <div className="truncate text-xs text-ink-400">{sub}</div>
+      </div>
+      <Download size={16} className="text-ink-400 group-hover:text-ink-100" />
+    </Tag>
+  );
+}
 
 // Files of several datasets as a download: <dataset repo>/<path>
 const asDownload = (entries) => entries.map((e) => ({ ds: e.ds, path: e.path, size: e.size, name: `${datasetById(e.ds).repo}/${e.path}` }));
@@ -52,14 +65,16 @@ export default function HeroPage({ heroKey, catalog, indexes, withCopies, route 
   const slots = useMemo(() => [...new Set(items.map((i) => i.slot || i.prefab))].sort(), [items]);
   const prefabTitleOr = (s) => (catalog.prefabs?.[s] ? prefabTitle(s) : s);
 
-  // The hero and each persona, with their models
-  const looks = hero ? [{ id: hero.id, name: hero.name, model: hero.model }, ...hero.personas.filter((p) => p.model)] : [];
+  // The hero and each persona, each with its body and the models it wears by default
+  const looks = hero ? [{ id: hero.id, name: hero.name, model: hero.model, look: hero.look || [] }, ...hero.personas.filter((p) => p.model)] : [];
   const [lookId, setLook] = useState("");
   const look = looks.find((l) => l.id === lookId) || looks[0];
-  const modelEntry = useMemo(
-    () => (look?.model && indexes.models ? indexes.models.entries.find((e) => e.path === look.model) : null),
-    [look, indexes.models]
-  );
+  const lookEntries = useMemo(() => {
+    if (!look?.model || !indexes.models) return [];
+    const byPath = new Map(indexes.models.entries.map((e) => [e.path, e]));
+    return [look.model, ...(look.look || [])].map((p) => byPath.get(p)).filter(Boolean);
+  }, [look, indexes.models]);
+  const modelEntry = lookEntries[0];
 
   const tab = route.kind && (route.kind === "items" || byDataset[route.kind]) ? route.kind : "items";
   const setTab = (t) => (location.hash = `#/hero/${heroKey}${t === "items" ? "" : `?kind=${t}`}`);
@@ -73,13 +88,22 @@ export default function HeroPage({ heroKey, catalog, indexes, withCopies, route 
   return (
     <div className="flex min-h-0 flex-1 flex-col">
       <div className="shrink-0 border-b border-ink-800">
-        <div className="grid grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)] gap-8 px-8 pt-6">
-          <div className="flex min-w-0 flex-col pt-2">
+        <div className="grid grid-cols-[minmax(0,1.35fr)_minmax(0,1fr)] gap-8 px-8 pt-6">
+          <div className="h-[460px] overflow-hidden rounded-xl border border-ink-800">
+            {modelEntry ? (
+              <Suspense fallback={null}>
+                <HeroViewer models={lookEntries} />
+              </Suspense>
+            ) : (
+              <img src={heroPortrait(hero)} alt="" className="h-full w-full object-cover opacity-70" />
+            )}
+          </div>
+          <div className="flex min-w-0 flex-col py-2">
             <a href="#/" className="text-xs text-ink-400 hover:text-ink-100">
               Heroes
             </a>
             <div className="mt-3 flex items-center gap-4">
-              <img src={heroPortrait(hero)} alt="" className="h-14 rounded-md border border-ink-800" />
+              <img src={heroPortrait(hero)} alt="" className="h-12 rounded-md border border-ink-800" />
               <h1 className="text-4xl font-semibold tracking-tight">{hero.name}</h1>
             </div>
             {looks.length > 1 && (
@@ -95,39 +119,34 @@ export default function HeroPage({ heroKey, catalog, indexes, withCopies, route 
                 ))}
               </div>
             )}
-            <div className="mt-6 flex flex-col items-start gap-3">
+            <div className="mt-8 text-[11px] tracking-wider text-ink-400 uppercase">Download</div>
+            <div className="mt-3 divide-y divide-ink-800 rounded-xl border border-ink-800">
               {modelEntry && (
-                <a
+                <DownloadRow
+                  title="Body model"
+                  sub={`${modelEntry.name} · ${formatSize(modelEntry.size)}`}
                   href={fileUrl(datasetById("models"), modelEntry.path, true)}
-                  className="inline-flex h-9 items-center gap-2 rounded-lg border border-ink-700 bg-ink-850 px-3.5 text-sm text-ink-100 hover:border-ink-600"
-                >
-                  <Download size={15} /> Download model · {modelEntry.name} · {formatSize(modelEntry.size)}
-                </a>
+                />
+              )}
+              {lookEntries.length > 1 && (
+                <DownloadRow
+                  title="Default look"
+                  sub={`${lookEntries.length} models as you see them · ${formatSize(lookEntries.reduce((n, e) => n + e.size, 0))}`}
+                  onClick={() => startJob("zip", lookEntries.map((e) => ({ ds: e.ds, path: e.path, size: e.size, name: e.name })), `${look.id.replace("npc_dota_hero_", "")}-look`)}
+                />
               )}
               {ready ? (
-                <div className="flex items-center gap-4">
-                  <DownloadButtons entries={files} title={hero.key} />
-                  <span className="text-xs text-ink-400 tabular-nums">{formatCount(files.length)} files</span>
-                </div>
+                <DownloadRow
+                  title="Everything"
+                  sub={`${formatCount(files.length)} files: models, items, sounds, effects, pictures · ${formatSize(files.reduce((n, e) => n + e.size, 0))}`}
+                  onClick={() => startJob("zip", asDownload(files), hero.key)}
+                />
               ) : (
-                <span className="flex h-9 items-center gap-2 text-sm text-ink-400">
+                <div className="flex h-16 items-center gap-2 px-4 text-sm text-ink-400">
                   <LoaderCircle size={14} className="animate-spin" /> Gathering files · {loaded}/{DATASETS.length} lists
-                </span>
+                </div>
               )}
             </div>
-          </div>
-          <div className="h-[340px] overflow-hidden rounded-xl border border-ink-800 bg-ink-900">
-            {modelEntry ? (
-              <Suspense fallback={null}>
-                <ModelPreview
-                  key={modelEntry.path}
-                  url={fileUrl(datasetById("models"), modelEntry.hasGz ? `${modelEntry.path}.gz` : modelEntry.path)}
-                  gz={modelEntry.hasGz}
-                />
-              </Suspense>
-            ) : (
-              <img src={heroPortrait(hero)} alt="" className="h-full w-full object-cover opacity-70" />
-            )}
           </div>
         </div>
         <div className="mt-5" />
