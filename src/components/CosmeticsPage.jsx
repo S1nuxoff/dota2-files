@@ -16,7 +16,7 @@ const SECTIONS = [
   ["Treasures", ["treasures", "treasure_chest", "retired_treasure_chest", "sticker_capsule", "key"]],
   ["Couriers and wards", ["courier", "courier_wearable", "courier_effect", "ward"]],
   ["Screens and interface", ["loading_screen", "hud_skin", "cursor_pack", "versus_screen", "emblem", "emoticon_tool", "player_card"]],
-  ["Music and voices", ["music", "announcer"]],
+  ["Music and voices", ["announcer"]],
   ["The map", ["terrain", "weather", "map_effect", "radiantcreeps", "direcreeps", "radiantsiegecreeps", "diresiegecreeps", "radianttowers", "diretowers", "roshan", "tormentor", "ancient", "summons"]],
   ["Effects", ["teleport_effect", "streak_effect", "kill_effect", "blink_effect", "head_effect", "death_effect"]],
   ["Collectibles", ["sticker", "pennant", "socket_gem", "showcase_decoration", "misc"]],
@@ -72,7 +72,7 @@ function Kinds({ catalog }) {
     }
     return { count, covers };
   }, [catalog]);
-  const known = new Set([...SECTIONS.flatMap(([, kinds]) => kinds), ...Object.values(MERGED).flat()]);
+  const known = new Set(["music", ...SECTIONS.flatMap(([, kinds]) => kinds), ...Object.values(MERGED).flat()]);
   const other = Object.keys(count)
     .filter((k) => !known.has(k))
     .sort((a, b) => count[b] - count[a]);
@@ -121,6 +121,7 @@ function Kinds({ catalog }) {
             <h2 className="text-[1.15rem] font-semibold tracking-[-0.02em]">{title}</h2>
             <div className="mt-4 grid grid-cols-[repeat(auto-fill,minmax(15rem,1fr))] gap-4">
               {title === "Hero items" && tile("/sets", "Sets", catalog.setByKey.size, firstSet?.icon, i++)}
+              {title === "Music and voices" && tile("/music", "Music Packs", count.music || 0, covers.music, i++)}
               {kinds.map((k) => tile(`/cosmetics/${k}`, titleOf(k), count[k], covers[k], i++))}
             </div>
           </section>

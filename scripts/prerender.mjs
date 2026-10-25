@@ -173,6 +173,15 @@ for (const [prefab, its] of byPrefab) {
   });
 }
 
+{
+  const packs = [...(byPrefab.get("music") || [])];
+  page("/music", {
+    title: "Every Dota 2 music pack: listen and download the tracks",
+    description: `All ${packs.length} Dota 2 music packs with every track to listen to and download: menu, hero select, battle, victory and more.`,
+    body: `<h1>Music</h1>${list(packs.map(([id, it]) => [`/item/${id}`, it.name]))}`,
+  });
+}
+
 page("/sets", {
   title: "Every Dota 2 set: 3D models, textures and icons",
   description: "Every Dota 2 cosmetic set on its hero, with the 3D models, textures and icons of all its items to download at once, by hero or by name.",
