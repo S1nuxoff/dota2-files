@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { fuzzyMatch } from "../lib/smart.js";
 import { ChevronDown, FileArchive, Search } from "lucide-react";
 import { filesOfRefs, imageUrl } from "../lib/catalog.js";
 import { formatCount, formatSize } from "../lib/format.js";
@@ -22,7 +23,8 @@ export default function MusicPage({ catalog, indexes, withCopies, route }) {
   );
   if (!catalog) return <Spinner text="Loading the catalog" />;
   const words = filter.toLowerCase().split(/\s+/).filter(Boolean);
-  const shown = packs.filter((p) => words.every((w) => p.name.toLowerCase().includes(w)));
+  const match = fuzzyMatch(packs, (p) => p.name, filter);
+  const shown = packs.filter((p) => !match || match.has(p));
 
   return (
     <div className="min-h-0 flex-1 overflow-y-auto">

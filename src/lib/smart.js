@@ -85,3 +85,20 @@ export function correctQuery(indexes, query) {
   });
   return { query: fixed.join(" "), changed };
 }
+
+// The same forgiving search over any list a page filters (heroes, sets, packs, a kind's items, models):
+// the items that match a query as a Set, or null for no query. The list's index is made at its first
+// question and kept while the list is the same
+const lists = new WeakMap();
+export function fuzzyMatch(list, text, query) {
+  if (!query.trim()) return null;
+  let index = lists.get(list);
+  if (!index) {
+    index = new MiniSearch({ idField: "i", fields: ["t"], tokenize: split, searchOptions: { prefix: true, fuzzy: 0.25, combineWith: "AND" } });
+    index.addAll(list.map((item, i) => ({ i, t: text(item) })));
+    lists.set(list, index);
+  }
+  let found = index.search(query);
+  if (!found.length) found = index.search(query, { combineWith: "OR" });
+  return new Set(found.map((r) => list[r.id]));
+}

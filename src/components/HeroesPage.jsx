@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { fuzzyMatch } from "../lib/smart.js";
 import { Search } from "lucide-react";
 import { heroCard, heroPortrait } from "../lib/catalog.js";
 import { link } from "../lib/route.js";
@@ -8,7 +9,8 @@ export default function HeroesPage({ catalog, error }) {
   const [filter, setFilter] = useState("");
   if (!catalog) return error ? <div className="p-16 text-center text-ink-400">The heroes could not be loaded: {error}</div> : <Spinner text="Loading heroes" />;
   const words = filter.toLowerCase().split(/\s+/).filter(Boolean);
-  const heroes = catalog.heroes.filter((h) => words.every((w) => h.name.toLowerCase().includes(w)));
+  const match = fuzzyMatch(catalog.heroes, (h) => `${h.name} ${h.key} ${h.tokens.join(" ")}`, filter);
+  const heroes = catalog.heroes.filter((h) => !match || match.has(h));
   return (
     <div className="min-h-0 flex-1 overflow-y-auto">
       <div className="anim-page">

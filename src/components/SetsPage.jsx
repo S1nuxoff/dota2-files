@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { fuzzyMatch } from "../lib/smart.js";
 import { ChevronDown, Search } from "lucide-react";
 import { formatCount } from "../lib/format.js";
 import { link } from "../lib/route.js";
@@ -19,7 +20,8 @@ export default function SetsPage({ catalog }) {
   const all = useMemo(() => (catalog ? [...catalog.setByKey.values()] : []), [catalog]);
   const shown = useMemo(() => {
     const words = filter.toLowerCase().split(/\s+/).filter(Boolean);
-    const list = all.filter((s) => (!heroKey || s.hero?.key === heroKey) && words.every((w) => `${s.name} ${s.hero?.name || ""}`.toLowerCase().includes(w)));
+    const match = fuzzyMatch(all, (s) => `${s.name} ${s.hero?.name || ""} ${s.hero?.key || ""}`, filter);
+    const list = all.filter((s) => (!heroKey || s.hero?.key === heroKey) && (!match || match.has(s)));
     const byName = (a, b) => a.name.localeCompare(b.name, "en", { numeric: true });
     return list.sort(sort === "items" ? (a, b) => b.items.length - a.items.length || byName(a, b) : byName);
   }, [all, filter, heroKey, sort]);

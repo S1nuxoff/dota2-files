@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { fuzzyMatch } from "../lib/smart.js";
 import { Check, ChevronDown, Search, X } from "lucide-react";
 import { datasetById, fileUrl } from "../datasets.js";
 
@@ -26,7 +27,8 @@ export default function HeroPicker({ heroes, value, onChange, anyLabel = "Any he
 
   const picked = heroes.find((h) => h.hero.key === value)?.hero;
   const words = query.toLowerCase().split(/\s+/).filter(Boolean);
-  const shown = heroes.filter(({ hero }) => words.every((w) => hero.name.toLowerCase().includes(w)));
+  const match = fuzzyMatch(heroes, ({ hero }) => `${hero.name} ${hero.key}`, query);
+  const shown = heroes.filter((h) => !match || match.has(h));
   const pick = (key) => {
     onChange(key);
     setOpen(false);

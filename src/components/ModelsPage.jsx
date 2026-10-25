@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { fuzzyMatch } from "../lib/smart.js";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import { Box, Check, ChevronDown, Download, LoaderCircle, ScanSearch, Search, SlidersHorizontal, Sparkles, X } from "lucide-react";
 import { datasetById, fileUrl } from "../datasets.js";
@@ -122,7 +123,8 @@ export default function ModelsPage({ catalog, indexes }) {
   const heroes = useMemo(() => count(ofType, (c) => c.hero), [ofType]);
 
   const shown = useMemo(() => {
-    const words = similar || meaning ? [] : filter.toLowerCase().split(/\s+/).filter(Boolean);
+    // by name, forgiving typos (lib/smart.js); not while searching by a picture or by meaning
+    const match = similar || meaning ? null : fuzzyMatch(cards, (c) => c.hay, filter);
     const list = ofType.filter(
       (c) =>
         (!group || c.group === group) &&
@@ -130,7 +132,7 @@ export default function ModelsPage({ catalog, indexes }) {
         (!heroKey || c.hero === heroKey) &&
         (!size || c.size === size) &&
         (!animated || c.animated) &&
-        words.every((w) => c.hay.includes(w))
+        (!match || match.has(c))
     );
     // Nearest first: a card's place is its best variant's
     if (similar) {

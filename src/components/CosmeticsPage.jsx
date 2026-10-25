@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { fuzzyMatch } from "../lib/smart.js";
 import { ChevronLeft, Music, CreditCard, Flag, Gem, Image as ImageIcon, KeyRound, Map as MapIcon, Mic, Monitor, MousePointer2, Package, Search, Shield, Smile, Sticker, Swords } from "lucide-react";
 import { datasetById, fileUrl } from "../datasets.js";
 import { imageUrl, prefabTitle } from "../lib/catalog.js";
@@ -288,9 +289,10 @@ export function Kind({ prefab, catalog, title, sub, back = true }) {
   }, [all]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const shown = useMemo(() => {
-    const words = filter.toLowerCase().split(/\s+/).filter(Boolean);
+    const match = fuzzyMatch(all, (i) => `${i.name} ${heroOf(i)?.name || ""} ${heroOf(i)?.key || ""}`, filter);
+    
     const list = all.filter(
-      (i) => (!heroKey || heroOf(i)?.key === heroKey) && (!rarity || i.rarity === rarity) && words.every((w) => `${i.name} ${heroOf(i)?.name || ""}`.toLowerCase().includes(w))
+      (i) => (!heroKey || heroOf(i)?.key === heroKey) && (!rarity || i.rarity === rarity) && (!match || match.has(i))
     );
     const order = (i) => catalog.rarities[i.rarity]?.order || 0;
     const byName = (a, b) => a.name.localeCompare(b.name, "en", { numeric: true });
