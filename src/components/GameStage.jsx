@@ -1,14 +1,14 @@
 import { useEffect, useState } from "react";
 import { DOTADEX } from "../datasets.js";
 
-// How heroes and items are shown: "game", as Dotadex draws them (the game's shader, lights,
-// particles), in its embed frame; or "simple", this site's own quick viewer. Remembered per browser
+// How heroes and items are shown: "simple", this site's own quick viewer (the default), or "game",
+// as Dotadex draws them (the game's shader, lights, particles) in its embed frame. Remembered per browser
 const KEY = "look";
 const read = () => {
   try {
-    return localStorage.getItem(KEY) === "simple" ? "simple" : "game";
+    return localStorage.getItem(KEY) === "game" ? "game" : "simple";
   } catch {
-    return "game";
+    return "simple";
   }
 };
 const listeners = new Set();
