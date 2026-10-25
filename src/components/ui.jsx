@@ -40,7 +40,8 @@ export function Crumbs({ items, className = "" }) {
 // to do with the whole of it (a search, tabs) under them
 export function PageHead({ crumbs, title, sub, search, actions, children, className = "" }) {
   return (
-    <header className={`page-x flex flex-col items-center pt-14 pb-10 text-center sm:pt-24 sm:pb-16 lg:pt-28 lg:pb-20 ${className}`}>
+    <header className={`relative isolate page-x flex flex-col items-center pt-14 pb-10 text-center sm:pt-24 sm:pb-16 lg:pt-28 lg:pb-20 ${className}`}>
+      <HeadGlow />
       {crumbs && <Crumbs items={crumbs} className="mb-6 [&>ol]:justify-center" />}
       <h1 className="max-w-4xl text-[clamp(2.1rem,4.6vw,3.6rem)] leading-[1.02] font-semibold tracking-[-0.045em] text-balance">{title}</h1>
       {sub && <p className="mt-4 max-w-2xl text-[1rem] leading-relaxed text-balance text-ink-400">{sub}</p>}
@@ -49,6 +50,13 @@ export function PageHead({ crumbs, title, sub, search, actions, children, classN
       {children}
     </header>
   );
+}
+
+// The front page's light behind a page's head: the red of the Dotadex mark from above, fading down.
+// Put inside a relative, isolated parent
+export const TOP_LIGHT = "bg-[radial-gradient(50%_60%_at_50%_0%,rgba(229,70,46,0.16),rgba(150,30,18,0.05)_50%,transparent_78%)]";
+export function HeadGlow() {
+  return <div aria-hidden="true" className={`anim-fade pointer-events-none absolute inset-x-0 -top-14 -z-10 h-[42rem] ${TOP_LIGHT}`} />;
 }
 
 // Is the element scrolled past the top bar: a sticky bar takes its own background from then on

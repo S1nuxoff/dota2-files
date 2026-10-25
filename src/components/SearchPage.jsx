@@ -11,7 +11,7 @@ import { Cell, Row, withSizes } from "./FileTable.jsx";
 import ItemCard from "./ItemCard.jsx";
 import SetCard from "./SetCard.jsx";
 import SoundList from "./SoundList.jsx";
-import { Button, Card, Empty, GRID, Page, SearchField, Section, Segmented, Spinner, Toolbar } from "./ui.jsx";
+import { Button, Card, Empty, GRID, Page, SearchField, Section, Segmented, Spinner, Toolbar, HeadGlow } from "./ui.jsx";
 import { rememberSearch } from "../lib/palette.js";
 
 // How many of a kind show before "Show more"
@@ -88,7 +88,8 @@ export default function SearchPage({ route, catalog, indexes, withCopies }) {
 
   return (
     <Page>
-      <header className="page-x flex flex-col items-center pt-14 pb-8 text-center sm:pt-24 sm:pb-12 lg:pt-28 lg:pb-14">
+      <header className="relative isolate page-x flex flex-col items-center pt-14 pb-8 text-center sm:pt-24 sm:pb-12 lg:pt-28 lg:pb-14">
+        <HeadGlow />
         <h1 className="sr-only">Search results for {q}</h1>
         <SearchField big value={text} onChange={setText} placeholder="Search heroes, items, files" className="w-full max-w-2xl" />
         <p className="mt-4 text-[0.92rem] text-ink-400">
