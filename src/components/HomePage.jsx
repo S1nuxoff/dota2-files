@@ -9,14 +9,13 @@ import {
   Gift,
   Heart,
   Search,
-  Users,
 } from "lucide-react";
 import { DATASETS, DOTADEX } from "../datasets.js";
 import { formatCount } from "../lib/format.js";
 import { link, navigate, openItem } from "../lib/route.js";
 import { previewOf } from "./CosmeticsPage.jsx";
 import { heroIcon } from "./HeroPicker.jsx";
-import { heroCard, imageUrl } from "../lib/catalog.js";
+import { imageUrl } from "../lib/catalog.js";
 
 const OWNER_URL = "https://huggingface.co/Sqls1";
 const SOURCE_URL = "https://github.com/S1nuxoff/dota2-files";
@@ -153,8 +152,6 @@ export default function HomePage({ catalog, indexes }) {
 
         {catalog && (
           <>
-            <HeroScene heroes={catalog.heroes} />
-
             <Feature
               icon={Gift}
               label="Treasures"
@@ -355,83 +352,6 @@ function Feature({ icon: Icon, label, href, title, text, points = [], frame = tr
           ))}
         </div>
       )}
-    </section>
-  );
-}
-
-// Heroes passing as the page scrolls, one to a screen: a tall section whose inner screen stays in place
-// while it goes by, and in it a row of screen-wide frames, each one hero, that slides from right to
-// left with the scroll, the words over them. Driven by the section's own place in the page, set each frame
-const SCENE = 8;
-function HeroScene({ heroes }) {
-  const section = useRef(null);
-  const track = useRef(null);
-  const row = useMemo(() => {
-    const day = Math.floor(Date.now() / 86400000);
-    return Array.from({ length: SCENE }, (_, i) => heroes[(day * 7 + i * 19) % heroes.length]);
-  }, [heroes]);
-  useEffect(() => {
-    const el = section.current;
-    const scroller = el?.closest(".overflow-y-auto");
-    if (!el || !scroller || !track.current) return;
-    let frame = 0;
-    const draw = () => {
-      frame = 0;
-      const box = el.getBoundingClientRect();
-      const view = scroller.clientHeight;
-      // 0 as the section comes up from the bottom of the screen, 1 as its inner screen lets go
-      const t = Math.min(1, Math.max(0, (view - box.top) / box.height));
-      // the frames go by one screen each, the first standing in view as the section arrives
-      const steps = SCENE - 1;
-      const at = Math.min(steps, Math.max(0, ((t - 0.25) / 0.6) * steps));
-      track.current.style.transform = `translateX(${-at * (track.current.firstElementChild?.offsetWidth || el.clientWidth)}px)`;
-    };
-    const onScroll = () => (frame ||= requestAnimationFrame(draw));
-    scroller.addEventListener("scroll", onScroll, { passive: true });
-    window.addEventListener("resize", onScroll);
-    draw();
-    return () => {
-      scroller.removeEventListener("scroll", onScroll);
-      window.removeEventListener("resize", onScroll);
-      cancelAnimationFrame(frame);
-    };
-  }, [row]);
-  return (
-    <section ref={section} className="relative mt-16" style={{ height: `${100 + SCENE * 45}vh` }}>
-      <div className="sticky top-0 h-[100dvh] overflow-hidden">
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-[60%] bg-[radial-gradient(55%_55%_at_50%_100%,rgba(178,34,24,0.2),transparent_70%)]" />
-        <div className="relative z-20 max-w-xl px-[6vw] pt-[16vh]">
-          <a href={link("/heroes")} className="group inline-flex items-center gap-2 text-[0.92rem] text-ink-300 transition-colors hover:text-ink-100">
-            <Users size={16} /> Heroes <ArrowRight size={14} className="transition-transform group-hover:translate-x-0.5" />
-          </a>
-          <h2 className="mt-4 text-[clamp(2rem,3.6vw,3.2rem)] leading-[1.06] font-semibold tracking-[-0.04em] text-balance">Every hero, down to the last voice line</h2>
-          <p className="mt-4 max-w-md text-[1.02rem] leading-relaxed text-balance text-ink-400">
-            {heroes.length} heroes, each with its model in 3D, its personas and abilities, its items by set, and every sound, effect and picture of it.
-          </p>
-        </div>
-        <div ref={track} style={{ "--frame": "100%" }} className="absolute inset-0 flex will-change-transform [&>*]:w-full [&>*]:min-w-full">
-          {row.map((h, i) => (
-            <div key={`${h.id}${i}`} style={{ width: "var(--frame, 100vw)" }} className="relative flex h-full shrink-0 items-end justify-center">
-              <a href={link(`/hero/${h.key}`)} title={h.name} className="group relative h-[94dvh]">
-                <img
-                  src={heroCard(h)}
-                  alt={h.name}
-                  className="h-full w-auto max-w-none mix-blend-lighten transition-transform duration-300 [mask-image:linear-gradient(to_bottom,black_80%,transparent)] group-hover:-translate-y-2"
-                />
-              </a>
-              <a
-                href={link(`/hero/${h.key}`)}
-                className="absolute right-[6vw] bottom-[16vh] text-right text-[clamp(1.6rem,2.6vw,2.6rem)] font-semibold tracking-[-0.03em] text-ink-100/90 transition-colors hover:text-white"
-              >
-                {h.name}
-                <span className="mt-1 block text-[0.9rem] font-normal tracking-normal text-ink-400">
-                  {h.items.length} items{h.personas.length ? `, ${h.personas.length} persona${h.personas.length > 1 ? "s" : ""}` : ""}
-                </span>
-              </a>
-            </div>
-          ))}
-        </div>
-      </div>
     </section>
   );
 }
