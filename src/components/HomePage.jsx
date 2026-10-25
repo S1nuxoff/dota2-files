@@ -47,6 +47,8 @@ function ago(iso) {
 // The front page: what the site holds and a way into each part of it
 export default function HomePage({ catalog, indexes }) {
   const [query, setQuery] = useState("");
+  // How far the side heroes are turned: facing the middle, then round with the scroll
+  const turns = [useRef(0.55), useRef(-0.55)];
   // Blocks below the opening show as they scroll into view
   const page = useRef(null);
   useEffect(() => {
@@ -130,11 +132,16 @@ export default function HomePage({ catalog, indexes }) {
   return (
     <div
       className="min-h-0 flex-1 overflow-y-auto pt-0"
-      onScroll={(e) => e.currentTarget.style.setProperty("--p", String(Math.min(1, e.currentTarget.scrollTop / 520)))}
+      onScroll={(e) => {
+        const top = e.currentTarget.scrollTop;
+        e.currentTarget.style.setProperty("--p", String(Math.min(1, top / 520)));
+        turns[0].current = 0.55 + top * 0.006;
+        turns[1].current = -0.55 - top * 0.006;
+      }}
     >
       <div ref={page}>
         {/* The opening reaches up under the top bar, so its light shows through the bar's blur */}
-        <section className="relative flex flex-col pt-14">
+        <section className="relative flex min-h-[100dvh] flex-col pt-14">
           {/* Light as in the game's menu: the deep red of the Dota mark from above, embers rising from below */}
           <div aria-hidden="true" className="anim-fade pointer-events-none absolute inset-0 overflow-hidden [mask-image:linear-gradient(to_bottom,black_65%,transparent)]">
             <div className="absolute inset-x-0 top-0 h-[46rem] bg-[radial-gradient(55%_55%_at_50%_0%,rgba(178,34,24,0.28),rgba(120,20,14,0.10)_45%,transparent_75%)]" />
@@ -143,7 +150,7 @@ export default function HomePage({ catalog, indexes }) {
             {/* a grain over the light, like worn stone */}
             <div className="absolute inset-0 opacity-[0.04] mix-blend-overlay" style={{ backgroundImage: GRAIN, backgroundSize: "220px 220px" }} />
           </div>
-          <div className="relative z-10 mx-auto flex w-full max-w-5xl flex-col items-center px-8 pt-[min(16vh,9rem)] text-center">
+          <div className="relative z-10 mx-auto flex w-full max-w-5xl flex-1 flex-col items-center justify-center px-8 py-16 text-center">
             <h1 className="anim-card text-[clamp(2.6rem,5.2vw,5.2rem)] leading-[1.02] font-semibold tracking-[-0.05em] text-balance whitespace-nowrap max-sm:whitespace-normal">
               The Dota 2 file archive
             </h1>
@@ -181,7 +188,7 @@ export default function HomePage({ catalog, indexes }) {
               ))}
             </nav>
           </div>
-          {catalog && <Showcase catalog={catalog} indexes={indexes} />}
+          {catalog && <SideHeroes catalog={catalog} indexes={indexes} turn={turns} />}
         </section>
 
         {/* Every way in */}
@@ -291,39 +298,37 @@ export default function HomePage({ catalog, indexes }) {
   );
 }
 
-// The hero of the day in 3D under the opening, in its default look, turning slowly on a lit floor; it
-// shows once it stands, and draws back a little as the page scrolls (--p, 0 to 1)
-function Showcase({ catalog, indexes }) {
-  const [ready, setReady] = useState(false);
-  const hero = useMemo(() => {
+// Two heroes of the day in 3D at the sides of the opening, in their default look on a lit floor,
+// turning as the page scrolls (each its own way); they show once they stand
+function SideHeroes({ catalog, indexes, turn }) {
+  const [ready, setReady] = useState([false, false]);
+  const heroes = useMemo(() => {
     const withModel = catalog.heroes.filter((h) => h.model);
-    return withModel[Math.floor(Date.now() / 86400000) % withModel.length];
+    const day = Math.floor(Date.now() / 86400000);
+    return [withModel[(day * 2) % withModel.length], withModel[(day * 2 + 37) % withModel.length]];
   }, [catalog]);
-  const models = useMemo(() => {
-    if (!hero || !indexes.models) return [];
+  const looks = useMemo(() => {
+    if (!indexes.models) return [];
     const byPath = new Map(indexes.models.entries.map((e) => [e.path, e]));
-    return [hero.model, ...(hero.look || [])].map((p) => byPath.get(p)).filter(Boolean);
-  }, [hero, indexes.models]);
-  if (!models.length) return <div className="h-[min(62vh,42rem)]" />;
-  return (
-    <div className="relative mx-auto mt-6 w-full max-w-[80rem] px-8">
-      <div className="pointer-events-none absolute inset-x-[15%] bottom-[8%] h-40 rounded-[100%] bg-[radial-gradient(closest-side,rgba(214,96,28,0.18),transparent)] blur-2xl" />
+    return heroes.map((h) => [h.model, ...(h.look || [])].map((p) => byPath.get(p)).filter(Boolean));
+  }, [heroes, indexes.models]);
+  if (!looks.length) return null;
+  return heroes.map((hero, i) => (
+    <a
+      key={hero.id}
+      href={link(`/hero/${hero.key}`)}
+      title={hero.name}
+      className={`absolute bottom-0 hidden h-[min(88vh,58rem)] w-[min(34vw,36rem)] transition-opacity duration-1000 xl:block ${i ? "right-0" : "left-0"} ${ready[i] ? "opacity-100" : "opacity-0"}`}
+    >
       <div
-        style={{ transform: "scale(calc(1 - var(--p, 0) * 0.08))", opacity: "calc(1 - var(--p, 0) * 0.5)" }}
-        className={`relative h-[min(62vh,42rem)] transition-opacity duration-1000 ${ready ? "" : "!opacity-0"}`}
-      >
-        <Suspense fallback={null}>
-          <HeroViewer models={models} bare showcase onReady={() => setReady(true)} />
-        </Suspense>
-      </div>
-      <a
-        href={link(`/hero/${hero.key}`)}
-        className={`mx-auto -mt-4 flex w-fit items-center gap-2 rounded-full px-3 py-1.5 text-[0.86rem] text-ink-400 transition-[color,opacity] duration-700 hover:text-ink-100 ${ready ? "opacity-100" : "opacity-0"}`}
-      >
-        Today: <span className="text-ink-200">{hero.name}</span> <ArrowRight size={14} />
-      </a>
-    </div>
-  );
+        style={{ background: `radial-gradient(closest-side, ${i ? "rgba(178,34,24,0.22)" : "rgba(214,96,28,0.2)"}, transparent)` }}
+        className="pointer-events-none absolute inset-x-[10%] bottom-[6%] h-32 rounded-[100%] blur-2xl"
+      />
+      <Suspense fallback={null}>
+        <HeroViewer models={looks[i]} bare showcase turn={turn[i]} onReady={() => setReady((r) => r.map((v, n) => v || n === i))} />
+      </Suspense>
+    </a>
+  ));
 }
 
 // A strip of up to three pictures at the foot of a door: model renders standing on a dark floor, or

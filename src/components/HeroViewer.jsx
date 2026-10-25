@@ -53,9 +53,10 @@ const idleOf = (names) =>
   names[0] ||
   "";
 
-// bare: no backdrop of its own (the page behind lights it); showcase: turning by itself, no zoom (the
-// wheel scrolls the page), no animation picker, no loading sign; onReady when the model stands
-export default function HeroViewer({ models, bare = false, showcase = false, onReady }) {
+// bare: no backdrop of its own (the page behind lights it); showcase: a still picture for a page, no
+// controls, no animation picker, no loading sign, turned by turn.current (radians, read each frame);
+// onReady when the model stands
+export default function HeroViewer({ models, bare = false, showcase = false, turn, onReady }) {
   const host = useRef(null);
   const stage = useRef(null);
   const [status, setStatus] = useState("loading");
@@ -81,12 +82,7 @@ export default function HeroViewer({ models, bare = false, showcase = false, onR
     const controls = new OrbitControls(camera, renderer.domElement);
     controls.enableDamping = true;
     controls.enablePan = false;
-    if (showcase) {
-      controls.autoRotate = true;
-      controls.autoRotateSpeed = 0.6;
-      controls.enableZoom = false;
-      controls.minPolarAngle = controls.maxPolarAngle = Math.PI * 0.46;
-    }
+    if (showcase) controls.enabled = false;
 
     const key = new THREE.DirectionalLight(0xfff4e8, 2.4);
     key.castShadow = true;
@@ -113,6 +109,7 @@ export default function HeroViewer({ models, bare = false, showcase = false, onR
     const s = { renderer, scene, camera, controls, key, rim, floor, mixer: null, root: null, actions: {} };
     renderer.setAnimationLoop(() => {
       s.mixer?.update(clock.getDelta());
+      if (turn && s.root) s.root.rotation.y += (turn.current - s.root.rotation.y) * 0.12;
       controls.update();
       renderer.render(scene, camera);
     });
