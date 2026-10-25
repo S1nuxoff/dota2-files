@@ -1,19 +1,21 @@
 @import "tailwindcss";
 
+/* Graphite: neutral greys without a tint, glass over them, white as the only accent. The ink names
+   stay those the pages use; the light behind a model is the model's own (set where it is shown) */
 @theme {
-  --color-ink-950: #08090c;
-  --color-ink-900: #0e1015;
-  --color-ink-850: #13161d;
-  --color-ink-800: #191d26;
-  --color-ink-700: #252a36;
-  --color-ink-600: #343b4b;
-  --color-ink-400: #7d8599;
-  --color-ink-300: #a3aabb;
-  --color-ink-100: #e6e8ee;
-  --color-accent: #e3593a;
-  --color-accent-soft: #e3593a26;
-  --font-sans: "Inter", "Segoe UI", system-ui, sans-serif;
-  --font-mono: "JetBrains Mono", "Cascadia Code", Consolas, monospace;
+  --color-ink-950: #0c0c0e;
+  --color-ink-900: #131315;
+  --color-ink-850: #1a1a1d;
+  --color-ink-800: #222225;
+  --color-ink-700: #2e2e32;
+  --color-ink-600: #45454b;
+  --color-ink-400: #8d8d94;
+  --color-ink-300: #b5b5bb;
+  --color-ink-100: #f4f4f5;
+  --color-accent: #f4f4f5;
+  --color-accent-soft: #f4f4f526;
+  --font-sans: "Geist", "SF Pro Text", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "Geist Mono", "Cascadia Code", Consolas, monospace;
 }
 
 html,
@@ -22,16 +24,29 @@ body,
   height: 100%;
 }
 
-/* Everything grows with wide screens: 16px up to a laptop's width, about 18px at 1920, 22px at 2560 */
+/* Text grows a little with wide screens: 15px on a laptop, about 16px at 1920, 18px at 2560 */
 html {
-  font-size: clamp(16px, 0.55vw + 8px, 22px);
+  font-size: clamp(15px, 0.3vw + 10px, 18px);
 }
 
 body {
   background: var(--color-ink-950);
   color: var(--color-ink-100);
   font-family: var(--font-sans);
+  letter-spacing: -0.006em;
   -webkit-font-smoothing: antialiased;
+}
+
+/* Faint light far behind everything, for the glass to bend */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(60rem 40rem at 15% -10%, #ffffff0d, transparent 70%),
+    radial-gradient(50rem 36rem at 95% 110%, #ffffff08, transparent 70%);
 }
 
 ::selection {
@@ -43,14 +58,36 @@ body {
   scrollbar-color: var(--color-ink-700) transparent;
 }
 
+:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+/* The glass: a frosted pane with a bright upper rim, floating over what is behind */
+@utility glass {
+  background: linear-gradient(180deg, rgb(255 255 255 / 0.04), rgb(255 255 255 / 0.02));
+  backdrop-filter: blur(24px) saturate(140%);
+  -webkit-backdrop-filter: blur(24px) saturate(140%);
+  border: 1px solid rgb(255 255 255 / 0.05);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.05),
+    0 8px 28px rgb(0 0 0 / 0.22);
+}
+
+/* A lighter pane inside glass (a selected segment, a field) */
+@utility glass-inset {
+  background: rgb(255 255 255 / 0.05);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.05);
+}
+
 /* Transparent pictures over a checkerboard, as image editors show them */
 .checker {
-  background-color: #1a1d24;
+  background-color: #11151c;
   background-image:
-    linear-gradient(45deg, #232731 25%, transparent 25%),
-    linear-gradient(-45deg, #232731 25%, transparent 25%),
-    linear-gradient(45deg, transparent 75%, #232731 75%),
-    linear-gradient(-45deg, transparent 75%, #232731 75%);
+    linear-gradient(45deg, #181d26 25%, transparent 25%),
+    linear-gradient(-45deg, #181d26 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, #181d26 75%),
+    linear-gradient(-45deg, transparent 75%, #181d26 75%);
   background-size: 16px 16px;
   background-position: 0 0, 0 8px, 8px -8px, -8px 0;
 }
@@ -59,4 +96,13 @@ model-viewer {
   width: 100%;
   height: 100%;
   --poster-color: transparent;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+  }
 }

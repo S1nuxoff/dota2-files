@@ -3,8 +3,7 @@ import { DATASETS, datasetById } from "./datasets.js";
 import { loadIndex, findDir, filesUnder } from "./lib/lists.js";
 import { useCatalog, prefabTitle } from "./lib/catalog.js";
 import { navigate, useRoute } from "./lib/route.js";
-import Header from "./components/Header.jsx";
-import Sidebar from "./components/Sidebar.jsx";
+import TopBar from "./components/TopBar.jsx";
 import Home from "./components/Home.jsx";
 import Browser from "./components/Browser.jsx";
 import HeroesPage from "./components/HeroesPage.jsx";
@@ -120,9 +119,8 @@ export default function App() {
 
   return (
     <div className="flex h-full flex-col">
-      <Header route={route} ds={ds} />
-      <div className="flex min-h-0 flex-1">
-        <Sidebar route={route} indexes={indexes} />
+      <TopBar route={route} />
+      <div className="flex min-h-0 flex-1 pt-18">
         <main className="flex min-w-0 flex-1 flex-col">
           <ErrorBoundary page={`${route.ds}/${route.dir}`}>{page}</ErrorBoundary>
         </main>

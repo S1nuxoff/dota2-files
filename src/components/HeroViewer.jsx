@@ -52,7 +52,8 @@ const idleOf = (names) =>
   names[0] ||
   "";
 
-export default function HeroViewer({ models }) {
+// bare: no backdrop of its own (the page behind lights it)
+export default function HeroViewer({ models, bare = false }) {
   const host = useRef(null);
   const stage = useRef(null);
   const [status, setStatus] = useState("loading");
@@ -199,7 +200,7 @@ export default function HeroViewer({ models }) {
   };
 
   return (
-    <div className="relative h-full w-full bg-[radial-gradient(ellipse_at_50%_40%,#1d2230_0%,#0e1015_70%)]">
+    <div className={`relative h-full w-full ${bare ? "" : "bg-[radial-gradient(ellipse_at_50%_40%,#202022_0%,#0f0f11_70%)]"}`}>
       <div ref={host} className="absolute inset-0" />
       {status !== "ready" && (
         <div className="pointer-events-none absolute inset-0 flex items-center justify-center text-sm text-ink-400">
@@ -210,7 +211,7 @@ export default function HeroViewer({ models }) {
         <select
           value={clip}
           onChange={(e) => play(e.target.value)}
-          className="absolute bottom-3 left-3 max-w-[50%] rounded-md border border-ink-700 bg-ink-900/90 px-2 py-1 text-xs text-ink-300 outline-none backdrop-blur"
+          className="glass absolute bottom-4 left-4 max-w-[50%] rounded-full px-3 py-1.5 text-[0.8rem] text-ink-300 outline-none"
         >
           {clips.map((c) => (
             <option key={c}>{c}</option>

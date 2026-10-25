@@ -93,7 +93,7 @@ export default function ImageSearch({ onResults, onClose }) {
 
   return (
     <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/70 p-8 backdrop-blur-sm" onClick={onClose}>
-      <div className="flex max-h-full w-full max-w-5xl flex-col rounded-2xl border border-ink-700 bg-ink-900 shadow-2xl" onClick={(e) => e.stopPropagation()}>
+      <div className="flex max-h-full w-full max-w-5xl flex-col rounded-3xl border border-ink-700 bg-ink-900 shadow-2xl" onClick={(e) => e.stopPropagation()}>
         <div className="flex items-center gap-3 border-b border-ink-800 px-6 py-4">
           <ScanSearch size={18} className="text-accent" />
           <div className="flex-1">
