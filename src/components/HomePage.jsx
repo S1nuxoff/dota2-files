@@ -84,10 +84,13 @@ export default function HomePage({ catalog, indexes }) {
     <div className="min-h-0 flex-1 overflow-y-auto">
       <div className="anim-page">
         <section className="mx-auto flex max-w-4xl flex-col items-center px-8 pt-20 text-center">
-          <h1 className="text-[clamp(2.6rem,4.4vw,4rem)] leading-[1.04] font-semibold tracking-[-0.045em]">Every file of Dota 2</h1>
-          <p className="mt-5 max-w-2xl text-[1.05rem] leading-relaxed text-ink-400">
-            {stats ? `${formatCount(stats.files)} files, ${formatSize(stats.bytes)}` : "All the files"} taken from the game: models, textures, sounds, pictures and data, sorted by hero, item and set.
-            {catalog?.updated && ` Updated ${ago(catalog.updated)}.`}
+          <h1 className="max-w-3xl text-[clamp(2.4rem,4.2vw,3.8rem)] leading-[1.06] font-semibold tracking-[-0.045em]">
+            Every model, sound and picture of Dota 2, ready to download
+          </h1>
+          <p className="mt-6 max-w-2xl text-[1.05rem] leading-relaxed text-ink-400">
+            {stats ? `${formatCount(stats.files)} files, ${formatSize(stats.bytes)},` : "All the files"} taken straight from the game and sorted the way the game sorts them: by hero, item, set, bundle and treasure.
+            Open a hero to get its model with animations, its items, voice lines and effects, or search the whole game at once.
+            {catalog?.updated && ` Last updated ${ago(catalog.updated)}.`}
           </p>
           <label className="mt-9 flex h-13 w-full max-w-2xl items-center gap-3 rounded-xl border border-white/[0.08] bg-ink-900 pr-2 pl-4 transition-colors focus-within:border-white/20">
             <Search size={18} className="shrink-0 text-ink-400" />
@@ -172,6 +175,21 @@ export default function HomePage({ catalog, indexes }) {
             <Take icon={Code2} title="Embed in your site" href={DOTADEX} link="Dotadex">
               Any hero, set or item in 3D on your own page. Each one has an Embed button with the code to paste, in the size you want.
             </Take>
+          </div>
+        </section>
+
+        <section className="mx-auto mt-20 max-w-[80rem] px-8">
+          <div className="flex flex-wrap items-center gap-6 rounded-2xl border border-white/[0.06] bg-ink-900 p-7">
+            <Heart size={22} className="shrink-0 text-ink-200" />
+            <div className="min-w-0 flex-1">
+              <h2 className="text-[1.15rem] font-semibold tracking-[-0.02em]">Support the author</h2>
+              <p className="mt-1.5 max-w-2xl text-[0.95rem] leading-relaxed text-ink-400">
+                This site, Dotadex and the datasets behind them are made by one person, and the exports and hosting are kept running by hand. If they saved you time, you can help keep them going.
+              </p>
+            </div>
+            <a href={SUPPORT_URL} target="_blank" rel="noreferrer" className="flex h-11 items-center gap-2 rounded-xl bg-ink-100 px-5 text-[0.92rem] font-medium text-ink-950 transition-colors hover:bg-white">
+              <Heart size={16} /> Support on Ko-fi
+            </a>
           </div>
         </section>
 
