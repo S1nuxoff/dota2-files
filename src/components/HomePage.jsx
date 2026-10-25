@@ -134,33 +134,43 @@ export default function HomePage({ catalog, indexes }) {
       <div ref={page}>
         <section className="relative flex min-h-[calc(100dvh-3.5rem)] flex-col">
           <div className="anim-fade pointer-events-none absolute inset-x-0 top-0 h-[44rem] bg-[radial-gradient(60%_50%_at_50%_0%,rgba(255,255,255,0.07),transparent_70%)]" />
-          <div className="relative z-10 mx-auto flex w-full max-w-4xl flex-1 flex-col items-center justify-center px-8 py-16 text-center">
-            <h1 className="anim-card text-[clamp(2.8rem,5.6vw,5.4rem)] leading-[1.02] font-semibold tracking-[-0.05em]">
+          <div className="relative z-10 mx-auto flex w-full max-w-5xl flex-1 flex-col items-center justify-center px-8 py-16 text-center">
+            <h1 className="anim-card text-[clamp(2.6rem,5.2vw,5.2rem)] leading-[1.02] font-semibold tracking-[-0.05em] text-balance whitespace-nowrap max-sm:whitespace-normal">
               All of Dota 2, taken apart
             </h1>
-            <p style={{ animationDelay: "90ms" }} className="anim-card mt-7 max-w-2xl text-[clamp(1.02rem,1.2vw,1.2rem)] leading-relaxed text-ink-400">
-              Models, voice lines, effects and what drops from every chest, pulled straight from the game files.
-              <br />
-              {stats ? `${formatCount(stats.files)} files, free to download.` : "Free to download."}
+            <p style={{ animationDelay: "90ms" }} className="anim-card mt-6 max-w-xl text-[clamp(1.02rem,1.15vw,1.15rem)] leading-relaxed text-balance text-ink-400">
+              Models, voice lines, effects and what drops from every chest, straight from the game files. {stats ? `${formatCount(stats.files)} files, free to download.` : "Free to download."}
             </p>
-            <label style={{ animationDelay: "180ms" }} className="anim-card mt-10 flex h-14 w-full max-w-2xl items-center gap-3 rounded-xl border border-white/[0.08] bg-ink-900 pr-2 pl-5 transition-colors focus-within:border-white/20">
+            <form
+              onSubmit={(e) => (e.preventDefault(), search())}
+              style={{ animationDelay: "180ms" }}
+              className="anim-card mt-10 flex h-[3.75rem] w-full max-w-[38rem] items-center gap-3 rounded-2xl border border-white/[0.1] bg-ink-900/90 p-1.5 pl-5 shadow-[0_20px_60px_-20px_rgba(0,0,0,0.8)] backdrop-blur transition-colors focus-within:border-white/25"
+            >
               <Search size={19} className="shrink-0 text-ink-400" />
               <input
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && search()}
-                placeholder="Search heroes, items and files"
-                className="h-12 min-w-0 flex-1 bg-transparent text-[1rem] outline-none placeholder:text-ink-400"
+                placeholder="Pudge, Crimson Witness, courier, berserkers_call..."
+                className="h-full min-w-0 flex-1 bg-transparent text-[1rem] outline-none placeholder:text-ink-400"
               />
-            </label>
-            <div style={{ animationDelay: "260ms" }} className="anim-card mt-5 flex flex-wrap justify-center gap-2.5">
-              <a href={link("/heroes")} className="flex h-11 items-center gap-2 rounded-xl bg-ink-100 px-5 text-[0.92rem] font-medium text-ink-950 transition-colors hover:bg-white">
-                Browse the heroes <ArrowRight size={16} />
-              </a>
-              <a href={link("/3d")} className="flex h-11 items-center gap-2 rounded-xl border border-white/[0.1] bg-ink-900 px-5 text-[0.92rem] text-ink-100 transition-colors hover:border-white/25">
-                <Box size={16} /> Find a model by screenshot
-              </a>
-            </div>
+              <button type="submit" className="h-full rounded-xl bg-ink-100 px-5 text-[0.92rem] font-medium text-ink-950 transition-colors hover:bg-white">
+                Search
+              </button>
+            </form>
+            <nav style={{ animationDelay: "260ms" }} className="anim-card mt-6 flex flex-wrap items-center justify-center gap-x-1 gap-y-2 text-[0.9rem]">
+              <span className="mr-1 text-ink-400">or open</span>
+              {[
+                ["/heroes", "Heroes"],
+                ["/sets", "Sets"],
+                ["/cosmetics/treasures", "Treasures"],
+                ["/music", "Music"],
+                ["/3d", "3D models"],
+              ].map(([href, label]) => (
+                <a key={href} href={link(href)} className="rounded-lg px-2.5 py-1 text-ink-300 transition-colors hover:bg-white/[0.06] hover:text-ink-100">
+                  {label}
+                </a>
+              ))}
+            </nav>
           </div>
           {/* Two heroes framing the words, one at each side, standing on the foot of the screen; their
               pictures' dark ground melts into the page's, their inner side and feet fade out */}
@@ -170,7 +180,7 @@ export default function HomePage({ catalog, indexes }) {
               href={link(`/hero/${hero.key}`)}
               title={hero.name}
               style={{ animationDelay: `${420 + i * 120}ms` }}
-              className={`anim-stand group absolute bottom-0 hidden h-[min(82vh,52rem)] lg:block ${i === 0 ? "left-[max(0rem,calc(50%-52rem))]" : "right-[max(0rem,calc(50%-52rem))]"}`}
+              className={`anim-stand group absolute bottom-0 hidden h-[min(78vh,48rem)] xl:block ${i === 0 ? "left-[-2vw]" : "right-[-2vw]"}`}
             >
               <img
                 src={heroCard(hero)}
@@ -179,8 +189,8 @@ export default function HomePage({ catalog, indexes }) {
                 onError={(e) => (e.currentTarget.style.visibility = "hidden")}
                 className={`h-full w-auto object-contain object-bottom opacity-80 mix-blend-lighten transition-[opacity,transform] duration-500 group-hover:-translate-y-1.5 group-hover:opacity-100 ${
                   i === 0
-                    ? "[mask-image:linear-gradient(to_right,black_55%,transparent),linear-gradient(to_bottom,black_75%,transparent)] [mask-composite:intersect]"
-                    : "-scale-x-100 [mask-image:linear-gradient(to_right,black_55%,transparent),linear-gradient(to_bottom,black_75%,transparent)] [mask-composite:intersect]"
+                    ? "[mask-image:linear-gradient(to_right,transparent,black_18%,black_55%,transparent),linear-gradient(to_bottom,black_75%,transparent)] [mask-composite:intersect]"
+                    : "-scale-x-100 [mask-image:linear-gradient(to_right,transparent,black_18%,black_55%,transparent),linear-gradient(to_bottom,black_75%,transparent)] [mask-composite:intersect]"
                 }`}
               />
             </a>
