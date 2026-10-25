@@ -7,6 +7,7 @@ import { startJob } from "../lib/jobs.js";
 import { canSaveToFolder } from "../lib/download.js";
 import FileTable from "./FileTable.jsx";
 import ItemCard from "./ItemCard.jsx";
+import SetCard from "./SetCard.jsx";
 import { link, navigate } from "../lib/route.js";
 import { Button, Chip, Spinner } from "./ui.jsx";
 import EmbedButton from "./EmbedButton.jsx";
@@ -38,6 +39,7 @@ export default function HeroPage({ heroKey, catalog, indexes, withCopies, route 
   const loaded = DATASETS.filter((d) => indexes[d.id]).length;
   const ready = loaded === DATASETS.length;
   const [slot, setSlot] = useState("");
+  const [grouping, setGrouping] = useState("sets");
 
   const files = useMemo(() => (hero && ready ? heroFiles(hero, catalog, indexes, withCopies) : []), [hero, catalog, indexes, withCopies, ready]);
   const byDataset = useMemo(() => {
@@ -68,6 +70,9 @@ export default function HeroPage({ heroKey, catalog, indexes, withCopies, route 
   if (!hero) return <div className="p-16 text-center text-ink-400">There is no hero called {heroKey}.</div>;
 
   const shown = slot ? items.filter((i) => (i.slot || i.prefab) === slot) : items;
+  // The hero's items that no set of it holds
+  const inSets = new Set(hero.sets.flatMap((s) => s.items));
+  const loose = items.filter((i) => !inSets.has(i.id));
   const tabs = [["items", "Items", items.length], ...DATASETS.filter((d) => byDataset[d.id]).map((d) => [d.id, d.title, byDataset[d.id].length])];
   const bytes = (list) => formatSize(list.reduce((n, e) => n + e.size, 0));
 
@@ -173,8 +178,23 @@ export default function HeroPage({ heroKey, catalog, indexes, withCopies, route 
         </div>
 
         {tab === "items" ? (
-          <div key="items" className="anim-page mt-6">
-            <div className="mb-5 flex flex-wrap gap-1.5">
+          <div key={`items-${grouping}`} className="anim-page mt-6">
+            <div className="mb-6 flex flex-wrap items-center gap-1.5">
+              <div className="mr-3 flex gap-1 rounded-lg bg-ink-850 p-1">
+                {[
+                  ["sets", "By set"],
+                  ["slots", "By slot"],
+                ].map(([id, title]) => (
+                  <button
+                    key={id}
+                    onClick={() => setGrouping(id)}
+                    className={`h-7 rounded-md px-3 text-[0.82rem] transition-colors ${grouping === id ? "bg-ink-100 text-ink-950" : "text-ink-400 hover:text-ink-100"}`}
+                  >
+                    {title}
+                  </button>
+                ))}
+              </div>
+              {grouping === "slots" && <>
               {["", ...slots].map((s) => (
                 <button
                   key={s}
@@ -184,12 +204,34 @@ export default function HeroPage({ heroKey, catalog, indexes, withCopies, route 
                   {s ? prefabTitleOr(s) : "All"}
                 </button>
               ))}
+              </>}
             </div>
-            <div className="grid grid-cols-[repeat(auto-fill,minmax(12.5rem,1fr))] gap-4">
-              {shown.map((item, i) => (
-                <ItemCard key={item.id} item={item} rarities={catalog.rarities} delay={Math.min(i, 24) * 20} list={shown.map((x) => x.id)} />
-              ))}
-            </div>
+            {grouping === "sets" ? (
+              <>
+                <h3 className="text-[1.15rem] font-semibold tracking-[-0.02em]">
+                  Sets <span className="ml-1 font-normal text-ink-400">{hero.sets.length}</span>
+                </h3>
+                <div className="mt-4 grid grid-cols-[repeat(auto-fill,minmax(12rem,1fr))] gap-4">
+                  {hero.sets.map((set, i) => (
+                    <SetCard key={set.key} set={set} delay={Math.min(i, 24) * 20} />
+                  ))}
+                </div>
+                <h3 className="mt-12 text-[1.15rem] font-semibold tracking-[-0.02em]">
+                  Not in a set <span className="ml-1 font-normal text-ink-400">{loose.length}</span>
+                </h3>
+                <div className="mt-4 grid grid-cols-[repeat(auto-fill,minmax(12.5rem,1fr))] gap-4">
+                  {loose.map((item, i) => (
+                    <ItemCard key={item.id} item={item} rarities={catalog.rarities} delay={Math.min(i, 24) * 20} list={loose.map((x) => x.id)} />
+                  ))}
+                </div>
+              </>
+            ) : (
+              <div className="grid grid-cols-[repeat(auto-fill,minmax(12.5rem,1fr))] gap-4">
+                {shown.map((item, i) => (
+                  <ItemCard key={item.id} item={item} rarities={catalog.rarities} delay={Math.min(i, 24) * 20} list={shown.map((x) => x.id)} />
+                ))}
+              </div>
+            )}
           </div>
         ) : (
           <div key={tab} className="anim-page mt-6 overflow-hidden rounded-2xl border border-white/[0.06] bg-ink-900 p-2">

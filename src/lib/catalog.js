@@ -23,6 +23,17 @@ export function loadCatalog() {
     for (const hero of catalog.heroes) hero.key = hero.id.slice("npc_dota_hero_".length);
     catalog.heroByKey = new Map(catalog.heroes.map((h) => [h.key, h]));
     catalog.heroById = new Map(catalog.heroes.map((h) => [h.id, h]));
+    // Sets: each with its key and its hero (its items' first); each hero with its sets
+    catalog.setByKey = new Map();
+    for (const [key, set] of Object.entries(catalog.sets || {})) {
+      set.key = key;
+      set.items = set.items.filter((id) => catalog.items[id]);
+      const heroId = set.items.map((id) => catalog.items[id].heroes.find((h) => h.startsWith("npc_dota_hero_"))).find(Boolean);
+      set.hero = heroId ? catalog.heroById.get(heroId) : null;
+      if (set.items.length) catalog.setByKey.set(key, set);
+    }
+    for (const hero of catalog.heroes) hero.sets = [];
+    for (const set of catalog.setByKey.values()) set.hero?.sets.push(set);
     prefabNames = catalog.prefabs || {};
     return catalog;
   });
@@ -43,6 +54,36 @@ export function useCatalog() {
 
 export const heroPortrait = (hero) => fileUrl(datasetById("images"), `panorama/images/heroes/${hero.id}_png.png`);
 export const imageUrl = (path) => (path ? fileUrl(datasetById("images"), path) : "");
+
+// A set's files: every file of every item of it
+export function setFiles(set, catalog, indexes, withCopies) {
+  const out = new Map();
+  for (const id of set.items) filesOfRefs(catalog.items[id].refs, indexes, withCopies, out);
+  return [...out.values()];
+}
+
+// The models a set puts on its hero: one per item (its first, the default style's)
+export function setModels(set, catalog, indexes) {
+  if (!indexes.models) return [];
+  const byPath = new Map(indexes.models.entries.map((e) => [e.path, e]));
+  return set.items.map((id) => (catalog.items[id].refs.models || []).map((pre) => byPath.get(`${pre}glb`)).find(Boolean)).filter(Boolean);
+}
+
+// The set on its hero in Dotadex: hero/<hero>?<slot>=<item>&... (a persona's slots switch to it)
+export function setDotadexPath(set, catalog) {
+  if (!set.hero) return "";
+  const params = new URLSearchParams();
+  let persona = 0;
+  for (const id of set.items) {
+    const slot = catalog.items[id].slotKey;
+    if (!slot) continue;
+    params.set(slot, id);
+    const m = /_persona_(\d+)$/.exec(slot);
+    if (m) persona = Number(m[1]);
+  }
+  if (persona) params.set("persona", persona);
+  return `hero/${set.hero.key}?${params}`;
+}
 // The hero standing whole in its default set, as the game's set pages show it (448 x 678)
 export const heroCard = (hero) => fileUrl(datasetById("images"), `panorama/images/econ/sets/v2/${hero.id}_0_png.png`);
 

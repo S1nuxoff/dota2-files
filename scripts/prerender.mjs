@@ -125,6 +125,26 @@ for (const [id, it] of itemPages) {
   });
 }
 
+// Sets: each on its hero, with its items
+const setHero = (set) => {
+  const id = set.items.map((x) => catalog.items[x]?.heroes.find((h) => h.startsWith("npc_dota_hero_"))).find(Boolean);
+  return id ? heroByKey.get(heroKey(id)) : null;
+};
+for (const [key, set] of Object.entries(catalog.sets || {})) {
+  const items = set.items.filter((x) => catalog.items[x]);
+  // A key a file can be named after (a few have ":" or "?"): the others open through 404.html
+  if (!items.length || !/^[\w'.,()&+-]+$/.test(key)) continue;
+  const hero = setHero(set);
+  const picture = set.icon ? fileUrl("dota2-images", set.icon) : "";
+  page(`/set/${encodeURIComponent(key)}`, {
+    title: `${set.name}${hero ? ` (${hero.name})` : ""}: set 3D models and textures`,
+    description: `${set.name}, a ${items.length}-item Dota 2 set${hero ? ` for ${hero.name}` : ""}. Download the 3D models (glb), textures and icons of every item, or the whole set at once.`,
+    image: picture,
+    body: `<h1>${esc(set.name)}</h1>${picture ? `<img src="${esc(picture)}" alt="${esc(set.name)}" width="224" />` : ""}<p>${items.length} items${hero ? ` for <a href="${esc(href(`/hero/${heroKey(hero.id)}`))}">${esc(hero.name)}</a>` : ""}.</p>${list(items.map((x) => [`/item/${x}`, catalog.items[x].name]))}`,
+    jsonld: { "@context": "https://schema.org", "@type": "CreativeWork", name: set.name, image: picture || undefined, url: url(`/set/${encodeURIComponent(key)}`), isPartOf: game },
+  });
+}
+
 const byPrefab = new Map();
 for (const [id, it] of itemPages) {
   if (!byPrefab.has(it.prefab)) byPrefab.set(it.prefab, []);

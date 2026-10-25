@@ -141,8 +141,17 @@ export default function ItemPage({ itemId, catalog, indexes, withCopies, route }
 
         {others.length > 0 && (
           <section className="mt-14">
-            <h2 className="text-[1.35rem] font-semibold tracking-[-0.02em]">{set.name}</h2>
-            <p className="mt-1 text-[0.9rem] text-ink-400">The rest of its set</p>
+            <h2 className="text-[1.35rem] font-semibold tracking-[-0.02em]">
+              <a href={link(`/set/${item.set}`)} className="hover:underline">
+                {set.name}
+              </a>
+            </h2>
+            <p className="mt-1 text-[0.9rem] text-ink-400">
+              The rest of its set.{" "}
+              <a href={link(`/set/${item.set}`)} className="text-ink-100 hover:underline">
+                Open the whole set
+              </a>
+            </p>
             <div className="mt-5 grid grid-cols-[repeat(auto-fill,minmax(12.5rem,1fr))] gap-4">
               {others.map((id, i) => (
                 <ItemCard key={id} item={catalog.items[id]} rarities={catalog.rarities} delay={i * 25} list={others} />

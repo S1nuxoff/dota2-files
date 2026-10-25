@@ -162,7 +162,10 @@ export default function ItemModal({ itemId, catalog, indexes, withCopies }) {
           <div className="min-h-0 flex-1 space-y-7 overflow-y-auto border-t border-white/[0.06] p-6">
             {others.length > 0 && (
               <section>
-                <h3 className="font-medium">{set.name}</h3>
+                <a href={link(`/set/${item.set}`)} className="font-medium hover:underline">
+                  {set.name}
+                </a>
+                <span className="ml-2 text-[0.8rem] text-ink-400">the whole set</span>
                 <div className="mt-3 grid grid-cols-4 gap-2">
                   {others.map((id) => (
                     <button
