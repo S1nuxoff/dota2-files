@@ -91,8 +91,14 @@ page("/", {
   title: "Dotadex Files: download every Dota 2 model, texture, sound and icon",
   description: `Browse and download every file of Dota 2: ${catalog.heroes.length} heroes with their 3D models, ${itemPages.length.toLocaleString("en-US")} cosmetic items, textures, sounds, voice lines, particles and icons. Free, straight from the game files.`,
   image: portrait(catalog.heroes[0]),
-  body: `<h1>Every file of Dota 2</h1><p>Heroes with all their 3D models, items, sounds and effects; every cosmetic; every 3D model, texture, picture, video and script of the game, ready to download.</p><h2>Heroes</h2>${list(catalog.heroes.map((h) => [`/hero/${heroKey(h.id)}`, h.name]))}`,
+  body: `<h1>Every file of Dota 2, sorted and linked</h1><p>Heroes with their models, items, voice lines and effects. Sets, bundles, treasures and what drops from them. Every model, texture, sound and picture of the game, free to download.</p>${list([["/heroes", "Heroes"], ["/sets", "Sets"], ["/bundles", "Bundles"], ["/cosmetics/treasures", "Treasures"], ["/music", "Music"], ["/3d", "3D models"], ["/cosmetics", "Cosmetics"], ["/files", "Files"]])}`,
   jsonld: { "@context": "https://schema.org", "@type": "WebSite", name: SITE_NAME, url: url("/"), about: game },
+});
+page("/heroes", {
+  title: "Every Dota 2 hero: 3D models, items, sounds and effects",
+  description: `All ${catalog.heroes.length} Dota 2 heroes, each with its 3D model, personas, abilities, cosmetic items, voice lines, effects and pictures to download.`,
+  image: portrait(catalog.heroes[0]),
+  body: `<h1>Heroes</h1>${list(catalog.heroes.map((h) => [`/hero/${heroKey(h.id)}`, h.name]))}`,
 });
 
 for (const h of catalog.heroes) {
@@ -103,7 +109,7 @@ for (const h of catalog.heroes) {
     title: `${h.name}: 3D models, items, textures and sounds`,
     description: `Download ${h.name} from Dota 2: the 3D model (glb) with animations${personas ? `, personas (${personas})` : ""}, ${items.length} cosmetic items, textures, voice lines, sounds, particles and icons.`,
     image: portrait(h),
-    body: `<h1>${esc(h.name)}</h1><img src="${esc(portrait(h))}" alt="${esc(h.name)}" width="256" /><p>${esc(h.name)}'s 3D model with animations, its default look and personas${personas ? ` (${esc(personas)})` : ""}, ${items.length} cosmetic items, and every texture, sound, voice line, particle effect and picture of the hero in Dota 2.</p>${h.about?.hype ? `<p>${esc(h.about.hype)}</p>` : ""}${h.about?.bio ? `<h2>Story</h2><p>${esc(h.about.bio)}</p>` : ""}${h.about?.abilities.length ? `<h2>Abilities</h2>${h.about.abilities.map((a) => `<h3>${esc(a.name)}</h3><p>${esc(a.text)}</p>`).join("")}` : ""}<h2>Items</h2>${list(items.map(([id, it]) => [`/item/${id}`, it.name]))}<p><a href="${esc(href("/"))}">All heroes</a></p>`,
+    body: `<h1>${esc(h.name)}</h1><img src="${esc(portrait(h))}" alt="${esc(h.name)}" width="256" /><p>${esc(h.name)}'s 3D model with animations, its default look and personas${personas ? ` (${esc(personas)})` : ""}, ${items.length} cosmetic items, and every texture, sound, voice line, particle effect and picture of the hero in Dota 2.</p>${h.about?.hype ? `<p>${esc(h.about.hype)}</p>` : ""}${h.about?.bio ? `<h2>Story</h2><p>${esc(h.about.bio)}</p>` : ""}${h.about?.abilities.length ? `<h2>Abilities</h2>${h.about.abilities.map((a) => `<h3>${esc(a.name)}</h3><p>${esc(a.text)}</p>`).join("")}` : ""}<h2>Items</h2>${list(items.map(([id, it]) => [`/item/${id}`, it.name]))}<p><a href="${esc(href("/heroes"))}">All heroes</a></p>`,
     jsonld: { "@context": "https://schema.org", "@type": "CreativeWork", name: `${h.name} (Dota 2)`, image: portrait(h), url: url(`/hero/${key}`), isPartOf: game },
   });
 }

@@ -12,7 +12,7 @@ const OUTSIDE = [
 const KOFI = "https://ko-fi.com/s1nuxoff";
 
 const SECTIONS = [
-  ["/", "Heroes", (r) => !r.ds || r.ds === "hero"],
+  ["/heroes", "Heroes", (r) => r.ds === "heroes" || r.ds === "hero"],
   ["/sets", "Sets", (r) => r.ds === "sets" || r.ds === "set"],
   ["/bundles", "Bundles", (r) => r.ds === "bundles"],
   ["/3d", "3D models", (r) => r.ds === "3d"],

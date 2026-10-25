@@ -83,7 +83,7 @@ export default function HeroPage({ heroKey, catalog, indexes, withCopies, route 
   return (
     <div className="min-h-0 flex-1 overflow-y-auto">
       <div key={heroKey} className="anim-page mx-auto max-w-[100rem] px-8 pt-6 pb-20">
-        <a href={link("/")} className="inline-flex items-center gap-1 text-[0.88rem] text-ink-400 transition-colors hover:text-ink-100">
+        <a href={link("/heroes")} className="inline-flex items-center gap-1 text-[0.88rem] text-ink-400 transition-colors hover:text-ink-100">
           <ChevronLeft size={16} /> Heroes
         </a>
 

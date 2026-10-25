@@ -14,6 +14,7 @@ import ModelsPage from "./components/ModelsPage.jsx";
 import ItemModal from "./components/ItemModal.jsx";
 import SetPage from "./components/SetPage.jsx";
 import BundlesPage from "./components/BundlesPage.jsx";
+import HomePage from "./components/HomePage.jsx";
 import MusicPage from "./components/MusicPage.jsx";
 import SetsPage from "./components/SetsPage.jsx";
 import Preview from "./components/Preview.jsx";
@@ -56,6 +57,8 @@ export default function App() {
             ? "3D models"
             : route.ds === "music"
             ? "Music"
+            : route.ds === "heroes"
+            ? "Heroes"
             : route.ds === "bundles"
             ? "Bundles"
             : route.ds === "cosmetics" && route.dir
@@ -128,7 +131,8 @@ export default function App() {
   else if (route.ds === "cosmetics") page = <CosmeticsPage key={route.dir} prefab={route.dir} catalog={catalog} />;
   else if (route.ds === "3d") page = <ModelsPage catalog={catalog} indexes={indexes} />;
   else if (route.ds === "files") page = <Home indexes={indexes} errors={errors} />;
-  else page = <HeroesPage catalog={catalog} error={catalogError} />;
+  else if (route.ds === "heroes") page = <HeroesPage catalog={catalog} error={catalogError} />;
+  else page = <HomePage catalog={catalog} indexes={indexes} />;
 
   return (
     <div className="flex h-full flex-col">
