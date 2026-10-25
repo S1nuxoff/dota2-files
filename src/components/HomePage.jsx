@@ -172,29 +172,6 @@ export default function HomePage({ catalog, indexes }) {
               ))}
             </nav>
           </div>
-          {/* Two heroes framing the words, one at each side, standing on the foot of the screen; their
-              pictures' dark ground melts into the page's, their inner side and feet fade out */}
-          {lineup.slice(0, 2).map((hero, i) => (
-            <a
-              key={hero.id}
-              href={link(`/hero/${hero.key}`)}
-              title={hero.name}
-              style={{ animationDelay: `${420 + i * 120}ms` }}
-              className={`anim-stand group absolute bottom-0 hidden h-[min(78vh,48rem)] xl:block ${i === 0 ? "left-[-2vw]" : "right-[-2vw]"}`}
-            >
-              <img
-                src={heroCard(hero)}
-                alt={hero.name}
-                loading="lazy"
-                onError={(e) => (e.currentTarget.style.visibility = "hidden")}
-                className={`h-full w-auto object-contain object-bottom opacity-80 mix-blend-lighten transition-[opacity,transform] duration-500 group-hover:-translate-y-1.5 group-hover:opacity-100 ${
-                  i === 0
-                    ? "[mask-image:linear-gradient(to_right,transparent,black_18%,black_55%,transparent),linear-gradient(to_bottom,black_75%,transparent)] [mask-composite:intersect]"
-                    : "-scale-x-100 [mask-image:linear-gradient(to_right,transparent,black_18%,black_55%,transparent),linear-gradient(to_bottom,black_75%,transparent)] [mask-composite:intersect]"
-                }`}
-              />
-            </a>
-          ))}
         </section>
 
         {/* Every way in */}
