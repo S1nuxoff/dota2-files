@@ -1,8 +1,7 @@
 import { useEffect, useState } from "react";
 import { ArrowUpRight, Box, Code, Database, FolderOpen, Gem, Heart, Search, Users } from "lucide-react";
-import { DOTADEX } from "../datasets.js";
 import { link } from "../lib/route.js";
-import { datasetById } from "../datasets.js";
+import { DOTADEX, datasetById } from "../datasets.js";
 import { openPalette } from "../lib/palette.js";
 
 export const SOURCE_URL = "https://github.com/S1nuxoff/dota2-files";
