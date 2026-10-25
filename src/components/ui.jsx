@@ -256,7 +256,10 @@ export function Section({ id, title, count, sub, actions, children, center = fal
     return (
       <section id={id} className={`scroll-mt-28 ${className}`}>
         <div className="mb-7 flex flex-col items-center text-center">
-          <h2 className="text-[clamp(1.4rem,2.2vw,1.9rem)] font-semibold tracking-[-0.035em]">{title}</h2>
+          <h2 className="flex items-baseline gap-2.5 text-[clamp(1.4rem,2.2vw,1.9rem)] font-semibold tracking-[-0.035em]">
+            {title}
+            {count != null && <span className="text-[0.55em] font-normal text-ink-500 tabular-nums">{typeof count === "number" ? count.toLocaleString("en-US") : count}</span>}
+          </h2>
           {sub && <p className="mt-2 max-w-xl text-[0.92rem] text-balance text-ink-400">{sub}</p>}
           {actions && <div className="mt-4">{actions}</div>}
         </div>

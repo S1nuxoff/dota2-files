@@ -70,7 +70,7 @@ function Section({ title, list, grid, route }) {
   const shown = all ? list : list.slice(0, SHOWN);
   return (
     <section>
-      <h3 className="text-[1.15rem] font-semibold tracking-[-0.02em]">
+      <h3 className="text-center text-[1.3rem] font-semibold tracking-[-0.03em]">
         {title} <span className="ml-1 font-normal text-ink-400">{formatCount(list.length)}</span>
       </h3>
       {grid ? (

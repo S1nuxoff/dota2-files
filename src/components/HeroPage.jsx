@@ -216,7 +216,7 @@ export default function HeroPage({ heroKey, catalog, indexes, withCopies, route 
       <div className="page-x pt-8">
         {tab === "items" ? (
           <div key={`items-${grouping}`} className="anim-page space-y-12">
-            <div className="flex flex-wrap items-center gap-2">
+            <div className="flex flex-col items-center gap-3">
               <Segmented
                 label="Group items"
                 value={grouping}
@@ -227,7 +227,7 @@ export default function HeroPage({ heroKey, catalog, indexes, withCopies, route 
                 ]}
               />
               {grouping === "slots" && (
-                <div className="no-bar -mx-1 flex gap-1.5 overflow-x-auto px-1 max-sm:w-full">
+                <div className="flex flex-wrap justify-center gap-1.5">
                   {["", ...slots].map((s) => (
                     <Chip key={s} active={slot === s} onClick={() => setSlot(s)}>
                       {s ? prefabTitleOr(s) : "All"}
@@ -238,11 +238,11 @@ export default function HeroPage({ heroKey, catalog, indexes, withCopies, route 
             </div>
             {grouping === "sets" ? (
               <>
-                <Section title="Sets" count={hero.sets.length}>
+                <Section title="Sets" count={hero.sets.length} center>
                   <Progressive items={hero.sets} step={24} className={GRID.tall} render={(set, i) => <SetCard key={set.key} set={set} delay={Math.min(i % 24, 24) * 20} />} />
                 </Section>
                 {loose.length > 0 && (
-                  <Section title="Not in a set" count={loose.length}>
+                  <Section title="Not in a set" count={loose.length} center>
                     <Progressive items={loose} step={36} className={GRID.item} render={(item, i) => <ItemCard key={item.id} item={item} rarities={catalog.rarities} delay={Math.min(i % 36, 24) * 20} list={loose.map((x) => x.id)} />} />
                   </Section>
                 )}

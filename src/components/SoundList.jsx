@@ -123,7 +123,7 @@ export default function SoundList({ files, route }) {
     <div className="space-y-10">
       {groups.map(({ kind, list, topics }) => (
         <section key={kind}>
-          <h3 className="text-[1.15rem] font-semibold tracking-[-0.02em]">
+          <h3 className="text-center text-[1.3rem] font-semibold tracking-[-0.03em]">
             {kind} <span className="ml-1 font-normal text-ink-400">{formatCount(list.length)}</span>
           </h3>
           <div className="mt-4 overflow-hidden rounded-2xl border border-white/[0.06] bg-ink-900">
@@ -146,10 +146,10 @@ export default function SoundList({ files, route }) {
 
       {others.length > 0 && (
         <section>
-          <h3 className="text-[1.15rem] font-semibold tracking-[-0.02em]">
+          <h3 className="text-center text-[1.3rem] font-semibold tracking-[-0.03em]">
             Other sound files <span className="ml-1 font-normal text-ink-400">{others.length}</span>
           </h3>
-          <p className="mt-1 text-[0.88rem] text-ink-400">The voice lines' phonemes for lip sync, as JSON</p>
+          <p className="mt-1 text-center text-[0.88rem] text-ink-400">The voice lines' phonemes for lip sync, as JSON</p>
           <div className="mt-4 overflow-hidden rounded-2xl border border-white/[0.06] bg-ink-900 p-2">
             <FileTable entries={others} route={route} height={`${Math.min(20, others.length * 2.75 + 0.5)}rem`} />
           </div>
