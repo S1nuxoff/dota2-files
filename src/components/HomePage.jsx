@@ -380,23 +380,24 @@ function HeroScene({ heroes }) {
     const draw = () => {
       frame = 0;
       const box = el.getBoundingClientRect();
-      const run = box.height - scroller.clientHeight;
-      const t = Math.min(1, Math.max(0, -box.top / run)); // 0 at the start, 1 at the end
-      const gather = Math.min(1, t / 0.6); // the first 60%: they come together
+      const view = scroller.clientHeight;
+      // 0 as the section comes up from the bottom of the screen, 1 as its inner screen lets go
+      const t = Math.min(1, Math.max(0, (view - box.top) / box.height));
+      const gather = Math.min(1, Math.max(0, (t - 0.1) / 0.45)); // they come together
       const ease = 1 - (1 - gather) ** 3;
-      const leave = Math.max(0, (t - 0.8) / 0.2); // the last 20%: the group draws back
+      const leave = Math.max(0, (t - 0.85) / 0.15); // the group draws back
       figures.forEach((f, i) => {
         const side = i - (SCENE - 1) / 2;
         const far = Math.abs(side);
         const x = side * (34 - 22 * ease); // vw: spread out, then close
-        const y = (1 - ease) * 18 + leave * 6; // vh: low, then on the floor
-        const scale = (0.55 + 0.45 * ease) * (1 - far * 0.09) * (1 - leave * 0.15);
+        const y = (1 - ease) * 8 + leave * 6; // vh: a little low, then on the floor
+        const scale = (0.7 + 0.3 * ease) * (1 - far * 0.09) * (1 - leave * 0.15);
         f.style.transform = `translate(-50%, 0) translate(${x}vw, ${y}vh) scale(${scale})`;
-        f.style.opacity = String((0.15 + 0.85 * ease) * (1 - far * 0.12) * (1 - leave));
+        f.style.opacity = String((0.45 + 0.55 * ease) * (1 - far * 0.1) * (1 - leave));
         f.style.zIndex = String(10 - far);
       });
       if (words) {
-        const show = Math.min(1, Math.max(0, (t - 0.25) / 0.3));
+        const show = Math.min(1, Math.max(0, (t - 0.08) / 0.25));
         words.style.opacity = String(show * (1 - leave));
         words.style.transform = `translateY(${(1 - show) * 30}px)`;
       }
