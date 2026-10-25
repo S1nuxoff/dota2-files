@@ -8,17 +8,19 @@ import ItemCard from "./ItemCard.jsx";
 const BONUS = { rare: "Rare bonus", very_rare: "Very rare bonus", ultra_rare: "Ultra rare bonus", cosmically_rare: "Cosmically rare bonus" };
 const bonusTitle = (r) => BONUS[r] || (r ? `${r.replace(/_/g, " ")} bonus` : "Bonus");
 
-// A treasure's contents and the extras it may give, grouped by how rare; and for any item, the
+// A bundle's items; a treasure's contents and the extras it may give, grouped by how rare; and for any item, the
 // treasures it drops from. compact: small icons for the item window, else cards for a page
 export default function Loot({ item, catalog, compact = false }) {
   const loot = item.loot;
   const from = (catalog.foundIn.get(item.id) || []).filter((id) => catalog.items[id]);
-  if (!loot && !from.length) return null;
+  const bundle = (item.bundle || []).filter((id) => catalog.items[id]);
+  if (!loot && !from.length && !bundle.length) return null;
 
   const bonus = new Map();
   for (const [id, r] of loot?.bonus || []) if (catalog.items[id]) (bonus.get(r) || bonus.set(r, []).get(r)).push(id);
   const order = ["rare", "very_rare", "ultra_rare", "cosmically_rare"];
   const groups = [
+    ...(bundle.length ? [["In this bundle", bundle, "Its items, each with its own files"]] : []),
     ...(loot?.drops.length ? [["Contents", loot.drops.filter((id) => catalog.items[id]), "One of these"]] : []),
     ...[...bonus.entries()].sort((a, b) => order.indexOf(a[0]) - order.indexOf(b[0])).map(([r, ids]) => [bonusTitle(r), ids, "A chance on top of the contents"]),
     ...(from.length ? [["Drops from", from.sort((a, b) => (catalog.items[b].date || "").localeCompare(catalog.items[a].date || "")), "The treasures that can give it"]] : []),

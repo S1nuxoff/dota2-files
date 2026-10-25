@@ -1,7 +1,7 @@
 import { lazy, Suspense, useEffect, useMemo, useState } from "react";
 import { ChevronLeft, ChevronRight, Download, ExternalLink, FileArchive, Image as ImageIcon, Maximize2, Package, X } from "lucide-react";
 import { DOTADEX, datasetById, fileUrl } from "../datasets.js";
-import { filesOfRefs, imageUrl, prefabTitle } from "../lib/catalog.js";
+import { imageUrl, itemDotadexPath, itemFiles, prefabTitle } from "../lib/catalog.js";
 import { formatSize } from "../lib/format.js";
 import { startJob } from "../lib/jobs.js";
 import { closeItem, link, openItem, openItems } from "../lib/route.js";
@@ -28,7 +28,7 @@ const textureLabel = (path) =>
 // arrows go through the items of the page it came from
 export default function ItemModal({ itemId, catalog, indexes, withCopies }) {
   const item = catalog?.items[itemId];
-  const files = useMemo(() => (item ? [...filesOfRefs(item.refs, indexes, withCopies).values()] : []), [item, indexes, withCopies]);
+  const files = useMemo(() => (item ? itemFiles(item, catalog, indexes, withCopies) : []), [item, catalog, indexes, withCopies]);
   const models = files.filter((e) => e.ext === "glb");
   const textures = files.filter((e) => e.ds === "textures");
   const sounds = files.filter((e) => e.ds === "sounds");
@@ -68,10 +68,10 @@ export default function ItemModal({ itemId, catalog, indexes, withCopies }) {
       <div key={itemId} className="anim-open absolute inset-5 grid grid-cols-[minmax(0,1fr)_25rem] gap-4" onClick={(e) => e.stopPropagation()}>
         <div className="relative overflow-hidden rounded-2xl border border-white/[0.06] bg-[radial-gradient(circle_at_50%_42%,#3a3a3f_0%,#232326_45%,#161618_100%)]">
           {shown === "game" && models.length > 0 ? (
-            <GameStage path={`item/${item.id}`} title={item.name} />
+            <GameStage path={itemDotadexPath(item, catalog)} title={item.name} />
           ) : model ? (
             <Suspense fallback={null}>
-              <HeroViewer key={model.path} models={[model]} bare />
+              <HeroViewer key={item.bundle ? item.id : model.path} models={item.bundle ? models : [model]} bare />
             </Suspense>
           ) : (
             <div className="flex h-full items-center justify-center">
@@ -89,7 +89,7 @@ export default function ItemModal({ itemId, catalog, indexes, withCopies }) {
             </div>
           )}
           {models.length > 0 && <LookSwitch look={shown} setLook={setShown} className="absolute top-4 right-4" />}
-          {shown === "simple" && models.length > 1 && (
+          {shown === "simple" && models.length > 1 && !item.bundle && (
             <div className="absolute inset-x-0 bottom-5 flex justify-center">
               <div className="flex gap-1 rounded-full bg-black/40 p-1 backdrop-blur-md">
                 {models.map((m, i) => (

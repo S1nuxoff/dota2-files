@@ -93,6 +93,23 @@ export function setDotadexPath(set, catalog) {
   if (persona) params.set("persona", persona);
   return `hero/${set.hero.key}?${params}`;
 }
+// An item's files with a bundle's: the bundle has only its picture, its items the models
+export function itemFiles(item, catalog, indexes, withCopies) {
+  const out = filesOfRefs(item.refs, indexes, withCopies);
+  for (const id of item.bundle || []) if (catalog.items[id]) filesOfRefs(catalog.items[id].refs, indexes, withCopies, out);
+  return [...out.values()];
+}
+
+// Where Dotadex shows an item: a bundle on its hero wearing all of it, else the item itself
+export function itemDotadexPath(item, catalog) {
+  if (item.bundle) {
+    const heroId = item.bundle.map((id) => catalog.items[id]?.heroes.find((h) => h.startsWith("npc_dota_hero_"))).find(Boolean);
+    const hero = heroId && catalog.heroById.get(heroId);
+    if (hero) return setDotadexPath({ hero, items: item.bundle.filter((id) => catalog.items[id]) }, catalog);
+  }
+  return `item/${item.id}`;
+}
+
 // The hero standing whole in its default set, as the game's set pages show it (448 x 678)
 export const heroCard = (hero) => fileUrl(datasetById("images"), `panorama/images/econ/sets/v2/${hero.id}_0_png.png`);
 

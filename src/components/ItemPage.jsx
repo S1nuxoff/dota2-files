@@ -1,7 +1,7 @@
 import { lazy, Suspense, useMemo, useState } from "react";
 import { ChevronLeft, Download, ExternalLink, FileArchive, Image as ImageIcon, LoaderCircle, Package } from "lucide-react";
 import { DATASETS, DOTADEX, datasetById, fileUrl } from "../datasets.js";
-import { filesOfRefs, imageUrl, prefabTitle } from "../lib/catalog.js";
+import { imageUrl, itemDotadexPath, itemFiles, prefabTitle } from "../lib/catalog.js";
 import { formatSize } from "../lib/format.js";
 import { startJob } from "../lib/jobs.js";
 import FileTable from "./FileTable.jsx";
@@ -29,7 +29,7 @@ const textureLabel = (path) =>
 // its downloads over it; under it the rest of its set, its textures and every file
 export default function ItemPage({ itemId, catalog, indexes, withCopies, route }) {
   const item = catalog?.items[itemId];
-  const files = useMemo(() => (item ? [...filesOfRefs(item.refs, indexes, withCopies).values()] : []), [item, indexes, withCopies]);
+  const files = useMemo(() => (item ? itemFiles(item, catalog, indexes, withCopies) : []), [item, catalog, indexes, withCopies]);
   const ready = item && Object.keys(item.refs).every((ds) => indexes[ds]);
   const [style, setStyle] = useState(0);
   const [shown, setShown] = useLook();
@@ -61,10 +61,10 @@ export default function ItemPage({ itemId, catalog, indexes, withCopies, route }
 
         <div className="relative mt-4 h-[min(70vh,46rem)] overflow-hidden rounded-3xl border border-white/[0.06] bg-[radial-gradient(circle_at_50%_45%,#3a3a3f_0%,#232326_45%,#141416_100%)]">
           {shown === "game" && models.length > 0 ? (
-            <GameStage path={`item/${item.id}`} title={item.name} />
+            <GameStage path={itemDotadexPath(item, catalog)} title={item.name} />
           ) : model ? (
             <Suspense fallback={null}>
-              <HeroViewer key={model.path} models={[model]} bare />
+              <HeroViewer key={item.bundle ? item.id : model.path} models={item.bundle ? models : [model]} bare />
             </Suspense>
           ) : (
             <div className="flex h-full items-center justify-center">
@@ -97,7 +97,7 @@ export default function ItemPage({ itemId, catalog, indexes, withCopies, route }
           </div>
 
           {models.length > 0 && <LookSwitch look={shown} setLook={setShown} className="absolute top-8 right-8" />}
-          {shown === "simple" && models.length > 1 && (
+          {shown === "simple" && models.length > 1 && !item.bundle && (
             <div className="absolute bottom-6 left-6 flex gap-1 rounded-full bg-black/40 p-1 backdrop-blur-md">
               {models.map((m, i) => (
                 <button
