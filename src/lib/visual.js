@@ -20,8 +20,9 @@ export function loadIndex() {
     const scales = new Float32Array(meta.paths.length);
     const values = new Int8Array(bin);
     for (let i = 0; i < meta.paths.length; i++) scales[i] = view.getFloat32(i * stride, true);
-    // A preview's model: previews/<path>.webp -> <path>.glb
-    const models = meta.paths.map((p) => `${p.slice("previews/".length, -".webp".length)}.glb`);
+    // A preview's model: previews/<path>.webp (the cards' view) or previews/top/<path>.webp (the
+    // match's view) -> <path>.glb
+    const models = meta.paths.map((p) => `${p.slice("previews/".length, -".webp".length).replace(/^top\//, "")}.glb`);
     return { meta, stride, scales, values, models };
   })();
   indexPromise.catch(() => (indexPromise = null));
@@ -67,8 +68,17 @@ function nearest(index, vector, count) {
     for (let k = 0; k < dim; k++) dot += values[at + k] * vector[k];
     scores[i] = dot * scales[i];
   }
+  // A model seen from two sides counts once, by its nearer view
   const order = Array.from(scores.keys()).sort((a, b) => scores[b] - scores[a]);
-  return order.slice(0, count).map((i) => ({ path: models[i], score: scores[i] }));
+  const seen = new Set();
+  const out = [];
+  for (const i of order) {
+    if (seen.has(models[i])) continue;
+    seen.add(models[i]);
+    out.push({ path: models[i], score: scores[i] });
+    if (out.length >= count) break;
+  }
+  return out;
 }
 
 // A picture (a Blob: the chosen piece of a screenshot), laid on the grey the previews were laid on
