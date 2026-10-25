@@ -85,11 +85,11 @@ export default function CosmeticsPage({ prefab, catalog }) {
 
 // A kind pictured by the site's own renders of its latest models (previews/<model>.webp, one look
 // for all), up to three; an item without a model of its own lends its bundle's
-const previewOf = (item, catalog) => {
+export const previewOf = (item, catalog) => {
   const own = item.refs.models?.[0] || item.bundle?.map((id) => catalog.items[id]?.refs.models?.[0]).find(Boolean);
   return own ? fileUrl(datasetById("models"), `previews/${own.replace(/\.$/, "")}.webp`) : "";
 };
-const picturesOf = (items, catalog) => {
+export const picturesOf = (items, catalog) => {
   const out = [];
   for (const it of [...items].sort((x, y) => (y.date || "").localeCompare(x.date || ""))) {
     const url = previewOf(it, catalog);

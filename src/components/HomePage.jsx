@@ -19,14 +19,14 @@ import {
 import { DATASETS, DOTADEX, datasetById, fileUrl } from "../datasets.js";
 import { formatCount, formatSize } from "../lib/format.js";
 import { link, navigate } from "../lib/route.js";
-import { eventKind } from "./CosmeticsPage.jsx";
+import { eventKind, picturesOf } from "./CosmeticsPage.jsx";
+import { heroIcon } from "./HeroPicker.jsx";
+import ItemCard from "./ItemCard.jsx";
+import { heroCard, imageUrl } from "../lib/catalog.js";
 
 const OWNER_URL = "https://huggingface.co/Sqls1";
 const SOURCE_URL = "https://github.com/S1nuxoff/dota2-files";
 const SUPPORT_URL = "https://ko-fi.com/s1nuxoff";
-
-// The site's render of a hero's body (previews/models/heroes/<x>/<x>.webp)
-const heroRender = (hero) => (hero.model ? fileUrl(datasetById("models"), `previews/${hero.model.replace(/\.glb$/, "")}.webp`) : "");
 
 // "3 hours ago", "2 days ago"
 function ago(iso) {
@@ -78,73 +78,94 @@ export default function HomePage({ catalog, indexes }) {
     return best;
   }, [catalog]);
 
+  // What each part looks like: the site's renders of its latest models
+  const art = useMemo(() => {
+    if (!catalog) return {};
+    const items = Object.values(catalog.items);
+    const of = (f) => picturesOf(items.filter(f), catalog);
+    return {
+      sets: of((i) => i.set && i.prefab === "wearable"),
+      bundles: of((i) => i.prefab === "bundle"),
+      treasures: of((i) => i.loot && i.prefab !== "sticker_capsule"),
+      models: of((i) => i.prefab === "courier" || i.prefab === "ward"),
+      cosmetics: of((i) => i.prefab === "courier"),
+      events: latestEvent ? of((i) => i.event === latestEvent.id) : [],
+      music: items
+        .filter((i) => i.prefab === "music" && i.icon)
+        .sort((a, b) => (b.date || "").localeCompare(a.date || ""))
+        .slice(0, 3)
+        .map((i) => imageUrl(i.icon)),
+    };
+  }, [catalog, latestEvent]);
+  // The newest things a player can wear or own with a model, as they came out
+  const latest = useMemo(() => {
+    if (!catalog) return [];
+    const kinds = new Set(["wearable", "courier", "ward", "taunt", "bundle"]);
+    return Object.values(catalog.items)
+      .filter((i) => kinds.has(i.prefab) && i.icon && i.date)
+      .sort((a, b) => b.date.localeCompare(a.date) || Number(b.id) - Number(a.id))
+      .slice(0, 12);
+  }, [catalog]);
+
   const n = (v) => (stats ? formatCount(v) : "…");
 
   return (
     <div className="min-h-0 flex-1 overflow-y-auto">
       <div className="anim-page">
-        <section className="mx-auto flex max-w-4xl flex-col items-center px-8 pt-20 text-center">
-          <h1 className="max-w-3xl text-[clamp(2.4rem,4.2vw,3.8rem)] leading-[1.06] font-semibold tracking-[-0.045em]">
-            Every model, sound and picture of Dota 2, ready to download
-          </h1>
-          <p className="mt-6 max-w-2xl text-[1.05rem] leading-relaxed text-ink-400">
-            {stats ? `${formatCount(stats.files)} files, ${formatSize(stats.bytes)},` : "All the files"} taken straight from the game and sorted the way the game sorts them: by hero, item, set, bundle and treasure.
-            Open a hero to get its model with animations, its items, voice lines and effects, or search the whole game at once.
-            {catalog?.updated && ` Last updated ${ago(catalog.updated)}.`}
-          </p>
-          <label className="mt-9 flex h-13 w-full max-w-2xl items-center gap-3 rounded-xl border border-white/[0.08] bg-ink-900 pr-2 pl-4 transition-colors focus-within:border-white/20">
-            <Search size={18} className="shrink-0 text-ink-400" />
-            <input
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && search()}
-              placeholder="Search heroes, items and files"
-              className="h-12 min-w-0 flex-1 bg-transparent text-[0.98rem] outline-none placeholder:text-ink-400"
-            />
-          </label>
-        </section>
-
-        <section className="mx-auto mt-12 max-w-[90rem] px-8">
-          <div className="flex items-end justify-center [mask-image:linear-gradient(to_right,transparent,black_15%,black_85%,transparent)]">
-            {lineup.map((hero, i) => (
-              <a key={hero.id} href={link(`/hero/${hero.key}`)} title={hero.name} className={`group relative -mx-3 flex-1 ${i === 3 ? "z-10 max-w-[16rem]" : "max-w-[12.5rem]"}`}>
-                <img
-                  src={heroRender(hero)}
-                  alt={hero.name}
-                  loading="lazy"
-                  onError={(e) => (e.currentTarget.style.visibility = "hidden")}
-                  className="mx-auto aspect-square w-full object-contain transition-transform duration-300 group-hover:-translate-y-1"
-                />
-              </a>
-            ))}
+        <section className="flex min-h-[calc(100dvh-3.5rem)] flex-col">
+          <div className="mx-auto flex w-full max-w-5xl flex-1 flex-col items-center justify-center px-8 pt-16 text-center">
+            <h1 className="text-[clamp(2.8rem,5.6vw,5.4rem)] leading-[1.02] font-semibold tracking-[-0.05em]">
+              Every model, sound and picture of Dota 2, ready to download
+            </h1>
+            <p className="mt-7 max-w-3xl text-[clamp(1.02rem,1.2vw,1.2rem)] leading-relaxed text-ink-400">
+              {stats ? `${formatCount(stats.files)} files, ${formatSize(stats.bytes)},` : "All the files"} taken straight from the game and sorted the way the game sorts them: by hero, item, set, bundle and treasure.
+              Open a hero to get its model with animations, its items, voice lines and effects, or search the whole game at once.
+              {catalog?.updated && ` Last updated ${ago(catalog.updated)}.`}
+            </p>
+            <label className="mt-10 flex h-14 w-full max-w-2xl items-center gap-3 rounded-xl border border-white/[0.08] bg-ink-900 pr-2 pl-5 transition-colors focus-within:border-white/20">
+              <Search size={19} className="shrink-0 text-ink-400" />
+              <input
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && search()}
+                placeholder="Search heroes, items and files"
+                className="h-12 min-w-0 flex-1 bg-transparent text-[1rem] outline-none placeholder:text-ink-400"
+              />
+            </label>
           </div>
-          <div className="h-px bg-white/[0.08]" />
+          <div className="mx-auto mt-10 w-full max-w-[96rem] px-8">
+            <div className="flex items-end justify-center [mask-image:linear-gradient(to_right,transparent,black_12%,black_88%,transparent)]">
+              {lineup.map((hero, i) => (
+                <a key={hero.id} href={link(`/hero/${hero.key}`)} title={hero.name} className={`group relative -mx-2 flex-1 ${i === 3 ? "z-10 max-w-[15rem]" : "max-w-[12rem]"}`}>
+                  <img
+                    src={heroCard(hero)}
+                    alt={hero.name}
+                    loading="lazy"
+                    onError={(e) => (e.currentTarget.style.visibility = "hidden")}
+                    className={`mx-auto aspect-[448/678] w-full object-contain object-bottom transition-transform duration-300 group-hover:-translate-y-1 ${i === 3 ? "" : "opacity-80 group-hover:opacity-100"}`}
+                  />
+                </a>
+              ))}
+            </div>
+            <div className="h-px bg-white/[0.08]" />
+          </div>
         </section>
 
         {/* Every way in */}
-        <section className="mx-auto mt-14 max-w-[80rem] px-8">
-          <div className="grid auto-rows-[minmax(11rem,auto)] gap-4 md:grid-cols-3">
+        <section className="mx-auto mt-20 max-w-[80rem] px-8">
+          <div className="grid gap-4 md:grid-flow-dense md:grid-cols-3">
             <Door
               href="/heroes"
               icon={Users}
               title="Heroes"
               count={stats?.heroes}
               text="A page for each hero: its model in 3D, personas, abilities and story, its items by set, and every sound, effect, texture and picture of it."
-              className="md:row-span-2"
-              art={
-                <div className="mt-6 grid grid-cols-3 gap-2">
-                  {lineup.slice(0, 6).map((h) => (
-                    <div key={h.id} className="aspect-square rounded-xl bg-[radial-gradient(circle_at_50%_60%,#2c2c31_0%,#18181b_75%)]">
-                      <img src={heroRender(h)} alt="" loading="lazy" className="h-full w-full object-contain p-1" />
-                    </div>
-                  ))}
-                </div>
-              }
+              art={<Renders urls={lineup.slice(0, 3).map(heroCard)} />}
             />
-            <Door href="/sets" icon={Layers} title="Sets" count={stats?.sets} text="Every set on its hero, worn together, with all of its files at once." />
-            <Door href="/bundles" icon={Package} title="Bundles" count={stats?.bundles} text="What the store sells as one: open one to see its items on the hero." />
-            <Door href="/cosmetics/treasures" icon={Gift} title="Treasures" count={stats?.treasures} text="Every chest and capsule by year, with what it holds and its rare bonus drops." />
-            <Door href="/music" icon={Music} title="Music" count={stats?.music} text="Every music pack, its tracks by the moment of the game they play at." />
+            <Door href="/sets" icon={Layers} title="Sets" count={stats?.sets} text="Every set on its hero, worn together, with all of its files at once." art={<Renders urls={art.sets} />} />
+            <Door href="/bundles" icon={Package} title="Bundles" count={stats?.bundles} text="What the store sells as one: open one to see its items on the hero." art={<Renders urls={art.bundles} />} />
+            <Door href="/cosmetics/treasures" icon={Gift} title="Treasures" count={stats?.treasures} text="Every chest and capsule by year, with what it holds and its rare bonus drops." art={<Renders urls={art.treasures} />} />
+            <Door href="/music" icon={Music} title="Music" count={stats?.music} text="Every music pack, its tracks by the moment of the game they play at." art={<Renders urls={art.music} covers />} />
             <Door
               href="/3d"
               icon={Box}
@@ -152,18 +173,56 @@ export default function HomePage({ catalog, indexes }) {
               count={stats?.models}
               text="Every model of the game as glb with its textures: heroes, items, couriers, creeps, trees, rocks, buildings. Search by words or by a screenshot."
               className="md:col-span-2"
+              art={<Renders urls={art.models} />}
             />
-            <Door href="/cosmetics" icon={Shirt} title="Cosmetics" count={stats?.items} text="Everything a player can own, by kind: couriers, wards, loading screens, HUDs, cursors, effects." />
+            <Door href="/cosmetics" icon={Shirt} title="Cosmetics" count={stats?.items} text="Everything a player can own, by kind: couriers, wards, loading screens, HUDs, cursors, effects." art={<Renders urls={art.cosmetics} />} />
             <Door
               href={latestEvent ? `/cosmetics/${eventKind(latestEvent.id)}` : "/cosmetics"}
               icon={CalendarDays}
               title="Events"
               count={stats?.events}
               text={latestEvent ? `Battle passes and events with all they brought. The latest: ${catalog.events?.[latestEvent.id] || latestEvent.id}.` : "Battle passes and events with all they brought."}
+              art={<Renders urls={art.events} />}
             />
-            <Door href="/files" icon={Database} title="Files" count={stats?.files} text="The raw datasets, folder by folder, with search across all of them and downloads of whole folders." />
+            <Door href="/files" icon={Database} title="Files" count={stats?.files} text="The raw datasets, folder by folder, with search across all of them and downloads of whole folders." className="md:col-span-3" />
           </div>
         </section>
+
+        {latest.length > 0 && (
+          <section className="mx-auto mt-20 max-w-[80rem] px-8">
+            <div className="flex items-baseline gap-4">
+              <h2 className="text-[1.25rem] font-semibold tracking-[-0.02em]">New in the game</h2>
+              <span className="text-[0.9rem] text-ink-400">{latest[0].date}</span>
+              <a href={link("/cosmetics")} className="ml-auto inline-flex items-center gap-1.5 text-[0.9rem] text-ink-300 hover:text-ink-100">
+                All cosmetics <ArrowRight size={14} />
+              </a>
+            </div>
+            <div className="mt-5 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
+              {latest.map((item, i) => (
+                <ItemCard key={item.id} item={item} rarities={catalog.rarities} delay={i * 20} list={latest.map((x) => x.id)} />
+              ))}
+            </div>
+          </section>
+        )}
+
+        {catalog && (
+          <section className="mx-auto mt-20 max-w-[80rem] px-8">
+            <div className="flex items-baseline gap-4">
+              <h2 className="text-[1.25rem] font-semibold tracking-[-0.02em]">All {catalog.heroes.length} heroes</h2>
+              <a href={link("/heroes")} className="ml-auto inline-flex items-center gap-1.5 text-[0.9rem] text-ink-300 hover:text-ink-100">
+                With their pictures <ArrowRight size={14} />
+              </a>
+            </div>
+            <div className="mt-5 grid grid-cols-[repeat(auto-fill,minmax(8.5rem,1fr))] gap-1.5">
+              {catalog.heroes.map((h) => (
+                <a key={h.id} href={link(`/hero/${h.key}`)} className="flex items-center gap-2.5 rounded-lg px-2 py-1.5 text-[0.86rem] text-ink-300 transition-colors hover:bg-ink-850 hover:text-ink-100">
+                  <img src={heroIcon(h)} alt="" loading="lazy" className="h-6 w-6 shrink-0 rounded" />
+                  <span className="truncate">{h.name}</span>
+                </a>
+              ))}
+            </div>
+          </section>
+        )}
 
         <section className="mx-auto mt-20 max-w-[80rem] px-8">
           <h2 className="text-[1.25rem] font-semibold tracking-[-0.02em]">Download and embed</h2>
@@ -211,6 +270,28 @@ export default function HomePage({ catalog, indexes }) {
             </a>
           </div>
         </footer>
+      </div>
+    </div>
+  );
+}
+
+// A strip of up to three pictures at the foot of a door: model renders standing on a dark floor, or
+// music covers side by side
+function Renders({ urls = [], covers = false }) {
+  if (!urls.length) return null;
+  return (
+    <div className="mt-auto pt-6">
+      <div className={`flex h-32 justify-center gap-2 rounded-xl bg-[radial-gradient(circle_at_50%_80%,#2a2a2f_0%,#161618_75%)] ${covers ? "items-center p-3" : "items-end px-4"}`}>
+        {urls.map((u) => (
+          <img
+            key={u}
+            src={u}
+            alt=""
+            loading="lazy"
+            onError={(e) => (e.currentTarget.style.display = "none")}
+            className={covers ? "h-full min-w-0 flex-1 rounded-lg object-cover" : "h-[92%] min-w-0 flex-1 object-contain transition-transform duration-500 group-hover:-translate-y-1"}
+          />
+        ))}
       </div>
     </div>
   );
