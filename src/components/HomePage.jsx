@@ -318,7 +318,7 @@ function SideHeroes({ catalog, indexes, turn }) {
       key={hero.id}
       href={link(`/hero/${hero.key}`)}
       title={hero.name}
-      className={`absolute bottom-0 hidden h-[min(88vh,58rem)] w-[min(34vw,36rem)] transition-opacity duration-1000 xl:block ${i ? "right-0" : "left-0"} ${ready[i] ? "opacity-100" : "opacity-0"}`}
+      className={`absolute bottom-0 hidden h-[min(100dvh,70rem)] w-[min(42vw,50rem)] transition-opacity duration-1000 xl:block ${i ? "-right-[4vw]" : "-left-[4vw]"} ${ready[i] ? "opacity-100" : "opacity-0"}`}
     >
       <div
         style={{ background: `radial-gradient(closest-side, ${i ? "rgba(178,34,24,0.22)" : "rgba(214,96,28,0.2)"}, transparent)` }}

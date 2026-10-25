@@ -168,8 +168,10 @@ export default function HeroViewer({ models, bare = false, showcase = false, tur
       const size = box.getSize(new THREE.Vector3());
       const center = box.getCenter(new THREE.Vector3());
       const radius = Math.max(size.x, size.z, size.y) * 0.75;
-      const fit = (size.y * 0.62) / Math.tan(THREE.MathUtils.degToRad(s.camera.fov / 2));
-      const distance = Math.max(fit, (Math.max(size.x, size.z) * 0.62) / Math.tan(THREE.MathUtils.degToRad(s.camera.fov / 2)) / Math.max(s.camera.aspect, 0.5));
+      // a showcase fills its box, a viewer leaves room around
+      const room = showcase ? 0.53 : 0.62;
+      const fit = (size.y * room) / Math.tan(THREE.MathUtils.degToRad(s.camera.fov / 2));
+      const distance = Math.max(fit, (Math.max(size.x, size.z) * room) / Math.tan(THREE.MathUtils.degToRad(s.camera.fov / 2)) / Math.max(s.camera.aspect, 0.5));
       s.controls.target.copy(center);
       s.camera.position.set(center.x + distance * 0.18, center.y + size.y * 0.06, center.z + distance);
       s.camera.near = distance / 50;
