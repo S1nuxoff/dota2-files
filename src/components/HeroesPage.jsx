@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 import { fuzzyMatch } from "../lib/smart.js";
 import { ATTRIBUTES, attributeIcon, heroCard, heroPortrait } from "../lib/catalog.js";
 import { link } from "../lib/route.js";
-import { FigureCard, Dropdown, Empty, GRID, Page, PageHead, SearchField, Segmented, Spinner, Toolbar, Button, LoadingList } from "./ui.jsx";
+import { FigureCard, Dropdown, Empty, GRID, Page, PageHead, SearchField, Segmented, Spinner, Toolbar, Button, LoadingList, Progressive } from "./ui.jsx";
 
 const ROLES = ["Carry", "Support", "Nuker", "Disabler", "Initiator", "Durable", "Escape", "Pusher"];
 
@@ -56,13 +56,16 @@ export default function HeroesPage({ catalog, error }) {
         {heroes.length === 0 ? (
           <Empty title="No hero fits" text="Clear the search or a filter to see more." action={<Button onClick={clear}>Clear all</Button>} />
         ) : (
-          <div className={GRID.tall}>
-            {heroes.map((hero, i) => (
+          <Progressive
+            items={heroes}
+            step={36}
+            className={GRID.tall}
+            render={(hero, i) => (
               <FigureCard
                 key={hero.id}
                 href={link(`/hero/${hero.key}`)}
                 className="anim-card"
-                style={{ animationDelay: `${Math.min(i, 24) * 16}ms` }}
+                style={{ animationDelay: `${Math.min(i % 36, 24) * 16}ms` }}
                 src={heroCard(hero)}
                 fallback={heroPortrait(hero)}
                 alt={hero.name}
@@ -70,8 +73,8 @@ export default function HeroesPage({ catalog, error }) {
                 meta={`${hero.items.length} items, ${hero.sets.length} sets`}
                 mark={hero.about?.attribute && <img src={attributeIcon(hero.about.attribute)} alt={hero.about.attribute} title={hero.about.attribute} className="h-6 w-6 shrink-0" />}
               />
-            ))}
-          </div>
+            )}
+          />
         )}
       </div>
     </Page>

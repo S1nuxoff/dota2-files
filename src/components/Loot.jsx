@@ -1,3 +1,4 @@
+import { Progressive } from "./ui.jsx";
 import { Package } from "lucide-react";
 import { imageUrl } from "../lib/catalog.js";
 import { formatCount } from "../lib/format.js";
@@ -53,11 +54,12 @@ export default function Loot({ item, catalog, compact = false }) {
           {title} <span className="ml-1 text-[1rem] font-normal text-ink-400">{formatCount(ids.length)}</span>
         </h2>
         <p className="mt-1 text-[0.9rem] text-ink-400">{sub}</p>
-        <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-[repeat(auto-fill,minmax(12rem,1fr))] sm:gap-4">
-          {ids.map((id, i) => (
-            <ItemCard key={id} item={catalog.items[id]} rarities={catalog.rarities} delay={Math.min(i, 24) * 20} list={ids} />
-          ))}
-        </div>
+        <Progressive
+          items={ids}
+          step={36}
+          className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-[repeat(auto-fill,minmax(12rem,1fr))] sm:gap-4"
+          render={(id, i) => <ItemCard key={id} item={catalog.items[id]} rarities={catalog.rarities} delay={Math.min(i % 36, 24) * 20} list={ids} />}
+        />
       </section>
     )
   );

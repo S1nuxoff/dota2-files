@@ -415,19 +415,44 @@ export function Sheet({ title, onClose, children, footer }) {
   );
 }
 
-// More of a long list as its end comes near: a mark to put after the list
-export function useMore(more, active) {
+// More of a long list as its end comes near: a mark to put after the list. at: how much is shown,
+// so the mark is looked at again after each step (it may still be in view)
+export function useMore(more, active, at) {
   const ref = useRef(null);
   const latest = useRef(more);
   latest.current = more;
   useEffect(() => {
     const el = ref.current;
     if (!el || !active) return;
-    const io = new IntersectionObserver(([e]) => e.isIntersecting && latest.current(), { rootMargin: "0px 0px 900px 0px" });
+    const io = new IntersectionObserver(([e]) => e.isIntersecting && latest.current(), { rootMargin: "0px 0px 1000px 0px" });
     io.observe(el);
     return () => io.disconnect();
-  }, [active]);
+  }, [active, at]);
   return ref;
+}
+
+// A long list shown a step at a time, the next step as its end comes near the screen (the first
+// again when the list changes): [the part to show, the mark to put after it]
+export function useProgressive(list, step = 48) {
+  const [n, setN] = useState(step);
+  // a list made again with the same things (a page drawn again) keeps its place: only a different
+  // list starts over
+  const first = list[0];
+  const key = `${list.length}:${first?.id ?? first?.key ?? first?.path ?? first}:${list.length > 1 ? JSON.stringify(list[list.length - 1]?.id ?? list[list.length - 1]?.key ?? list[list.length - 1]) : ""}`;
+  useEffect(() => setN(step), [key, step]);
+  const ref = useMore(() => setN((x) => x + step), n < list.length, n);
+  return [list.length > n ? list.slice(0, n) : list, ref];
+}
+
+// The same as a component, for lists drawn in a loop (a page's sections): each item by render(item, i)
+export function Progressive({ items, step = 48, className = "", render }) {
+  const [shown, more] = useProgressive(items, step);
+  return (
+    <>
+      <div className={className}>{shown.map(render)}</div>
+      {shown.length < items.length && <div ref={more} aria-hidden="true" />}
+    </>
+  );
 }
 
 // Blocks with data-reveal show as they scroll into view, anywhere on the site

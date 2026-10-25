@@ -13,7 +13,7 @@ import ImageGroups from "./ImageGroups.jsx";
 import GroupedFiles from "./GroupedFiles.jsx";
 import HeroAbout from "./HeroAbout.jsx";
 import { link, navigate } from "../lib/route.js";
-import { Button, Chip, Empty, GRID, Page, Section, Segmented, Spinner, Toolbar, buttonClass, LoadingDetail } from "./ui.jsx";
+import { Button, Chip, Empty, GRID, Page, Section, Segmented, Spinner, Toolbar, buttonClass, LoadingDetail, Progressive } from "./ui.jsx";
 import EmbedButton from "./EmbedButton.jsx";
 import GameStage, { LookSwitch, useLook } from "./GameStage.jsx";
 import { DetailTop, SideActions, SideBlock, SideTitle, StageSwitch, Tag } from "./Detail.jsx";
@@ -230,28 +230,16 @@ export default function HeroPage({ heroKey, catalog, indexes, withCopies, route 
             {grouping === "sets" ? (
               <>
                 <Section title="Sets" count={hero.sets.length}>
-                  <div className={GRID.tall}>
-                    {hero.sets.map((set, i) => (
-                      <SetCard key={set.key} set={set} delay={Math.min(i, 24) * 20} />
-                    ))}
-                  </div>
+                  <Progressive items={hero.sets} step={24} className={GRID.tall} render={(set, i) => <SetCard key={set.key} set={set} delay={Math.min(i % 24, 24) * 20} />} />
                 </Section>
                 {loose.length > 0 && (
                   <Section title="Not in a set" count={loose.length}>
-                    <div className={GRID.item}>
-                      {loose.map((item, i) => (
-                        <ItemCard key={item.id} item={item} rarities={catalog.rarities} delay={Math.min(i, 24) * 20} list={loose.map((x) => x.id)} />
-                      ))}
-                    </div>
+                    <Progressive items={loose} step={36} className={GRID.item} render={(item, i) => <ItemCard key={item.id} item={item} rarities={catalog.rarities} delay={Math.min(i % 36, 24) * 20} list={loose.map((x) => x.id)} />} />
                   </Section>
                 )}
               </>
             ) : (
-              <div className={GRID.item}>
-                {shown.map((item, i) => (
-                  <ItemCard key={item.id} item={item} rarities={catalog.rarities} delay={Math.min(i, 24) * 20} list={shown.map((x) => x.id)} />
-                ))}
-              </div>
+              <Progressive items={shown} step={36} className={GRID.item} render={(item, i) => <ItemCard key={item.id} item={item} rarities={catalog.rarities} delay={Math.min(i % 36, 24) * 20} list={shown.map((x) => x.id)} />} />
             )}
           </div>
         ) : (

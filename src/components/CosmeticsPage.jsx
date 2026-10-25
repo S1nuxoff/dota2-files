@@ -8,9 +8,9 @@ import { searchNames } from "../lib/smart.js";
 import ItemCard from "./ItemCard.jsx";
 import HeroPicker from "./HeroPicker.jsx";
 import { link } from "../lib/route.js";
-import { Button, Dropdown, Empty, GRID, Page, PageHead, SearchField, Section, Segmented, Spinner, Toolbar, useMore, LoadingList } from "./ui.jsx";
+import { Button, Dropdown, Empty, GRID, Page, PageHead, SearchField, Section, Segmented, Spinner, Toolbar, useMore, LoadingList, Progressive } from "./ui.jsx";
 
-const PAGE = 240;
+const PAGE = 60;
 
 // The kinds of item (items_game's prefabs) in sections a player knows them by; a kind the game adds
 // later lands in Other until it gets a place here
@@ -252,16 +252,12 @@ function Kinds({ catalog }) {
         {found && (
           <Section title={found.length === 1 ? "1 item" : `${formatCount(found.length)} items`} sub={`For “${query}”`}>
             {found.length === 0 && <Empty title="Nothing of that name" text="Try a shorter word, a hero's name or a kind like courier." />}
-            <div className={GRID.item}>
-              {found.slice(0, more * 120).map((item, n) => (
-                <ItemCard key={item.id} item={item} rarities={catalog.rarities} delay={Math.min(n, 30) * 15} list={found.slice(0, more * 120).map((x) => x.id)} />
-              ))}
-            </div>
-            {found.length > more * 120 && (
-              <div className="mt-8 flex justify-center">
-                <Button onClick={() => setMore(more + 1)}>Show more of {formatCount(found.length)}</Button>
-              </div>
-            )}
+            <Progressive
+              items={found}
+              step={60}
+              className={GRID.item}
+              render={(item, n) => <ItemCard key={item.id} item={item} rarities={catalog.rarities} delay={Math.min(n % 60, 30) * 15} list={found.map((x) => x.id)} />}
+            />
           </Section>
         )}
         {!found &&
@@ -354,7 +350,7 @@ export function Kind({ prefab, catalog, title, sub, tab }) {
   }, [shown, group, catalog]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const ids = useMemo(() => sections.flatMap(([, l]) => l.map((i) => i.id)), [sections]);
-  const more = useMore(() => setLimit((l) => l + PAGE), limit < shown.length);
+  const more = useMore(() => setLimit((l) => l + PAGE), limit < shown.length, limit);
   let left = limit;
   const none = { hero: "Without a hero", slot: "Without a slot", type: "Without a type", rarity: "Without a rarity", year: "Without a date", prefab: "Other", event: "Without an event" }[group];
   if (prefab === "treasures") tab = "/cosmetics/treasures";

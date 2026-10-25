@@ -5,7 +5,7 @@ import { loadModels } from "../lib/catalog.js";
 import { formatSize } from "../lib/format.js";
 import FileTable from "./FileTable.jsx";
 import ModelPanel from "./ModelPanel.jsx";
-import { Card } from "./ui.jsx";
+import { Card, Progressive } from "./ui.jsx";
 
 const pretty = (file) => file.replace(/\.glb$/, "").replace(/_/g, " ");
 const previewUrl = (path) => fileUrl(datasetById("models"), `previews/${path.slice(0, -4)}.webp`);
@@ -67,13 +67,16 @@ export default function ModelGrid({ files, catalog, indexes, heroName = "", rout
             <h3 className="text-[1.15rem] font-semibold tracking-[-0.02em]">
               {title} <span className="ml-1 font-normal text-ink-400">{list.length}</span>
             </h3>
-            <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-[repeat(auto-fill,minmax(12rem,1fr))] sm:gap-4">
-              {list.map((i, n) => (
-                <div key={cards[i].key} className="anim-card" style={{ animationDelay: `${Math.min(n, 24) * 20}ms` }}>
+            <Progressive
+              items={list}
+              step={24}
+              className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-[repeat(auto-fill,minmax(12rem,1fr))] sm:gap-4"
+              render={(i, n) => (
+                <div key={cards[i].key} className="anim-card" style={{ animationDelay: `${Math.min(n % 24, 24) * 20}ms` }}>
                   <ModelTile card={cards[i]} onOpen={() => setOpen(i)} />
                 </div>
-              ))}
-            </div>
+              )}
+            />
           </section>
         ))}
       </div>

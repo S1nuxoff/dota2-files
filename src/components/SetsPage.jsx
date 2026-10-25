@@ -5,9 +5,9 @@ import { link } from "../lib/route.js";
 import SetCard from "./SetCard.jsx";
 import HeroPicker, { heroIcon } from "./HeroPicker.jsx";
 import { CosmeticsTabs } from "./CosmeticsPage.jsx";
-import { Dropdown, Empty, GRID, Page, PageHead, SearchField, Section, Segmented, Spinner, Toolbar, useMore, LoadingList } from "./ui.jsx";
+import { Dropdown, Empty, GRID, Page, PageHead, SearchField, Section, Segmented, Spinner, Toolbar, useMore, LoadingList, useProgressive } from "./ui.jsx";
 
-const PAGE = 240;
+const PAGE = 60;
 
 // Every set of the game: by name or by hero, searched, filtered to one hero, or laid out hero by hero
 export default function SetsPage({ catalog }) {
@@ -36,7 +36,9 @@ export default function SetsPage({ catalog }) {
     return [...by.entries()].sort(([a], [b]) => (!a) - (!b) || (catalog.heroByKey.get(a)?.name || "").localeCompare(catalog.heroByKey.get(b)?.name || ""));
   }, [grouped, shown, catalog]);
 
-  const more = useMore(() => setLimit((l) => l + PAGE), !grouped && limit < shown.length);
+  const more = useMore(() => setLimit((l) => l + PAGE), !grouped && limit < shown.length, limit);
+  // By hero: a few heroes at a time
+  const [someGroups, moreGroups] = useProgressive(groups, 6);
   if (!catalog) return <LoadingList title="Sets" ratio="aspect-[1/1.02]" grid={GRID.tall} count={24} tabs={<CosmeticsTabs current="/sets" />} />;
   const heroesWithSets = catalog.heroes.filter((h) => h.sets.length);
   const reset = () => setLimit(PAGE);
@@ -89,7 +91,7 @@ export default function SetsPage({ catalog }) {
 
         {grouped ? (
           <div className="space-y-12">
-            {groups.map(([key, sets]) => {
+            {someGroups.map(([key, sets]) => {
               const hero = catalog.heroByKey.get(key);
               return (
                 <Section
@@ -123,6 +125,7 @@ export default function SetsPage({ catalog }) {
           </div>
         )}
         <div ref={more} />
+        {grouped && someGroups.length < groups.length && <div ref={moreGroups} />}
       </div>
     </Page>
   );
