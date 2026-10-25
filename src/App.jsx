@@ -15,6 +15,7 @@ import ItemModal from "./components/ItemModal.jsx";
 import SetPage from "./components/SetPage.jsx";
 import BundlesPage from "./components/BundlesPage.jsx";
 import HomePage from "./components/HomePage.jsx";
+import SearchPage from "./components/SearchPage.jsx";
 import MusicPage from "./components/MusicPage.jsx";
 import SetsPage from "./components/SetsPage.jsx";
 import Preview from "./components/Preview.jsx";
@@ -108,7 +109,8 @@ export default function App() {
 
   const common = { route, catalog, indexes, withCopies };
   let page;
-  if (ds || route.ds === "all") {
+  if (route.ds === "all" && route.q) page = <SearchPage key={route.q} {...common} />;
+  else if (ds || route.ds === "all") {
     page = (
       <Browser
         key={ds?.id || "all"}
