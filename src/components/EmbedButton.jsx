@@ -1,4 +1,5 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { Check, Code2, Copy } from "lucide-react";
 import { DOTADEX } from "../datasets.js";
 
@@ -16,9 +17,21 @@ export default function EmbedButton({ path, title, className = "" }) {
   const [autoplay, setAutoplay] = useState(false);
   const [copied, setCopied] = useState(false);
   const panel = useRef(null);
+  const button = useRef(null);
+  // The panel over the page (a stage that clips would cut it): above the button, its right edge on
+  // the button's, kept inside the window; below the button when there is no room above
+  const [at, setAt] = useState(null);
+  useLayoutEffect(() => {
+    if (!open || !button.current || !panel.current) return;
+    const b = button.current.getBoundingClientRect();
+    const p = panel.current.getBoundingClientRect();
+    const left = Math.max(12, Math.min(b.right - p.width, window.innerWidth - p.width - 12));
+    const top = b.top - p.height - 8 >= 12 ? b.top - p.height - 8 : Math.min(b.bottom + 8, window.innerHeight - p.height - 12);
+    setAt({ left, top });
+  }, [open, size, autoplay]);
   useEffect(() => {
     if (!open) return;
-    const onDown = (e) => !panel.current?.parentElement.contains(e.target) && setOpen(false);
+    const onDown = (e) => !panel.current?.contains(e.target) && !button.current?.contains(e.target) && setOpen(false);
     const onKey = (e) => e.key === "Escape" && setOpen(false);
     window.addEventListener("pointerdown", onDown);
     window.addEventListener("keydown", onKey);
@@ -37,11 +50,16 @@ export default function EmbedButton({ path, title, className = "" }) {
 
   return (
     <div className="relative">
-      <button onClick={() => setOpen(!open)} title="Show it on your own site" className={className}>
+      <button ref={button} onClick={() => (setAt(null), setOpen(!open))} title="Show it on your own site" className={className}>
         <Code2 size={16} /> Embed
       </button>
-      {open && (
-        <div ref={panel} className="anim-open absolute right-0 bottom-full z-30 mb-2 w-[30rem] rounded-2xl border border-white/[0.08] bg-ink-900 p-5 text-left shadow-2xl shadow-black/60">
+      {open &&
+        createPortal(
+        <div
+          ref={panel}
+          style={{ left: at?.left ?? 0, top: at?.top ?? 0, visibility: at ? "visible" : "hidden" }}
+          onClick={(e) => e.stopPropagation()}
+          className="anim-open fixed z-50 w-[30rem] max-w-[calc(100vw-1.5rem)] rounded-2xl border border-white/[0.08] bg-ink-900 p-5 text-left shadow-2xl shadow-black/60">
           <div className="font-medium">Show {title} on your site</div>
           <p className="mt-1 text-[0.84rem] text-ink-400">Paste this where the 3D view should be. It shows a picture until it is clicked, so a page with several stays light.</p>
           <div className="mt-4 flex flex-wrap items-center gap-1.5">
@@ -75,8 +93,9 @@ export default function EmbedButton({ path, title, className = "" }) {
               Preview
             </a>
           </div>
-        </div>
-      )}
+        </div>,
+          document.body
+        )}
     </div>
   );
 }
