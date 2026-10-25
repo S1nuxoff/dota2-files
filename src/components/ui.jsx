@@ -208,7 +208,18 @@ export function Empty({ title, text, action }) {
 }
 
 // A section of a page: its title, how many, a line under it, what to do with it on the right
-export function Section({ id, title, count, sub, actions, children, className = "" }) {
+export function Section({ id, title, count, sub, actions, children, center = false, className = "" }) {
+  if (center)
+    return (
+      <section id={id} className={`scroll-mt-28 ${className}`}>
+        <div className="mb-7 flex flex-col items-center text-center">
+          <h2 className="text-[clamp(1.4rem,2.2vw,1.9rem)] font-semibold tracking-[-0.035em]">{title}</h2>
+          {sub && <p className="mt-2 max-w-xl text-[0.92rem] text-balance text-ink-400">{sub}</p>}
+          {actions && <div className="mt-4">{actions}</div>}
+        </div>
+        {children}
+      </section>
+    );
   return (
     <section id={id} className={className}>
       <div className="mb-5 flex flex-wrap items-end gap-x-4 gap-y-2">

@@ -81,6 +81,9 @@ export default function CosmeticsPage({ prefab, catalog }) {
   return <Kinds catalog={catalog} />;
 }
 
+// Kinds as tiles: even columns filling the width, more of them on a wider screen
+const TILES = "grid grid-cols-1 gap-3 xs:grid-cols-2 sm:gap-4 md:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 min-[2200px]:grid-cols-6";
+
 // The parts of cosmetics a player looks for most, as tabs over each of their pages
 const HUB = [
   ["/cosmetics", "Overview"],
@@ -99,11 +102,19 @@ export const previewOf = (item, catalog) => {
   const own = item.refs.models?.[0] || item.bundle?.map((id) => catalog.items[id]?.refs.models?.[0]).find(Boolean);
   return own ? fileUrl(datasetById("models"), `previews/${own.replace(/\.$/, "")}.webp`) : "";
 };
+// A kind's pictures: [{ url, flat }], renders of its latest models, or for a kind without models
+// (loading screens, keys, emblems) the game's own icons of its latest items (flat)
 export const picturesOf = (items, catalog) => {
+  const latest = [...items].sort((x, y) => (y.date || "").localeCompare(x.date || ""));
   const out = [];
-  for (const it of [...items].sort((x, y) => (y.date || "").localeCompare(x.date || ""))) {
+  for (const it of latest) {
     const url = previewOf(it, catalog);
-    if (url && !out.includes(url)) out.push(url);
+    if (url && !out.some((p) => p.url === url)) out.push({ url });
+    if (out.length === 3) return out;
+  }
+  if (out.length) return out;
+  for (const it of latest) {
+    if (it.icon && !out.some((p) => p.url === imageUrl(it.icon))) out.push({ url: imageUrl(it.icon), flat: true });
     if (out.length === 3) break;
   }
   return out;
@@ -164,8 +175,12 @@ function Kinds({ catalog }) {
       .map((e) => ({ ...e, n: e.items.length, icons: picturesOf(e.items, catalog) }));
   }, [catalog]);
 
+  // A kind: its pictures on a stage (the latest in front, two behind it), its name and how many
   const tile = (href, title, n, pictures, i, sign = Package) => {
     const Sign = sign;
+    const [front, ...behind] = pictures;
+    const flat = front?.flat;
+    const hide = (e) => (e.currentTarget.style.display = "none");
     return (
       <a
         key={href}
@@ -173,24 +188,40 @@ function Kinds({ catalog }) {
         style={{ animationDelay: `${Math.min(i, 30) * 18}ms` }}
         className="anim-card group relative overflow-hidden rounded-2xl border border-white/[0.06] bg-ink-900 transition-[border-color,transform] duration-300 hover:-translate-y-0.5 hover:border-white/[0.15]"
       >
-        <div className="stage flex aspect-[16/9] items-center justify-center px-4">
-          {pictures.length ? (
-            pictures.map((url, n) => (
-              <img
-                key={url}
-                src={url}
-                alt=""
-                loading="lazy"
-                onError={(e) => (e.currentTarget.style.display = "none")}
-                className={`h-[78%] min-w-0 flex-1 object-contain transition-transform duration-700 ease-[var(--ease-out-soft)] group-hover:scale-[1.07] ${pictures.length > 1 && n !== 1 ? "opacity-75" : ""}`}
-              />
-            ))
-          ) : (
-            <Sign size={38} strokeWidth={1.2} className="text-ink-500 transition-colors group-hover:text-ink-300" />
+        <div className="stage relative aspect-[16/10] overflow-hidden">
+          {!front && (
+            <div className="flex h-full items-center justify-center">
+              <Sign size={40} strokeWidth={1.2} className="text-ink-500 transition-colors group-hover:text-ink-300" />
+            </div>
+          )}
+          {front && flat && (
+            <div className="absolute inset-0 flex items-center justify-center">
+              {[behind[0], front, behind[1]].map((p, k) =>
+                p ? (
+                  <img
+                    key={p.url}
+                    src={p.url}
+                    alt=""
+                    loading="lazy"
+                    onError={hide}
+                    className={`w-[44%] rounded-lg border border-white/10 shadow-[0_14px_30px_-12px_rgb(0_0_0/0.9)] transition-transform duration-500 ease-[var(--ease-out-soft)] ${
+                      k === 1 ? "relative z-10 group-hover:-translate-y-1.5" : k === 0 ? "-mr-[14%] -rotate-[8deg] opacity-80 group-hover:-rotate-[12deg]" : "-ml-[14%] rotate-[8deg] opacity-80 group-hover:rotate-[12deg]"
+                    }`}
+                  />
+                ) : null
+              )}
+            </div>
+          )}
+          {front && !flat && (
+            <>
+              {behind[0] && <img src={behind[0].url} alt="" loading="lazy" onError={hide} className="absolute top-[14%] left-[2%] h-[70%] w-[44%] object-contain opacity-55 transition-transform duration-700 ease-[var(--ease-out-soft)] group-hover:-translate-x-1.5" />}
+              {behind[1] && <img src={behind[1].url} alt="" loading="lazy" onError={hide} className="absolute top-[14%] right-[2%] h-[70%] w-[44%] object-contain opacity-55 transition-transform duration-700 ease-[var(--ease-out-soft)] group-hover:translate-x-1.5" />}
+              <img src={front.url} alt="" loading="lazy" onError={hide} className="absolute inset-x-[18%] top-[4%] h-[92%] w-[64%] object-contain drop-shadow-[0_18px_24px_rgb(0_0_0/0.6)] transition-transform duration-700 ease-[var(--ease-out-soft)] group-hover:scale-[1.06]" />
+            </>
           )}
         </div>
         <div className="flex items-baseline justify-between gap-3 px-4 py-3">
-          <span className="truncate text-[0.94rem] font-medium">{title}</span>
+          <span className="truncate text-[0.95rem] font-medium">{title}</span>
           <span className="shrink-0 text-[0.8rem] text-ink-400 tabular-nums">{formatCount(n)}</span>
         </div>
       </a>
@@ -198,7 +229,6 @@ function Kinds({ catalog }) {
   };
 
   let i = 0;
-  const all = [...sections.map(([title, kinds]) => [title, kinds]), ...(events.length ? [["Events and battle passes", null]] : [])];
   const anchor = (title) => title.toLowerCase().replace(/[^a-z]+/g, "-");
   return (
     <Page>
@@ -217,17 +247,7 @@ function Kinds({ catalog }) {
       >
         <CosmeticsTabs current="/cosmetics" />
       </PageHead>
-      {!found && (
-        <Toolbar>
-          <div className="no-bar -mx-1 flex max-w-full gap-1 overflow-x-auto px-1">
-            {all.map(([title]) => (
-              <a key={title} href={`#${anchor(title)}`} className="shrink-0 rounded-lg px-2.5 py-1.5 text-[0.84rem] whitespace-nowrap text-ink-400 transition-colors hover:bg-white/[0.05] hover:text-ink-100">
-                {title.replace(" and battle passes", "")}
-              </a>
-            ))}
-          </div>
-        </Toolbar>
-      )}
+
       <div className="page-x space-y-14 pt-6">
         {found && (
           <Section title={found.length === 1 ? "1 item" : `${formatCount(found.length)} items`} sub={`For “${query}”`}>
@@ -246,18 +266,18 @@ function Kinds({ catalog }) {
         )}
         {!found &&
           sections.map(([title, kinds]) => (
-            <Section key={title} id={anchor(title)} title={title}>
-              <div className={GRID.tile}>
+            <Section key={title} id={anchor(title)} title={title} center>
+              <div className={TILES}>
                 {title === "Hero items" && tile("/sets", "Sets", catalog.setByKey.size, setCovers, i++)}
                 {title === "Hero items" && tile("/bundles", "Bundles", count.bundle || 0, covers.bundle || [], i++)}
-                {title === "Music and voices" && tile("/music", "Music Packs", count.music || 0, [], i++, Music)}
+                {title === "Music and voices" && tile("/music", "Music Packs", count.music || 0, covers.music || [], i++, Music)}
                 {kinds.map((k) => tile(`/cosmetics/${k}`, titleOf(k), count[k], covers[k] || [], i++, SIGNS[k]))}
               </div>
             </Section>
           ))}
         {!found && events.length > 0 && (
-          <Section id={anchor("Events and battle passes")} title="Events and battle passes" count={events.length} sub="Every battle pass, The International and seasonal event, the latest first, with all it brought">
-            <div className={GRID.tile}>{events.map((e) => tile(`/cosmetics/${eventKind(e.id)}`, catalog.events?.[e.id] || e.id, e.n, e.icons, i++))}</div>
+          <Section id={anchor("Events and battle passes")} title="Events and battle passes" count={events.length} center sub="Every battle pass, The International and seasonal event, the latest first, with all it brought">
+            <div className={TILES}>{events.map((e) => tile(`/cosmetics/${eventKind(e.id)}`, catalog.events?.[e.id] || e.id, e.n, e.icons, i++))}</div>
           </Section>
         )}
       </div>
