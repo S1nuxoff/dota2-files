@@ -3,6 +3,9 @@ name: Deploy
 on:
   push:
     branches: [main]
+  schedule:
+    # Pages of items and heroes the game has gained since (the catalog is made again after each update)
+    - cron: "40 5 * * *"
   workflow_dispatch:
 
 permissions:
@@ -14,8 +17,9 @@ concurrency:
   group: pages
   cancel-in-progress: true
 
-# The site reads every list and file from the datasets in the browser, so it is built only when its
-# code changes
+# The app reads every list and file from the datasets in the browser; the build also makes a page of
+# its own for every hero, item and section from the tracker's catalog (scripts/prerender.mjs), for
+# search engines and link previews
 jobs:
   deploy:
     runs-on: ubuntu-latest

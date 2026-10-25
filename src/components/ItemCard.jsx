@@ -1,11 +1,12 @@
 import { Package } from "lucide-react";
 import { imageUrl, prefabTitle } from "../lib/catalog.js";
+import { link } from "../lib/route.js";
 
 export default function ItemCard({ item, rarities }) {
   const rarity = rarities[item.rarity || "common"];
   return (
     <a
-      href={`#/item/${item.id}`}
+      href={link(`/item/${item.id}`)}
       className="group flex flex-col overflow-hidden rounded-lg border border-ink-800 bg-ink-900 transition hover:border-ink-600"
     >
       <div className="relative flex aspect-[4/3] items-center justify-center overflow-hidden bg-ink-850">

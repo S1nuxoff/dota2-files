@@ -5,6 +5,7 @@ import { filesOfRefs, imageUrl, prefabTitle } from "../lib/catalog.js";
 import FileTable from "./FileTable.jsx";
 import ItemCard from "./ItemCard.jsx";
 import { DownloadButtons, Loading } from "./HeroPage.jsx";
+import { link } from "../lib/route.js";
 
 const ModelPreview = lazy(() => import("./ModelPreview.jsx"));
 
@@ -28,12 +29,12 @@ export default function ItemPage({ itemId, catalog, indexes, withCopies, route }
         <div className="text-xs text-ink-400">
           {heroes.length ? (
             heroes.map((h) => (
-              <a key={h.id} href={`#/hero/${h.key}`} className="mr-3 hover:text-ink-100">
+              <a key={h.id} href={link(`/hero/${h.key}`)} className="mr-3 hover:text-ink-100">
                 {h.name}
               </a>
             ))
           ) : (
-            <a href={`#/cosmetics/${item.prefab}`} className="hover:text-ink-100">
+            <a href={link(`/cosmetics/${item.prefab}`)} className="hover:text-ink-100">
               {prefabTitle(item.prefab)}
             </a>
           )}

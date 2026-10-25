@@ -7,6 +7,7 @@ import { startJob } from "../lib/jobs.js";
 import { canSaveToFolder } from "../lib/download.js";
 import FileTable from "./FileTable.jsx";
 import ItemCard from "./ItemCard.jsx";
+import { link, navigate } from "../lib/route.js";
 
 const HeroViewer = lazy(() => import("./HeroViewer.jsx"));
 
@@ -77,7 +78,7 @@ export default function HeroPage({ heroKey, catalog, indexes, withCopies, route 
   const modelEntry = lookEntries[0];
 
   const tab = route.kind && (route.kind === "items" || byDataset[route.kind]) ? route.kind : "items";
-  const setTab = (t) => (location.hash = `#/hero/${heroKey}${t === "items" ? "" : `?kind=${t}`}`);
+  const setTab = (t) => navigate({ ds: "hero", dir: heroKey, kind: t === "items" ? "" : t }, true);
 
   if (!catalog) return <Loading text="Loading the catalog…" />;
   if (!hero) return <div className="p-10 text-sm text-ink-400">No hero {heroKey}.</div>;
@@ -99,7 +100,7 @@ export default function HeroPage({ heroKey, catalog, indexes, withCopies, route 
             )}
           </div>
           <div className="flex min-w-0 flex-col py-2">
-            <a href="#/" className="text-xs text-ink-400 hover:text-ink-100">
+            <a href={link("/")} className="text-xs text-ink-400 hover:text-ink-100">
               Heroes
             </a>
             <div className="mt-3 flex items-center gap-4">

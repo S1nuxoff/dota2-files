@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Search, X } from "lucide-react";
-import { navigate } from "../lib/route.js";
+import { navigate, link } from "../lib/route.js";
 import { datasetById } from "../datasets.js";
 
 export default function Header({ route, ds }) {
@@ -33,8 +33,8 @@ export default function Header({ route, ds }) {
 
   return (
     <header className="flex h-14 shrink-0 items-center gap-6 border-b border-ink-800 px-5">
-      <a href="#/" className="flex shrink-0 items-center gap-3">
-        <img src="./logo.png" alt="Dotadex" className="h-4 opacity-90" />
+      <a href={link("/")} className="flex shrink-0 items-center gap-3">
+        <img src={`${import.meta.env.BASE_URL}logo.png`} alt="Dotadex" className="h-4 opacity-90" />
         <span className="text-sm font-medium tracking-wide text-ink-400">Files</span>
       </a>
       <label className="flex h-9 max-w-xl flex-1 items-center gap-2.5 rounded-lg border border-ink-800 bg-ink-900 px-3 transition focus-within:border-ink-600">

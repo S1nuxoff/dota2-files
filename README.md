@@ -18,7 +18,9 @@ folders and picked files are zipped in the browser.
 `public/dev/catalog.json`, when present, is read instead of the uploaded catalog (a catalog made
 locally with `node exporters/catalog.js --no-upload` in the tracker).
 
-Pushes to `main` deploy to GitHub Pages.
+Pushes to `main` deploy to GitHub Pages, and once a day for new items. The build also writes a page
+of its own for every hero, item and section (`scripts/prerender.mjs`: title, description, link
+preview, text), a sitemap and `404.html`, which GitHub Pages serves for every other address.
 
 Dota 2 content and materials are trademarks and copyrights of Valve. Not affiliated with Valve.
 Non-commercial.

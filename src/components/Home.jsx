@@ -2,6 +2,7 @@ import { ArrowRight } from "lucide-react";
 import { DATASETS, OWNER } from "../datasets.js";
 import { formatCount, formatSize } from "../lib/format.js";
 import CopyButton from "./CopyButton.jsx";
+import { link } from "../lib/route.js";
 
 export default function Home({ indexes, errors }) {
   const loaded = Object.values(indexes);
@@ -34,7 +35,7 @@ export default function Home({ indexes, errors }) {
             return (
               <a
                 key={ds.id}
-                href={`#/${ds.id}`}
+                href={link(`/${ds.id}`)}
                 className="group flex flex-col rounded-xl border border-ink-800 bg-ink-900 p-5 transition hover:border-ink-600 hover:bg-ink-850"
               >
                 <div className="flex items-center justify-between">

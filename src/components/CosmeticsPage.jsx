@@ -4,6 +4,7 @@ import { prefabTitle } from "../lib/catalog.js";
 import { formatCount } from "../lib/format.js";
 import ItemCard from "./ItemCard.jsx";
 import { Loading } from "./HeroPage.jsx";
+import { link } from "../lib/route.js";
 
 const PAGE = 240;
 
@@ -32,7 +33,7 @@ export default function CosmeticsPage({ prefab, catalog }) {
       <div className="mx-auto max-w-6xl px-10 py-12">
         <div className="flex items-end justify-between gap-6">
           <div>
-            <a href="#/cosmetics" className="text-xs text-ink-400 hover:text-ink-100">
+            <a href={link("/cosmetics")} className="text-xs text-ink-400 hover:text-ink-100">
               Cosmetics
             </a>
             <h1 className="mt-1 text-3xl font-semibold tracking-tight">{prefab ? prefabTitle(prefab) : "Cosmetics"}</h1>
@@ -58,7 +59,7 @@ export default function CosmeticsPage({ prefab, catalog }) {
         ) : (
           <div className="mt-8 grid grid-cols-[repeat(auto-fill,minmax(200px,1fr))] gap-2">
             {kinds.map(([kind, n]) => (
-              <a key={kind} href={`#/cosmetics/${kind}`} className="flex items-center justify-between rounded-lg border border-ink-800 bg-ink-900 px-4 py-3 text-sm hover:border-ink-600">
+              <a key={kind} href={link(`/cosmetics/${kind}`)} className="flex items-center justify-between rounded-lg border border-ink-800 bg-ink-900 px-4 py-3 text-sm hover:border-ink-600">
                 {prefabTitle(kind)}
                 <span className="text-xs text-ink-400 tabular-nums">{formatCount(n)}</span>
               </a>

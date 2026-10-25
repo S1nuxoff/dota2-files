@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { LoaderCircle, Search } from "lucide-react";
 import { heroPortrait } from "../lib/catalog.js";
+import { link } from "../lib/route.js";
 
 export default function HeroesPage({ catalog, error }) {
   const [filter, setFilter] = useState("");
@@ -33,7 +34,7 @@ export default function HeroesPage({ catalog, error }) {
         </div>
         <div className="mt-8 grid grid-cols-[repeat(auto-fill,minmax(150px,1fr))] gap-3">
           {heroes.map((hero) => (
-            <a key={hero.id} href={`#/hero/${hero.key}`} className="group overflow-hidden rounded-lg border border-ink-800 bg-ink-900 transition hover:border-ink-600">
+            <a key={hero.id} href={link(`/hero/${hero.key}`)} className="group overflow-hidden rounded-lg border border-ink-800 bg-ink-900 transition hover:border-ink-600">
               <div className="aspect-[16/9] overflow-hidden bg-ink-850">
                 <img src={heroPortrait(hero)} loading="lazy" alt="" className="h-full w-full object-cover transition duration-300 group-hover:scale-105" />
               </div>

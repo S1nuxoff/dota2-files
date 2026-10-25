@@ -6,7 +6,7 @@ import {
 import { DATASETS, cliCommand, datasetById, fileUrl, hubUrl } from "../datasets.js";
 import { KINDS, formatCount, formatSize } from "../lib/format.js";
 import { findDir, search } from "../lib/lists.js";
-import { navigate } from "../lib/route.js";
+import { navigate, link } from "../lib/route.js";
 import { startJob } from "../lib/jobs.js";
 import { canSaveToFolder } from "../lib/download.js";
 import { heroPortrait, imageUrl } from "../lib/catalog.js";
@@ -67,11 +67,11 @@ export default function Browser({ ds, route, index, error, indexes, catalog, wit
     if (!allMode || !searching || !catalog) return [];
     const words = route.q.toLowerCase().split(/\s+/).filter(Boolean);
     const hit = (name) => words.every((w) => name.toLowerCase().includes(w));
-    const heroes = catalog.heroes.filter((h) => hit(h.name)).map((h) => ({ key: h.id, href: `#/hero/${h.key}`, name: h.name, sub: "Hero", icon: heroPortrait(h) }));
+    const heroes = catalog.heroes.filter((h) => hit(h.name)).map((h) => ({ key: h.id, href: link(`/hero/${h.key}`), name: h.name, sub: "Hero", icon: heroPortrait(h) }));
     const items = Object.values(catalog.items)
       .filter((i) => hit(i.name))
       .slice(0, 40)
-      .map((i) => ({ key: i.id, href: `#/item/${i.id}`, name: i.name, sub: i.type || i.slot, icon: imageUrl(i.icon) }));
+      .map((i) => ({ key: i.id, href: link(`/item/${i.id}`), name: i.name, sub: i.type || i.slot, icon: imageUrl(i.icon) }));
     return [...heroes, ...items];
   }, [allMode, searching, catalog, route.q]);
 
@@ -266,7 +266,7 @@ function Crumbs({ ds, dir, kind }) {
   const parts = dir ? dir.split("/") : [];
   return (
     <div className="flex min-w-0 flex-wrap items-center gap-1">
-      <a href={`#/${ds.id}${kind ? `?kind=${kind}` : ""}`} className={`rounded px-1.5 py-0.5 hover:bg-ink-850 ${parts.length ? "text-ink-400" : "text-ink-100"}`}>
+      <a href={link(`/${ds.id}${kind ? `?kind=${kind}` : ""}`)} className={`rounded px-1.5 py-0.5 hover:bg-ink-850 ${parts.length ? "text-ink-400" : "text-ink-100"}`}>
         {ds.title}
       </a>
       {parts.map((part, i) => (

@@ -1,6 +1,7 @@
 import { Box, HardDrive, Search, Shirt, Swords } from "lucide-react";
 import { DATASETS } from "../datasets.js";
 import { formatCount } from "../lib/format.js";
+import { link } from "../lib/route.js";
 
 export default function Sidebar({ route, indexes }) {
   const item = (active) =>
@@ -8,15 +9,15 @@ export default function Sidebar({ route, indexes }) {
   const heading = "mt-5 mb-1.5 px-3 text-[11px] font-medium tracking-wider text-ink-400 uppercase";
   return (
     <nav className="flex w-56 shrink-0 flex-col gap-0.5 overflow-y-auto border-r border-ink-800 p-3">
-      <a href="#/" className={item(!route.ds || route.ds === "hero")}>
+      <a href={link("/")} className={item(!route.ds || route.ds === "hero")}>
         <Swords size={16} strokeWidth={1.75} />
         Heroes
       </a>
-      <a href="#/cosmetics" className={item(route.ds === "cosmetics" || route.ds === "item")}>
+      <a href={link("/cosmetics")} className={item(route.ds === "cosmetics" || route.ds === "item")}>
         <Shirt size={16} strokeWidth={1.75} />
         Cosmetics
       </a>
-      <a href="#/3d" className={item(route.ds === "3d")}>
+      <a href={link("/3d")} className={item(route.ds === "3d")}>
         <Box size={16} strokeWidth={1.75} />
         3D models
       </a>
@@ -27,7 +28,7 @@ export default function Sidebar({ route, indexes }) {
         </span>
       )}
       <div className={heading}>Files</div>
-      <a href="#/files" className={item(route.ds === "files")}>
+      <a href={link("/files")} className={item(route.ds === "files")}>
         <HardDrive size={16} strokeWidth={1.75} />
         All datasets
       </a>
@@ -35,7 +36,7 @@ export default function Sidebar({ route, indexes }) {
         const Icon = ds.icon;
         const index = indexes[ds.id];
         return (
-          <a key={ds.id} href={`#/${ds.id}`} className={item(route.ds === ds.id)}>
+          <a key={ds.id} href={link(`/${ds.id}`)} className={item(route.ds === ds.id)}>
             <Icon size={16} strokeWidth={1.75} className={route.ds === ds.id ? "text-accent" : ""} />
             <span className="flex-1">{ds.title}</span>
             <span className="text-[11px] text-ink-400 tabular-nums">{index ? formatCount(index.count) : ""}</span>
