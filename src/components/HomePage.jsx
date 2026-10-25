@@ -69,7 +69,7 @@ export default function HomePage({ catalog, indexes }) {
     if (!catalog) return [];
     const withModel = catalog.heroes.filter((h) => h.model);
     const day = Math.floor(Date.now() / 86400000);
-    return Array.from({ length: 7 }, (_, i) => withModel[(day * 7 + i * 17) % withModel.length]);
+    return Array.from({ length: 9 }, (_, i) => withModel[(day * 9 + i * 17) % withModel.length]);
   }, [catalog]);
   const latestEvent = useMemo(() => {
     if (!catalog) return null;
@@ -116,11 +116,12 @@ export default function HomePage({ catalog, indexes }) {
           <div className="pointer-events-none absolute inset-x-0 top-0 h-[44rem] bg-[radial-gradient(60%_50%_at_50%_0%,rgba(255,255,255,0.07),transparent_70%)]" />
           <div className="relative mx-auto flex w-full max-w-5xl flex-1 flex-col items-center justify-center px-8 pt-16 text-center">
             <h1 className="text-[clamp(2.8rem,5.6vw,5.4rem)] leading-[1.02] font-semibold tracking-[-0.05em]">
-              Every model, sound and picture of Dota 2, ready to download
+              All of Dota 2, taken apart
             </h1>
             <p className="mt-7 max-w-3xl text-[clamp(1.02rem,1.2vw,1.2rem)] leading-relaxed text-ink-400">
-              {stats ? `${formatCount(stats.files)} files, ${formatSize(stats.bytes)},` : "All the files"} taken straight from the game and sorted the way the game sorts them: by hero, item, set, bundle and treasure.
-              Open a hero to get its model with animations, its items, voice lines and effects, or search the whole game at once.
+              Every hero, item, courier and chest, pulled out of the game files and put back together: models with their animations and textures,
+              voice lines with the moment the hero says them, effects, music, and what drops from every treasure.{" "}
+              {stats ? `${formatCount(stats.files)} files, ${formatSize(stats.bytes)}, free to download.` : "Free to download."}
               {catalog?.updated && ` Last updated ${ago(catalog.updated)}.`}
             </p>
             <label className="mt-10 flex h-14 w-full max-w-2xl items-center gap-3 rounded-xl border border-white/[0.08] bg-ink-900 pr-2 pl-5 transition-colors focus-within:border-white/20">
@@ -134,16 +135,16 @@ export default function HomePage({ catalog, indexes }) {
               />
             </label>
           </div>
-          <div className="relative mx-auto mt-10 w-full max-w-[96rem] px-8">
-            <div className="flex items-end justify-center [mask-image:linear-gradient(to_right,transparent,black_12%,black_88%,transparent)]">
+          <div className="relative mx-auto mt-10 w-full px-4">
+            <div className="flex items-end justify-center [mask-image:linear-gradient(to_right,transparent,black_6%,black_94%,transparent)]">
               {lineup.map((hero, i) => (
-                <a key={hero.id} href={link(`/hero/${hero.key}`)} title={hero.name} className={`group relative -mx-2 flex-1 ${i === 3 ? "z-10 max-w-[15rem]" : "max-w-[12rem]"}`}>
+                <a key={hero.id} href={link(`/hero/${hero.key}`)} title={hero.name} className={`group relative -mx-2 flex-1 ${i === 4 ? "z-10 max-w-[17rem]" : "max-w-[15rem]"}`}>
                   <img
                     src={heroCard(hero)}
                     alt={hero.name}
                     loading="lazy"
                     onError={(e) => (e.currentTarget.style.visibility = "hidden")}
-                    className={`mx-auto aspect-[448/678] w-full object-contain object-bottom transition-transform duration-300 group-hover:-translate-y-1 ${i === 3 ? "" : "opacity-80 group-hover:opacity-100"}`}
+                    className={`mx-auto aspect-[448/678] w-full object-contain object-bottom transition-transform duration-300 group-hover:-translate-y-1 ${i === 4 ? "" : "opacity-85 group-hover:opacity-100"}`}
                   />
                 </a>
               ))}
@@ -161,7 +162,7 @@ export default function HomePage({ catalog, indexes }) {
               title="Heroes"
               count={stats?.heroes}
               text="A page for each hero: its model in 3D, personas, abilities and story, its items by set, and every sound, effect, texture and picture of it."
-              art={<Renders urls={lineup.slice(0, 3).map(heroCard)} />}
+              art={<Renders urls={lineup.slice(3, 6).map(heroCard)} />}
             />
             <Door href="/sets" icon={Layers} title="Sets" count={stats?.sets} text="Every set on its hero, worn together, with all of its files at once." art={<Renders urls={art.sets} />} />
             <Door href="/bundles" icon={Package} title="Bundles" count={stats?.bundles} text="What the store sells as one: open one to see its items on the hero." art={<Renders urls={art.bundles} />} />
