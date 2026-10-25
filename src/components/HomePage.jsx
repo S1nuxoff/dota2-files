@@ -162,26 +162,31 @@ export default function HomePage({ catalog, indexes }) {
               </a>
             </div>
           </div>
-          <div className="relative mx-auto mt-10 w-full px-4">
-            <div className="flex items-end justify-center [mask-image:linear-gradient(to_right,transparent,black_6%,black_94%,transparent)]">
+          {/* The heroes on the floor at the foot of the screen: their pictures' dark ground melts into the
+              page's (lighten), their feet fade into the floor, the row fades out at both sides */}
+          <div className="relative mx-auto mt-8 w-full max-w-[110rem] px-4">
+            <div className="flex h-[min(38vh,26rem)] items-end justify-center gap-1 [mask-image:linear-gradient(to_right,transparent,black_8%,black_92%,transparent)]">
               {lineup.map((hero, i) => (
                 <a
                   key={hero.id}
                   href={link(`/hero/${hero.key}`)}
                   title={hero.name}
                   style={{ animationDelay: `${360 + Math.abs(i - 4) * 80}ms` }}
-                  className={`anim-stand group relative -mx-2 flex-1 ${i === 4 ? "z-10 max-w-[17rem]" : "max-w-[15rem]"}`}>
+                  className={`anim-stand group relative flex h-full min-w-0 flex-1 items-end justify-center ${i === 4 ? "z-10" : ""}`}
+                >
                   <img
                     src={heroCard(hero)}
                     alt={hero.name}
                     loading="lazy"
                     onError={(e) => (e.currentTarget.style.visibility = "hidden")}
-                    className={`mx-auto aspect-[448/678] w-full object-contain object-bottom transition-transform duration-300 group-hover:-translate-y-1 ${i === 4 ? "" : "opacity-85 group-hover:opacity-100"}`}
+                    className={`max-h-full w-auto max-w-full object-contain object-bottom mix-blend-lighten transition-transform duration-300 [mask-image:linear-gradient(to_bottom,black_80%,transparent)] group-hover:-translate-y-1.5 ${
+                      i === 4 ? "h-full" : Math.abs(i - 4) === 1 ? "h-[92%] opacity-90" : "h-[84%] opacity-75"
+                    } group-hover:opacity-100`}
                   />
                 </a>
               ))}
             </div>
-            <div className="h-px bg-white/[0.08]" />
+            <div className="h-px bg-gradient-to-r from-transparent via-white/15 to-transparent" />
           </div>
         </section>
 
