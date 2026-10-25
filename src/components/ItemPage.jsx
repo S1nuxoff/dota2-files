@@ -10,7 +10,7 @@ import Loot from "./Loot.jsx";
 import { eventKind } from "./CosmeticsPage.jsx";
 import SoundList from "./SoundList.jsx";
 import { link, navigate } from "../lib/route.js";
-import { Button, Empty, GRID, Page, Section, Spinner, buttonClass } from "./ui.jsx";
+import { Button, Empty, GRID, Page, Section, Spinner, buttonClass, LoadingDetail } from "./ui.jsx";
 import EmbedButton from "./EmbedButton.jsx";
 import GameStage, { LookSwitch, useLook } from "./GameStage.jsx";
 import { DetailHead, Stage, StageBar, StageSwitch, Tag } from "./Detail.jsx";
@@ -36,7 +36,7 @@ export default function ItemPage({ itemId, catalog, indexes, withCopies, route }
   const ready = item && Object.keys(item.refs).every((ds) => indexes[ds]);
   const [style, setStyle] = useState(0);
   const [shown, setShown] = useLook();
-  if (!catalog) return <Spinner text="Loading the catalog" />;
+  if (!catalog) return <LoadingDetail />;
   if (!item) return <Page><Empty title={`There is no item ${itemId}`} action={<Button as="a" href={link("/cosmetics")}>All cosmetics</Button>} /></Page>;
 
   const rarity = catalog.rarities[item.rarity || "common"];

@@ -6,7 +6,7 @@ import { formatCount, formatSize } from "../lib/format.js";
 import { startJob } from "../lib/jobs.js";
 import { link, openItem } from "../lib/route.js";
 import SoundList from "./SoundList.jsx";
-import { Button, Empty, Page, PageHead, SearchField, Spinner, Toolbar } from "./ui.jsx";
+import { Button, Empty, Page, PageHead, SearchField, Spinner, Toolbar, LoadingList } from "./ui.jsx";
 import { CosmeticsTabs } from "./CosmeticsPage.jsx";
 
 // Every music pack of the game, the latest first, each opening to its tracks to play in place
@@ -22,7 +22,7 @@ export default function MusicPage({ catalog, indexes, withCopies, route }) {
         : [],
     [catalog]
   );
-  if (!catalog) return <Spinner text="Loading the catalog" />;
+  if (!catalog) return <LoadingList title="Music" grid="space-y-3" ratio="h-20" count={6} tabs={<CosmeticsTabs current="/music" />} />;
   const match = fuzzyMatch(packs, (p) => p.name, filter);
   const shown = packs.filter((p) => !match || match.has(p));
 

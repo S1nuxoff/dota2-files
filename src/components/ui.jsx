@@ -398,3 +398,54 @@ export function useReveal() {
     };
   }, []);
 }
+
+// A list page while its data comes: its head as it will be, the bar of filters, and cards waiting in
+// the grid, so nothing jumps when the cards arrive (and the footer stays out of sight)
+export function LoadingList({ title, eyebrow, sub, ratio = "aspect-[4/3.4]", grid = GRID.item, count = 18, tabs }) {
+  return (
+    <Page className="min-h-[100svh]">
+      <PageHead eyebrow={eyebrow || <span className="skeleton inline-block h-3 w-20 rounded" />} title={title} sub={sub}>
+        {tabs}
+      </PageHead>
+      <div className="page-x flex gap-2 py-3" aria-hidden="true">
+        <div className="skeleton h-10 w-full rounded-xl sm:w-72" />
+        <div className="skeleton hidden h-10 w-40 rounded-xl sm:block" />
+      </div>
+      <div className={`page-x pt-4 ${grid}`} aria-busy="true" aria-label="Loading">
+        {Array.from({ length: count }, (_, i) => (
+          <div key={i} className="overflow-hidden rounded-2xl border border-white/[0.05]" style={{ animationDelay: `${i * 40}ms` }}>
+            <div className={`skeleton ${ratio}`} style={{ animationDelay: `${(i % 6) * 90}ms` }} />
+            <div className="space-y-2 px-4 py-3.5">
+              <div className="skeleton h-3 w-3/4 rounded" />
+              <div className="skeleton h-2.5 w-1/2 rounded" />
+            </div>
+          </div>
+        ))}
+      </div>
+    </Page>
+  );
+}
+
+// A hero's, set's or item's page while its data comes: the trail, the stage, the name and buttons
+export function LoadingDetail() {
+  return (
+    <Page className="min-h-[100svh]" aria-busy="true">
+      <div className="page-x pt-5 sm:pt-6">
+        <div className="skeleton h-3.5 w-40 rounded" />
+      </div>
+      <div className="page-x mt-4">
+        <div className="skeleton h-[min(62svh,34rem)] rounded-2xl sm:h-[min(70vh,48rem)] sm:rounded-3xl" />
+      </div>
+      <div className="page-x mt-6 flex flex-col gap-4 lg:flex-row lg:justify-between">
+        <div className="space-y-3">
+          <div className="skeleton h-10 w-72 max-w-full rounded-lg" />
+          <div className="skeleton h-3.5 w-48 rounded" />
+        </div>
+        <div className="flex gap-2">
+          <div className="skeleton h-10 w-48 rounded-xl" />
+          <div className="skeleton h-10 w-28 rounded-xl" />
+        </div>
+      </div>
+    </Page>
+  );
+}

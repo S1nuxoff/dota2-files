@@ -11,7 +11,7 @@ import SetCard from "./SetCard.jsx";
 import { DetailHead, Stage, Tag } from "./Detail.jsx";
 import EmbedButton from "./EmbedButton.jsx";
 import GameStage, { LookSwitch, useLook } from "./GameStage.jsx";
-import { Button, Empty, GRID, Page, Section, Spinner, buttonClass } from "./ui.jsx";
+import { Button, Empty, GRID, Page, Section, Spinner, buttonClass, LoadingDetail } from "./ui.jsx";
 
 const HeroViewer = lazy(() => import("./HeroViewer.jsx"));
 
@@ -27,7 +27,7 @@ export default function SetPage({ setKey, catalog, indexes, withCopies, route })
     const body = set.hero?.model && indexes.models.entries.find((e) => e.path === set.hero.model);
     return [body, ...setModels(set, catalog, indexes)].filter(Boolean);
   }, [set, catalog, indexes]);
-  if (!catalog) return <Spinner text="Loading the catalog" />;
+  if (!catalog) return <LoadingDetail />;
   if (!set) return <Page><Empty title={`There is no set ${setKey}`} action={<Button as="a" href={link("/sets")}>All sets</Button>} /></Page>;
 
   const hero = set.hero;

@@ -8,7 +8,7 @@ import { searchNames } from "../lib/smart.js";
 import ItemCard from "./ItemCard.jsx";
 import HeroPicker from "./HeroPicker.jsx";
 import { link } from "../lib/route.js";
-import { Button, Dropdown, Empty, GRID, Page, PageHead, SearchField, Section, Segmented, Spinner, Toolbar, useMore } from "./ui.jsx";
+import { Button, Dropdown, Empty, GRID, Page, PageHead, SearchField, Section, Segmented, Spinner, Toolbar, useMore, LoadingList } from "./ui.jsx";
 
 const PAGE = 240;
 
@@ -76,7 +76,7 @@ const SORTS = [
 
 // Every item of a kind (couriers, wards, loading screens...), or the kinds to pick from
 export default function CosmeticsPage({ prefab, catalog }) {
-  if (!catalog) return <Spinner text="Loading the catalog" />;
+  if (!catalog) return prefab ? <LoadingList title={prefab === "treasures" ? "Treasures" : titleOf(prefab)} /> : <LoadingList title="Cosmetics" grid={GRID.tile} ratio="aspect-[16/9]" count={12} tabs={<CosmeticsTabs current="/cosmetics" />} />;
   if (prefab) return <Kind key={prefab} prefab={prefab} catalog={catalog} />;
   return <Kinds catalog={catalog} />;
 }

@@ -7,7 +7,7 @@ import { SIZES, loadModels, sizeOf } from "../lib/catalog.js";
 import { formatCount } from "../lib/format.js";
 import { useRem } from "../lib/scale.js";
 import ModelPanel from "./ModelPanel.jsx";
-import { Button, Card, Chip, Empty, Page, PageHead, SearchField, Segmented, Sheet, Spinner, Dropdown, Toolbar } from "./ui.jsx";
+import { Button, Card, Chip, Empty, Page, PageHead, SearchField, Segmented, Sheet, Spinner, Dropdown, Toolbar, LoadingList } from "./ui.jsx";
 import ImageSearch from "./ImageSearch.jsx";
 import HeroPicker from "./HeroPicker.jsx";
 import { searchByWords } from "../lib/visual.js";
@@ -226,7 +226,7 @@ export default function ModelsPage({ catalog, indexes }) {
     animated && ["Animated", () => setAnimated(false)],
   ].filter(Boolean);
 
-  if (!ready) return <Page>{error ? <Empty title="The list of models could not be loaded" text={error} /> : <Spinner text="Loading models" />}</Page>;
+  if (!ready) return error ? <Page><Empty title="The list of models could not be loaded" text={error} /></Page> : <LoadingList title="3D Models" />;
 
   // The opened card's neighbours in the list, for the arrows
   const at = open ? shown.findIndex((c) => c.key === open.key) : -1;

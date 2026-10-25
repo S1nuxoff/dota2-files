@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 import { fuzzyMatch } from "../lib/smart.js";
 import { ATTRIBUTES, attributeIcon, heroCard, heroPortrait } from "../lib/catalog.js";
 import { link } from "../lib/route.js";
-import { Card, Dropdown, Empty, GRID, Page, PageHead, SearchField, Segmented, Spinner, Toolbar, Button } from "./ui.jsx";
+import { Card, Dropdown, Empty, GRID, Page, PageHead, SearchField, Segmented, Spinner, Toolbar, Button, LoadingList } from "./ui.jsx";
 
 const ROLES = ["Carry", "Support", "Nuker", "Disabler", "Initiator", "Durable", "Escape", "Pusher"];
 
@@ -28,7 +28,7 @@ export default function HeroesPage({ catalog, error }) {
     return list.sort(sort === "items" ? (a, b) => b.items.length - a.items.length || byName(a, b) : sort === "sets" ? (a, b) => b.sets.length - a.sets.length || byName(a, b) : byName);
   }, [catalog, filter, attribute, attack, role, sort]);
 
-  if (!catalog) return error ? <Empty title="The heroes could not be loaded" text={error} /> : <Spinner text="Loading heroes" />;
+  if (!catalog) return error ? <Empty title="The heroes could not be loaded" text={error} /> : <LoadingList title="Heroes" ratio="aspect-[448/678]" grid={GRID.tall} count={24} />;
   const count = (a) => catalog.heroes.filter((h) => h.about?.attribute === a).length;
   const clear = () => (setFilter(""), setAttribute(""), setAttack(""), setRole(""));
 

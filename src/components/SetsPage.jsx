@@ -5,7 +5,7 @@ import { link } from "../lib/route.js";
 import SetCard from "./SetCard.jsx";
 import HeroPicker, { heroIcon } from "./HeroPicker.jsx";
 import { CosmeticsTabs } from "./CosmeticsPage.jsx";
-import { Dropdown, Empty, GRID, Page, PageHead, SearchField, Section, Segmented, Spinner, Toolbar, useMore } from "./ui.jsx";
+import { Dropdown, Empty, GRID, Page, PageHead, SearchField, Section, Segmented, Spinner, Toolbar, useMore, LoadingList } from "./ui.jsx";
 
 const PAGE = 240;
 
@@ -37,7 +37,7 @@ export default function SetsPage({ catalog }) {
   }, [grouped, shown, catalog]);
 
   const more = useMore(() => setLimit((l) => l + PAGE), !grouped && limit < shown.length);
-  if (!catalog) return <Spinner text="Loading the sets" />;
+  if (!catalog) return <LoadingList title="Sets" ratio="aspect-[448/678]" grid={GRID.tall} count={24} tabs={<CosmeticsTabs current="/sets" />} />;
   const heroesWithSets = catalog.heroes.filter((h) => h.sets.length);
   const reset = () => setLimit(PAGE);
 

@@ -13,7 +13,7 @@ import ImageGroups from "./ImageGroups.jsx";
 import GroupedFiles from "./GroupedFiles.jsx";
 import HeroAbout from "./HeroAbout.jsx";
 import { link, navigate } from "../lib/route.js";
-import { Button, Chip, Empty, GRID, Page, Section, Segmented, Spinner, Toolbar, buttonClass } from "./ui.jsx";
+import { Button, Chip, Empty, GRID, Page, Section, Segmented, Spinner, Toolbar, buttonClass, LoadingDetail } from "./ui.jsx";
 import EmbedButton from "./EmbedButton.jsx";
 import GameStage, { LookSwitch, useLook } from "./GameStage.jsx";
 import { DetailHead, Stage, StageBar, StageSwitch, Tag } from "./Detail.jsx";
@@ -73,7 +73,7 @@ export default function HeroPage({ heroKey, catalog, indexes, withCopies, route 
   const tab = route.kind && (route.kind === "items" || route.kind === "about" || byDataset[route.kind]) ? route.kind : "items";
   const setTab = (t) => navigate({ ds: "hero", dir: heroKey, kind: t === "items" ? "" : t }, true);
 
-  if (!catalog) return <Spinner text="Loading the catalog" />;
+  if (!catalog) return <LoadingDetail />;
   if (!hero) return <Page><Empty title={`There is no hero called ${heroKey}`} action={<Button as="a" href={link("/heroes")}>All heroes</Button>} /></Page>;
 
   const shown = slot ? items.filter((i) => (i.slot || i.prefab) === slot) : items;
