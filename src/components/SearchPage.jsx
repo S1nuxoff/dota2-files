@@ -80,7 +80,7 @@ export default function SearchPage({ route, catalog, indexes, withCopies }) {
 
   return (
     <div className="min-h-0 flex-1 overflow-y-auto">
-      <div key={q} className="anim-page mx-auto max-w-[100rem] px-8 pt-10 pb-20">
+      <div key={q} className="anim-page mx-auto max-w-[128rem] px-8 pt-10 pb-20">
         <h1 className="text-[2rem] font-semibold tracking-[-0.035em]">“{q}”</h1>
         <p className="mt-2 text-[0.95rem] text-ink-400">
           {[

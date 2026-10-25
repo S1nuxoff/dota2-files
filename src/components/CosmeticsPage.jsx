@@ -207,7 +207,7 @@ function Kinds({ catalog }) {
           placeholder="Search every item by name, hero, kind or event"
         />
       </PageHead>
-      <div className="mx-auto max-w-[100rem] space-y-10 px-8 pb-20">
+      <div className="mx-auto max-w-[128rem] space-y-10 px-8 pb-20">
         {found && (
           <section>
             <h2 className="text-[1.15rem] font-semibold tracking-[-0.02em]">
@@ -330,7 +330,7 @@ export function Kind({ prefab, catalog, title, sub, back = true }) {
       }}
     >
       {back && (
-        <div className="mx-auto max-w-[100rem] px-8 pt-6">
+        <div className="mx-auto max-w-[128rem] px-8 pt-6">
           <a href={link("/cosmetics")} className="inline-flex items-center gap-1 text-[0.88rem] text-ink-400 transition-colors hover:text-ink-100">
             <ChevronLeft size={16} /> Cosmetics
           </a>
@@ -351,7 +351,7 @@ export function Kind({ prefab, catalog, title, sub, back = true }) {
         />
       </PageHead>
 
-      <div className="mx-auto max-w-[100rem] px-8 pb-20">
+      <div className="mx-auto max-w-[128rem] px-8 pb-20">
         <div className="flex flex-wrap items-center gap-2 pb-6">
           {rarities.length > 1 && (
             <>

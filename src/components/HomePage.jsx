@@ -237,7 +237,7 @@ export default function HomePage({ catalog, indexes }) {
         </section>
 
         <footer className="border-t border-white/[0.06]">
-          <div className="mx-auto grid max-w-[100rem] gap-10 px-8 py-14 sm:grid-cols-2 lg:grid-cols-[1.4fr_1fr_1fr_1fr]">
+          <div className="mx-auto grid max-w-[128rem] gap-10 px-8 py-14 sm:grid-cols-2 lg:grid-cols-[1.4fr_1fr_1fr_1fr]">
             <div>
               <div className="text-[0.95rem] font-medium">Dotadex Files</div>
               <p className="mt-2 max-w-xs text-[0.86rem] leading-relaxed text-ink-400">Every file of Dota 2, sorted and free. Not affiliated with Valve; Dota 2 belongs to Valve Corporation.</p>
@@ -344,7 +344,7 @@ function HeroField({ heroes }) {
 // words, a large picture of the real thing, and under it the points that matter, side by side
 function Feature({ icon: Icon, label, href, title, text, points = [], frame = true, children }) {
   return (
-    <section data-reveal className="mx-auto mt-32 max-w-[100rem] px-8">
+    <section data-reveal className="mx-auto mt-32 max-w-[128rem] px-8">
       <a href={link(href)} className="group inline-flex items-center gap-2 text-[0.92rem] text-ink-300 transition-colors hover:text-ink-100">
         <Icon size={16} /> {label} <ArrowRight size={14} className="transition-transform group-hover:translate-x-0.5" />
       </a>

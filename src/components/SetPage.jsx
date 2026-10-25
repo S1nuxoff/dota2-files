@@ -39,7 +39,7 @@ export default function SetPage({ setKey, catalog, indexes, withCopies, route })
 
   return (
     <div className="min-h-0 flex-1 overflow-y-auto">
-      <div key={setKey} className="anim-page mx-auto max-w-[100rem] px-8 pt-6 pb-20">
+      <div key={setKey} className="anim-page mx-auto max-w-[128rem] px-8 pt-6 pb-20">
         <a href={hero ? link(`/hero/${hero.key}`) : link("/cosmetics")} className="inline-flex items-center gap-1 text-[0.88rem] text-ink-400 transition-colors hover:text-ink-100">
           <ChevronLeft size={16} /> {hero ? hero.name : "Cosmetics"}
         </a>

@@ -61,7 +61,7 @@ export default function SetsPage({ catalog }) {
           />
         </PageHead>
 
-        <div className="mx-auto max-w-[100rem] px-8">
+        <div className="mx-auto max-w-[128rem] px-8">
           <div className="flex flex-wrap items-center gap-2 pb-6">
             <Chip active={!grouped} onClick={() => setGrouped(false)}>
               All sets

@@ -30,7 +30,7 @@ export default function MusicPage({ catalog, indexes, withCopies, route }) {
         <PageHead title="Music" sub={`${packs.length} music packs of Dota 2, every track to play here and download.`}>
           <SearchField value={filter} onChange={setFilter} icon={Search} placeholder="Search by pack" />
         </PageHead>
-        <div className="mx-auto max-w-[100rem] space-y-3 px-8 pb-20">
+        <div className="mx-auto max-w-[128rem] space-y-3 px-8 pb-20">
           {shown.map((p, i) => (
             <Pack key={p.id} pack={p} catalog={catalog} indexes={indexes} withCopies={withCopies} route={route} open={open === p.id} onToggle={() => setOpen(open === p.id ? "" : p.id)} delay={Math.min(i, 20) * 20} />
           ))}

@@ -15,7 +15,7 @@ export default function HeroesPage({ catalog, error }) {
         <PageHead title="Every file of Dota 2" sub="Pick a hero to get its 3D model, items, sounds, effects and pictures, or search all of them at once.">
           <SearchField value={filter} onChange={setFilter} icon={Search} placeholder={`Find one of ${catalog.heroes.length} heroes`} />
         </PageHead>
-        <div className="mx-auto grid max-w-[100rem] grid-cols-[repeat(auto-fill,minmax(12rem,1fr))] gap-5 px-8 pb-20">
+        <div className="mx-auto grid max-w-[128rem] grid-cols-[repeat(auto-fill,minmax(12rem,1fr))] gap-5 px-8 pb-20">
           {heroes.map((hero, i) => (
             <Card
               key={hero.id}
@@ -40,7 +40,7 @@ export default function HeroesPage({ catalog, error }) {
           ))}
         </div>
         {heroes.length === 0 && <p className="pb-20 text-center text-ink-400">No hero has that name.</p>}
-        <p className="mx-auto max-w-[100rem] px-8 pb-10 text-[0.8rem] text-ink-600">
+        <p className="mx-auto max-w-[128rem] px-8 pb-10 text-[0.8rem] text-ink-600">
           Dota 2 content and materials are trademarks and copyrights of Valve. Not affiliated with Valve. Non-commercial.
         </p>
       </div>

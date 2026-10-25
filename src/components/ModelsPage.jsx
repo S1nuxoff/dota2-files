@@ -276,7 +276,7 @@ export default function ModelsPage({ catalog, indexes }) {
             </div>
           </PageHead>
 
-          <div className="mx-auto max-w-[100rem] px-8">
+          <div className="mx-auto max-w-[128rem] px-8">
             <div className="flex items-center gap-2 pb-5">
               <div className="relative">
                 <Button onClick={() => setFiltersOpen(!filtersOpen)}>
@@ -314,7 +314,7 @@ export default function ModelsPage({ catalog, indexes }) {
         </div>
 
         {shown.length === 0 && <div className="p-16 text-center text-ink-400">No model fits these filters. Clear one to see more.</div>}
-        <div className="mx-auto max-w-[100rem] px-8 pb-16">
+        <div className="mx-auto max-w-[128rem] px-8 pb-16">
           <div ref={grid} style={{ height: virtual.getTotalSize(), position: "relative" }}>
             {virtual.getVirtualItems().map((line) => (
               <div
