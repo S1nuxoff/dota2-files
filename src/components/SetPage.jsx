@@ -114,7 +114,7 @@ export default function SetPage({ setKey, catalog, indexes, withCopies, route })
           }
         >
         </SideActions>
-        {dotadex && <DotadexCard href={`${DOTADEX}/${dotadex}`} name={hero ? `${hero.name} in it` : set.name} embed={<EmbedButton path={dotadex} title={set.name} className={buttonClass({ ghost: true, size: "sm" })} />} />}
+        {dotadex && <DotadexCard href={`${DOTADEX}/${dotadex}`} embed={<EmbedButton path={dotadex} title={set.name} className={`${buttonClass({ ghost: true, size: "sm" })} text-ink-400`} />} />}
       </DetailTop>
 
       <div className="page-x mt-12 space-y-14">

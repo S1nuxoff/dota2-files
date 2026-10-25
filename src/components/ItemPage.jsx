@@ -158,7 +158,7 @@ export default function ItemPage({ itemId, catalog, indexes, withCopies, route }
             </Button>
           )}
         </SideActions>
-        <DotadexCard href={`${DOTADEX}/item/${item.id}`} name="it" embed={<EmbedButton path={`item/${item.id}`} title={item.name} className={buttonClass({ ghost: true, size: "sm" })} />} />
+        <DotadexCard href={`${DOTADEX}/item/${item.id}`} embed={<EmbedButton path={`item/${item.id}`} title={item.name} className={`${buttonClass({ ghost: true, size: "sm" })} text-ink-400`} />} />
       </DetailTop>
 
       <div className="page-x mt-12 space-y-14">

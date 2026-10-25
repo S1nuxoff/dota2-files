@@ -154,20 +154,24 @@ export function StyleSwitch({ models, value, onChange }) {
   );
 }
 
-// The way to Dotadex from a hero, set or item: what it shows there, and the code to put it on another
-// site (embed) beside it
-export function DotadexCard({ href, name, embed }) {
+// The way to Dotadex from a hero, set or item: its mark and what it shows there, the whole card a
+// link; the code to put it on another site (embed) under it
+export function DotadexCard({ href, embed }) {
   return (
-    <div className="flex items-stretch overflow-hidden rounded-2xl border border-white/[0.08] bg-[linear-gradient(120deg,rgba(229,70,46,0.10),transparent_55%)]">
-      <a href={href} target="_blank" rel="noreferrer" className="group flex min-w-0 flex-1 items-center gap-3.5 p-3.5 transition-colors hover:bg-white/[0.03]">
-        <span className="min-w-0 flex-1 leading-tight">
-          <span className="flex items-center gap-1.5 text-[0.92rem] font-medium">
-            See {name} in Dotadex <ArrowUpRight size={15} className="text-ink-400 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
-          </span>
-          <span className="mt-1 block text-[0.8rem] text-ink-400">The game's own shading, effects and voice lines</span>
+    <div className="space-y-1.5">
+      <a
+        href={href}
+        target="_blank"
+        rel="noreferrer"
+        className="group block rounded-2xl border border-white/[0.08] bg-[radial-gradient(120%_140%_at_0%_0%,rgba(229,70,46,0.12),transparent_60%)] px-4 py-3.5 transition-colors hover:border-white/[0.18]"
+      >
+        <span className="flex items-center justify-between">
+          <img src={`${import.meta.env.BASE_URL}logo.png`} alt="Open in Dotadex" width="875" height="113" className="h-3 w-auto" />
+          <ArrowUpRight size={16} className="text-ink-400 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:text-ink-100" />
         </span>
+        <span className="mt-2 block text-[0.84rem] text-ink-400">In 3D with the game's shading, effects and voice lines</span>
       </a>
-      {embed && <div className="flex items-center border-l border-white/[0.06] px-1.5">{embed}</div>}
+      {embed && <div className="flex justify-center">{embed}</div>}
     </div>
   );
 }

@@ -198,7 +198,7 @@ export default function HeroPage({ heroKey, catalog, indexes, withCopies, route 
             </Button>
           )}
         </SideActions>
-        <DotadexCard href={`${DOTADEX}/hero/${hero.key}${persona}`} name={look.name} embed={<EmbedButton path={`hero/${hero.key}${persona}`} title={look.name} className={buttonClass({ ghost: true, size: "sm" })} />} />
+        <DotadexCard href={`${DOTADEX}/hero/${hero.key}${persona}`} embed={<EmbedButton path={`hero/${hero.key}${persona}`} title={look.name} className={`${buttonClass({ ghost: true, size: "sm" })} text-ink-400`} />} />
       </DetailTop>
 
       <Toolbar className="py-0" gap={false}>
