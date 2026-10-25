@@ -89,7 +89,7 @@ export default function HomePage({ catalog, indexes }) {
     if (!catalog) return [];
     const withModel = catalog.heroes.filter((h) => h.model);
     const day = Math.floor(Date.now() / 86400000);
-    return Array.from({ length: 9 }, (_, i) => withModel[(day * 9 + i * 17) % withModel.length]);
+    return Array.from({ length: 6 }, (_, i) => withModel[(day * 6 + i * 17) % withModel.length]);
   }, [catalog]);
   const latestEvent = useMemo(() => {
     if (!catalog) return null;
@@ -134,7 +134,7 @@ export default function HomePage({ catalog, indexes }) {
       <div ref={page}>
         <section className="relative flex min-h-[calc(100dvh-3.5rem)] flex-col">
           <div className="anim-fade pointer-events-none absolute inset-x-0 top-0 h-[44rem] bg-[radial-gradient(60%_50%_at_50%_0%,rgba(255,255,255,0.07),transparent_70%)]" />
-          <div className="relative mx-auto flex w-full max-w-5xl flex-1 flex-col items-center justify-center px-8 pt-16 text-center">
+          <div className="relative z-10 mx-auto flex w-full max-w-4xl flex-1 flex-col items-center justify-center px-8 py-16 text-center">
             <h1 className="anim-card text-[clamp(2.8rem,5.6vw,5.4rem)] leading-[1.02] font-semibold tracking-[-0.05em]">
               All of Dota 2, taken apart
             </h1>
@@ -162,32 +162,29 @@ export default function HomePage({ catalog, indexes }) {
               </a>
             </div>
           </div>
-          {/* The heroes on the floor at the foot of the screen: their pictures' dark ground melts into the
-              page's (lighten), their feet fade into the floor, the row fades out at both sides */}
-          <div className="relative mx-auto mt-8 w-full max-w-[110rem] px-4">
-            <div className="flex h-[min(38vh,26rem)] items-end justify-center gap-1 [mask-image:linear-gradient(to_right,transparent,black_8%,black_92%,transparent)]">
-              {lineup.map((hero, i) => (
-                <a
-                  key={hero.id}
-                  href={link(`/hero/${hero.key}`)}
-                  title={hero.name}
-                  style={{ animationDelay: `${360 + Math.abs(i - 4) * 80}ms` }}
-                  className={`anim-stand group relative flex h-full min-w-0 flex-1 items-end justify-center ${i === 4 ? "z-10" : ""}`}
-                >
-                  <img
-                    src={heroCard(hero)}
-                    alt={hero.name}
-                    loading="lazy"
-                    onError={(e) => (e.currentTarget.style.visibility = "hidden")}
-                    className={`max-h-full w-auto max-w-full object-contain object-bottom mix-blend-lighten transition-transform duration-300 [mask-image:linear-gradient(to_bottom,black_80%,transparent)] group-hover:-translate-y-1.5 ${
-                      i === 4 ? "h-full" : Math.abs(i - 4) === 1 ? "h-[92%] opacity-90" : "h-[84%] opacity-75"
-                    } group-hover:opacity-100`}
-                  />
-                </a>
-              ))}
-            </div>
-            <div className="h-px bg-gradient-to-r from-transparent via-white/15 to-transparent" />
-          </div>
+          {/* Two heroes framing the words, one at each side, standing on the foot of the screen; their
+              pictures' dark ground melts into the page's, their inner side and feet fade out */}
+          {lineup.slice(0, 2).map((hero, i) => (
+            <a
+              key={hero.id}
+              href={link(`/hero/${hero.key}`)}
+              title={hero.name}
+              style={{ animationDelay: `${420 + i * 120}ms` }}
+              className={`anim-stand group absolute bottom-0 hidden h-[min(82vh,52rem)] lg:block ${i === 0 ? "left-[max(0rem,calc(50%-52rem))]" : "right-[max(0rem,calc(50%-52rem))]"}`}
+            >
+              <img
+                src={heroCard(hero)}
+                alt={hero.name}
+                loading="lazy"
+                onError={(e) => (e.currentTarget.style.visibility = "hidden")}
+                className={`h-full w-auto object-contain object-bottom opacity-80 mix-blend-lighten transition-[opacity,transform] duration-500 group-hover:-translate-y-1.5 group-hover:opacity-100 ${
+                  i === 0
+                    ? "[mask-image:linear-gradient(to_right,black_55%,transparent),linear-gradient(to_bottom,black_75%,transparent)] [mask-composite:intersect]"
+                    : "-scale-x-100 [mask-image:linear-gradient(to_right,black_55%,transparent),linear-gradient(to_bottom,black_75%,transparent)] [mask-composite:intersect]"
+                }`}
+              />
+            </a>
+          ))}
         </section>
 
         {/* Every way in */}
@@ -199,7 +196,7 @@ export default function HomePage({ catalog, indexes }) {
               title="Heroes"
               count={stats?.heroes}
               text="A page for each hero: its model in 3D, personas, abilities and story, its items by set, and every sound, effect, texture and picture of it."
-              art={<Renders urls={lineup.slice(3, 6).map(heroCard)} />}
+              art={<Renders urls={lineup.slice(2, 5).map(heroCard)} />}
             />
             <Door href="/sets" icon={Layers} title="Sets" count={stats?.sets} text="Every set on its hero, worn together, with all of its files at once." art={<Renders urls={art.sets} />} />
             <Door href="/bundles" icon={Package} title="Bundles" count={stats?.bundles} text="What the store sells as one: open one to see its items on the hero." art={<Renders urls={art.bundles} />} />
