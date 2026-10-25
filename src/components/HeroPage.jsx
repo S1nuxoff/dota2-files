@@ -165,7 +165,7 @@ export default function HeroPage({ heroKey, catalog, indexes, withCopies, route 
             </div>
             <div className="grid grid-cols-[repeat(auto-fill,minmax(12.5rem,1fr))] gap-4">
               {shown.map((item, i) => (
-                <ItemCard key={item.id} item={item} rarities={catalog.rarities} delay={Math.min(i, 24) * 20} />
+                <ItemCard key={item.id} item={item} rarities={catalog.rarities} delay={Math.min(i, 24) * 20} list={shown.map((x) => x.id)} />
               ))}
             </div>
           </div>

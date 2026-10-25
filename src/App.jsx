@@ -11,6 +11,7 @@ import HeroPage from "./components/HeroPage.jsx";
 import ItemPage from "./components/ItemPage.jsx";
 import CosmeticsPage from "./components/CosmeticsPage.jsx";
 import ModelsPage from "./components/ModelsPage.jsx";
+import ItemModal from "./components/ItemModal.jsx";
 import Preview from "./components/Preview.jsx";
 import SelectionBar from "./components/SelectionBar.jsx";
 import Tray from "./components/Tray.jsx";
@@ -126,6 +127,7 @@ export default function App() {
         </main>
         {previewEntry && <Preview entry={previewEntry} ds={datasetById(previewEntry.ds)} onClose={() => navigate({ ...route, file: "" })} />}
       </div>
+      {route.item && <ItemModal itemId={route.item} catalog={catalog} indexes={indexes} withCopies={withCopies} />}
       <SelectionBar selection={selection} clear={() => setSelection(new Map())} resolve={resolve} route={route} />
       <Tray />
     </div>

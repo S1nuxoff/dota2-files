@@ -61,7 +61,7 @@ export default function CosmeticsPage({ prefab, catalog }) {
             </PageHead>
             <div className="mx-auto grid max-w-[100rem] grid-cols-[repeat(auto-fill,minmax(12.5rem,1fr))] gap-4 px-8 pb-20">
               {items.slice(0, limit).map((item, i) => (
-                <ItemCard key={item.id} item={item} rarities={catalog.rarities} delay={Math.min(i, 30) * 15} />
+                <ItemCard key={item.id} item={item} rarities={catalog.rarities} delay={Math.min(i, 30) * 15} list={items.map((x) => x.id)} />
               ))}
             </div>
           </>

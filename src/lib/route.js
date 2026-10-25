@@ -12,11 +12,23 @@ export function link(path) {
   return `${BASE}${slashed}${query ? `?${query}` : ""}`;
 }
 
-function parse() {
-  const rel = decodeURIComponent(location.pathname.startsWith(BASE) ? location.pathname.slice(BASE.length) : location.pathname.replace(/^\/+/, ""));
+function parseUrl(pathname, search) {
+  const rel = decodeURIComponent(pathname.startsWith(BASE) ? pathname.slice(BASE.length) : pathname.replace(/^\/+/, ""));
   const [ds = "", ...rest] = rel.split("/").filter(Boolean);
-  const params = new URLSearchParams(location.search);
+  const params = new URLSearchParams(search);
   return { ds, dir: rest.join("/"), file: params.get("file") || "", q: params.get("q") || "", kind: params.get("kind") || "" };
+}
+
+// An item opened over a page keeps that page in the history entry (state.over): the route is the
+// page's, with the item on top (route.item); opened by its address alone, it is a page of its own
+function parse() {
+  const over = history.state?.over;
+  if (over) {
+    const under = new URL(over, location.origin);
+    const item = /\/item\/([^/]+)/.exec(location.pathname)?.[1] || "";
+    return { ...parseUrl(under.pathname, under.search), item };
+  }
+  return { ...parseUrl(location.pathname, location.search), item: "" };
 }
 
 export function href({ ds = "", dir = "", file = "", q = "", kind = "" }) {
@@ -31,15 +43,31 @@ export function href({ ds = "", dir = "", file = "", q = "", kind = "" }) {
 
 const changed = () => window.dispatchEvent(new Event("locationchange"));
 
-function go(url, replace) {
-  if (replace) history.replaceState(null, "", url);
-  else history.pushState(null, "", url);
+function go(url, replace, state = null) {
+  if (replace) history.replaceState(state, "", url);
+  else history.pushState(state, "", url);
   changed();
-  if (!replace) window.scrollTo(0, 0);
+  if (!replace && !state) window.scrollTo(0, 0);
 }
 
 export function navigate(route, replace = false) {
   go(href(route), replace);
+}
+
+// The items the open one can step to (the list it was opened from), kept for the window's arrows
+let itemList = [];
+export const openItems = () => itemList;
+
+// An item over the page: a new history entry, so Back closes it; moving to another item from the
+// window replaces that entry
+export function openItem(id, list) {
+  if (list) itemList = list;
+  const over = history.state?.over;
+  go(link(`/item/${id}`), Boolean(over), { over: over || location.pathname + location.search });
+}
+
+export function closeItem() {
+  if (history.state?.over) history.back();
 }
 
 // Links of the site open in place: a click on <a href="<base>..."> moves the page without loading it
