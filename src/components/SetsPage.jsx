@@ -19,7 +19,6 @@ export default function SetsPage({ catalog }) {
 
   const all = useMemo(() => (catalog ? [...catalog.setByKey.values()] : []), [catalog]);
   const shown = useMemo(() => {
-    const words = filter.toLowerCase().split(/\s+/).filter(Boolean);
     const match = fuzzyMatch(all, (s) => `${s.name} ${s.hero?.name || ""} ${s.hero?.key || ""}`, filter);
     const list = all.filter((s) => (!heroKey || s.hero?.key === heroKey) && (!match || match.has(s)));
     const byName = (a, b) => a.name.localeCompare(b.name, "en", { numeric: true });

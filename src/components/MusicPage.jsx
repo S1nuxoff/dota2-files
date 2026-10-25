@@ -22,7 +22,6 @@ export default function MusicPage({ catalog, indexes, withCopies, route }) {
     [catalog]
   );
   if (!catalog) return <Spinner text="Loading the catalog" />;
-  const words = filter.toLowerCase().split(/\s+/).filter(Boolean);
   const match = fuzzyMatch(packs, (p) => p.name, filter);
   const shown = packs.filter((p) => !match || match.has(p));
 

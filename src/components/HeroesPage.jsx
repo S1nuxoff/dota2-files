@@ -8,7 +8,6 @@ import { Card, PageHead, SearchField, Spinner } from "./ui.jsx";
 export default function HeroesPage({ catalog, error }) {
   const [filter, setFilter] = useState("");
   if (!catalog) return error ? <div className="p-16 text-center text-ink-400">The heroes could not be loaded: {error}</div> : <Spinner text="Loading heroes" />;
-  const words = filter.toLowerCase().split(/\s+/).filter(Boolean);
   const match = fuzzyMatch(catalog.heroes, (h) => `${h.name} ${h.key} ${h.tokens.join(" ")}`, filter);
   const heroes = catalog.heroes.filter((h) => !match || match.has(h));
   return (

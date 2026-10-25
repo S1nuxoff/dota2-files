@@ -26,7 +26,6 @@ export default function HeroPicker({ heroes, value, onChange, anyLabel = "Any he
   }, [open]);
 
   const picked = heroes.find((h) => h.hero.key === value)?.hero;
-  const words = query.toLowerCase().split(/\s+/).filter(Boolean);
   const match = fuzzyMatch(heroes, ({ hero }) => `${hero.name} ${hero.key}`, query);
   const shown = heroes.filter((h) => !match || match.has(h));
   const pick = (key) => {
