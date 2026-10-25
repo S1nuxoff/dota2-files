@@ -232,7 +232,7 @@ function Kinds({ catalog }) {
   const anchor = (title) => title.toLowerCase().replace(/[^a-z]+/g, "-");
   return (
     <Page>
-      <PageHead eyebrow={`${formatCount(Object.keys(catalog.items).length)} items`} title="Cosmetics" sub="Everything a player can own, by kind: hero items, sets and bundles, treasures, couriers, wards, screens, music and effects."
+      <PageHead title="Cosmetics" sub="Everything a player can own, by kind: hero items, sets and bundles, treasures, couriers, wards, screens, music and effects."
         search={
           <SearchField
             big
@@ -241,7 +241,7 @@ function Kinds({ catalog }) {
               setQuery(v);
               setMore(1);
             }}
-            placeholder="Search every item by name, hero, kind or event"
+            placeholder={`Search ${formatCount(Object.keys(catalog.items).length)} items by name, hero, kind or event`}
           />
         }
       >
@@ -365,7 +365,6 @@ export function Kind({ prefab, catalog, title, sub, tab }) {
     <Page>
       <PageHead
         crumbs={tab ? null : [["/cosmetics", "Cosmetics"], ["", name]]}
-        eyebrow={tab ? `${formatCount(all.length)} items` : null}
         title={name}
         sub={sub || `${formatCount(all.length)} of them, each with its model, textures and icon.`}
         search={

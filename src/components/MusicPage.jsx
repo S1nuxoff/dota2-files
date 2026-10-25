@@ -28,8 +28,8 @@ export default function MusicPage({ catalog, indexes, withCopies, route }) {
 
   return (
     <Page>
-      <PageHead eyebrow={`${packs.length} music packs`} title="Music" sub="Every music pack of Dota 2, the latest first. Open one to play its tracks here, or take the whole pack at once."
-        search={<SearchField big value={filter} onChange={setFilter} placeholder="Search by pack" />}
+      <PageHead title="Music" sub="Every music pack of Dota 2, the latest first. Open one to play its tracks here, or take the whole pack at once."
+        search={<SearchField big value={filter} onChange={setFilter} placeholder={`Search ${packs.length} music packs`} />}
       >
         <CosmeticsTabs current="/music" />
       </PageHead>

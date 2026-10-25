@@ -17,9 +17,8 @@ export default function Home({ indexes, errors }) {
   return (
     <Page>
       <PageHead
-        eyebrow={loaded.length ? `${formatCount(files)} files, ${formatSize(bytes)}` : "Counting files"}
         title="Files"
-        sub="Every picture, model, texture, sound, video, effect, map and script of the game, in eight datasets, by folder. Open one to browse, preview and download."
+        sub={`${loaded.length ? `${formatCount(files)} files, ${formatSize(bytes)}: e` : "E"}very picture, model, texture, sound, video, effect, map and script of the game, in eight datasets, by folder.`}
         actions={
           <button
             onClick={() => openPalette()}

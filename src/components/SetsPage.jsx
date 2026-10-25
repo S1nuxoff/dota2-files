@@ -43,7 +43,7 @@ export default function SetsPage({ catalog }) {
 
   return (
     <Page>
-      <PageHead eyebrow={`${formatCount(all.length)} sets`} title="Sets" sub="Every set of the game on its hero, with every file of its items to download at once."
+      <PageHead title="Sets" sub="Every set of the game on its hero, with every file of its items to download at once."
         search={
           <SearchField
             big
@@ -52,7 +52,7 @@ export default function SetsPage({ catalog }) {
               setFilter(v);
               reset();
             }}
-            placeholder="Search by set or hero"
+            placeholder={`Search ${formatCount(all.length)} sets by name or hero`}
           />
         }
       >

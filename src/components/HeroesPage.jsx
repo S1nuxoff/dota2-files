@@ -35,7 +35,6 @@ export default function HeroesPage({ catalog, error }) {
   return (
     <Page>
       <PageHead
-        eyebrow={`${catalog.heroes.length} heroes`}
         title="Heroes"
         sub="Each with its 3D model and personas, every item by set, its abilities, voice lines, effects and pictures."
         search={<SearchField big value={filter} onChange={setFilter} placeholder={`Find one of ${catalog.heroes.length} heroes`} />}

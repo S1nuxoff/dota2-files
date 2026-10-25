@@ -236,7 +236,6 @@ export default function ModelsPage({ catalog, indexes }) {
   return (
     <Page>
       <PageHead
-        eyebrow={`${formatCount(cards.length)} models`}
         title="3D Models"
         sub="Every model of Dota 2 as glb with its textures and animations. Find one by name, by how it looks, or by a screenshot from the game."
         search={
@@ -245,7 +244,7 @@ export default function ModelsPage({ catalog, indexes }) {
             onChange={setFilter}
             onEnter={() => meaning && findByMeaning()}
             icon={meaning ? Sparkles : Search}
-            placeholder={meaning ? "Say how it looks, then press Enter" : "Search by name or path"}
+            placeholder={meaning ? "Say how it looks, then press Enter" : `Search ${formatCount(cards.length)} models by name or path`}
             big
             right={
               <div className="flex items-center gap-1">

@@ -36,18 +36,12 @@ export function Crumbs({ items, className = "" }) {
   );
 }
 
-// A page's head, in the middle: where it sits, a small label, the title, a line under it, then what
+// A page's head, in the middle: where it sits, the title, a line under it, then what
 // to do with the whole of it (a search, tabs) under them
-export function PageHead({ crumbs, eyebrow, title, sub, search, actions, children, className = "" }) {
+export function PageHead({ crumbs, title, sub, search, actions, children, className = "" }) {
   return (
     <header className={`page-x flex flex-col items-center pt-8 pb-6 text-center sm:pt-14 sm:pb-8 ${className}`}>
       {crumbs && <Crumbs items={crumbs} className="mb-6 [&>ol]:justify-center" />}
-      {eyebrow && (
-        <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-white/[0.08] bg-ink-900/80 py-1 pr-3 pl-2.5 text-[0.72rem] font-medium tracking-[0.08em] text-ink-400 uppercase">
-          <span aria-hidden="true" className="h-1.5 w-1.5 rotate-45 bg-ember" />
-          {eyebrow}
-        </div>
-      )}
       <h1 className="max-w-4xl text-[clamp(2.1rem,4.6vw,3.6rem)] leading-[1.02] font-semibold tracking-[-0.045em] text-balance">{title}</h1>
       {sub && <p className="mt-4 max-w-2xl text-[1rem] leading-relaxed text-balance text-ink-400">{sub}</p>}
       {search && <div className="mt-8 w-full max-w-2xl [&>label]:h-14 [&>label]:rounded-2xl [&>label]:pl-5 [&>label]:shadow-[0_24px_60px_-28px_rgb(0_0_0/0.9)]">{search}</div>}
@@ -414,10 +408,10 @@ export function useReveal() {
 
 // A list page while its data comes: its head as it will be, the bar of filters, and cards waiting in
 // the grid, so nothing jumps when the cards arrive (and the footer stays out of sight)
-export function LoadingList({ title, eyebrow, sub, ratio = "aspect-[4/3.4]", grid = GRID.item, count = 18, tabs }) {
+export function LoadingList({ title, sub, ratio = "aspect-[4/3.4]", grid = GRID.item, count = 18, tabs }) {
   return (
     <Page className="min-h-[100svh]">
-      <PageHead eyebrow={eyebrow || <span className="skeleton inline-block h-3 w-20 rounded" />} title={title} sub={sub}>
+      <PageHead title={title} sub={sub}>
         {tabs}
       </PageHead>
       <div className="page-x flex justify-center gap-2 py-3" aria-hidden="true">

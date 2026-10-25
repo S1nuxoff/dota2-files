@@ -75,18 +75,7 @@ function Opening({ catalog, stats }) {
       {/* the red of the Dotadex mark, as a light from above */}
       <div aria-hidden="true" className="anim-fade pointer-events-none absolute inset-x-0 top-0 h-[42rem] bg-[radial-gradient(50%_60%_at_50%_0%,rgba(229,70,46,0.16),rgba(150,30,18,0.05)_50%,transparent_78%)]" />
       <div className="relative z-10 page-x flex flex-col items-center pt-[clamp(3rem,11vh,8rem)] text-center">
-        <a
-          href={link("/heroes")}
-          className="anim-card group inline-flex items-center gap-2 rounded-full border border-white/[0.08] bg-ink-900/70 py-1 pr-3 pl-2 text-[0.8rem] text-ink-300 backdrop-blur transition-colors hover:border-white/[0.16] hover:text-ink-100"
-        >
-          <span className="relative flex h-2 w-2">
-            <span className="absolute inset-0 animate-ping rounded-full bg-ember opacity-60" />
-            <span className="relative h-2 w-2 rounded-full bg-ember" />
-          </span>
-          {catalog?.updated ? `Updated ${ago(catalog.updated)}, after every patch` : "Updated after every patch"}
-          <ArrowRight size={13} className="transition-transform group-hover:translate-x-0.5" />
-        </a>
-        <h1 style={{ animationDelay: "70ms" }} className="anim-card mt-7 max-w-4xl text-[clamp(2.5rem,6.4vw,5.6rem)] leading-[0.98] font-semibold tracking-[-0.055em] text-balance">
+        <h1 style={{ animationDelay: "70ms" }} className="anim-card max-w-4xl text-[clamp(2.5rem,6.4vw,5.6rem)] leading-[0.98] font-semibold tracking-[-0.055em] text-balance">
           Every file of Dota&nbsp;2
         </h1>
         <p style={{ animationDelay: "140ms" }} className="anim-card mt-6 max-w-2xl text-[clamp(1rem,1.25vw,1.2rem)] leading-relaxed text-pretty text-ink-400">
@@ -116,6 +105,7 @@ function Opening({ catalog, stats }) {
             </a>
           ))}
         </nav>
+        {catalog?.updated && <p className="anim-fade mt-6 text-[0.8rem] text-ink-500">Updated {ago(catalog.updated)}, after every patch</p>}
       </div>
       {catalog && <HeroArc heroes={catalog.heroes} />}
     </section>
@@ -192,11 +182,10 @@ function Numbers({ stats }) {
 }
 
 // A heading of a block of the front page
-function Head({ eyebrow, title, text, href, more }) {
+function Head({ title, text, href, more }) {
   return (
     <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
       <div className="max-w-2xl">
-        {eyebrow && <div className="mb-3 text-[0.82rem] font-medium text-ember">{eyebrow}</div>}
         <h2 className="text-[clamp(1.9rem,3.4vw,3rem)] leading-[1.05] font-semibold tracking-[-0.045em] text-balance">{title}</h2>
         {text && <p className="mt-4 text-[1.02rem] leading-relaxed text-pretty text-ink-400">{text}</p>}
       </div>
@@ -246,7 +235,7 @@ function Browse({ catalog, stats, indexes, n }) {
   return (
     <section className="page-x mt-28 sm:mt-36">
       <div data-reveal>
-        <Head eyebrow="Browse" title="Everything in its place, and linked" text="A hero knows its sets, a set its items, an item the chests it drops from and every file it is made of." />
+        <Head title="Everything in its place, and linked" text="A hero knows its sets, a set its items, an item the chests it drops from and every file it is made of." />
       </div>
       <div className="mt-10 grid gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-12 lg:grid-rows-[repeat(3,minmax(15rem,auto))]">
         <a data-reveal href={link("/heroes")} className={`${tile} min-h-[24rem] lg:col-span-6 lg:row-span-2`}>
@@ -384,7 +373,6 @@ function Treasures({ catalog, n, stats }) {
     <section className="page-x mt-28 sm:mt-36">
       <div data-reveal>
         <Head
-          eyebrow="Treasures"
           title="Every chest, and what is inside it"
           text={`${n(stats.treasures)} treasures and capsules with their contents and rare bonus drops. An item knows the chests it drops from and the bundles it comes in.`}
           href="/cosmetics/treasures"
@@ -425,7 +413,6 @@ function Developers({ n, stats }) {
     <section className="page-x mt-28 sm:mt-36">
       <div data-reveal>
         <Head
-          eyebrow="For developers"
           title="Take the files anywhere"
           text={`${n(stats.files)} files in public datasets on Hugging Face, updated after each patch. Download one file, a folder or all of it, or show any hero and item in 3D on your own site.`}
         />
