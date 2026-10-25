@@ -136,10 +136,10 @@ export default function HomePage({ catalog, indexes }) {
           <div className="anim-fade pointer-events-none absolute inset-x-0 top-0 h-[44rem] bg-[radial-gradient(60%_50%_at_50%_0%,rgba(255,255,255,0.07),transparent_70%)]" />
           <div className="relative z-10 mx-auto flex w-full max-w-5xl flex-1 flex-col items-center justify-center px-8 py-16 text-center">
             <h1 className="anim-card text-[clamp(2.6rem,5.2vw,5.2rem)] leading-[1.02] font-semibold tracking-[-0.05em] text-balance whitespace-nowrap max-sm:whitespace-normal">
-              All of Dota 2, taken apart
+              The Dota 2 file archive
             </h1>
-            <p style={{ animationDelay: "90ms" }} className="anim-card mt-6 max-w-xl text-[clamp(1.02rem,1.15vw,1.15rem)] leading-relaxed text-balance text-ink-400">
-              Models, voice lines, effects and what drops from every chest, straight from the game files. {stats ? `${formatCount(stats.files)} files, free to download.` : "Free to download."}
+            <p style={{ animationDelay: "90ms" }} className="anim-card mt-6 text-[clamp(1rem,1.15vw,1.15rem)] leading-relaxed text-balance text-ink-400 lg:whitespace-nowrap">
+              Models, voice lines, effects and chest drops straight from the game{stats ? `, ${formatCount(stats.files)} files` : ""}, all free to download.
             </p>
             <form
               onSubmit={(e) => (e.preventDefault(), search())}
