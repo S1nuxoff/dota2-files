@@ -4,10 +4,12 @@ import { Box, Download, LoaderCircle, Search } from "lucide-react";
 import { datasetById, fileUrl } from "../datasets.js";
 import { SIZES, loadModels, sizeOf } from "../lib/catalog.js";
 import { formatCount } from "../lib/format.js";
+import { useRem } from "../lib/scale.js";
 import ModelPanel from "./ModelPanel.jsx";
 
-const CARD_W = 184;
-const CARD_H = 228;
+// In rem (lib/scale.js)
+const CARD_W = 15;
+const CARD_H = 18;
 
 const TYPES = [
   ["", "All"],
@@ -141,11 +143,12 @@ export default function ModelsPage({ catalog, indexes }) {
     ro.observe(el);
     return () => ro.disconnect();
   }, [ready]);
-  const columns = Math.max(1, Math.floor((width - 40) / CARD_W));
+  const rem = useRem();
+  const columns = Math.max(1, Math.floor((width - 40) / (CARD_W * rem)));
   const virtual = useVirtualizer({
     count: Math.ceil(shown.length / columns),
     getScrollElement: () => scroller.current,
-    estimateSize: () => CARD_H + 12,
+    estimateSize: () => (CARD_H + 0.75) * rem,
     overscan: 4,
   });
   useEffect(() => {
@@ -170,8 +173,12 @@ export default function ModelsPage({ catalog, indexes }) {
     );
   }
 
+  // The opened card's neighbours in the list, for the arrows
+  const at = open ? shown.findIndex((c) => c.key === open.key) : -1;
+  const step = (d) => at >= 0 && shown.length && setOpen(shown[(at + d + shown.length) % shown.length]);
+
   return (
-    <div className="flex min-h-0 flex-1">
+    <div className="relative flex min-h-0 flex-1">
       <div className="flex min-w-0 flex-1 flex-col">
         <div className="shrink-0 border-b border-ink-800 px-6 pt-6">
           <div className="flex items-end gap-4">
@@ -272,7 +279,7 @@ export default function ModelsPage({ catalog, indexes }) {
           </div>
         </div>
       </div>
-      {open && <ModelPanel key={open.key} card={open} entries={entries} onClose={() => setOpen(null)} />}
+      {open && <ModelPanel key={open.key} card={open} entries={entries} onClose={() => setOpen(null)} onPrev={() => step(-1)} onNext={() => step(1)} />}
     </div>
   );
 }
@@ -317,7 +324,7 @@ function Card({ c, active, onOpen }) {
   return (
     <div
       onClick={onOpen}
-      style={{ height: CARD_H }}
+      style={{ height: `${CARD_H}rem` }}
       className={`group flex cursor-pointer flex-col overflow-hidden rounded-lg border bg-ink-900 transition ${active ? "border-ink-400" : "border-ink-800 hover:border-ink-600"}`}
     >
       <div className="relative flex min-h-0 flex-1 items-center justify-center overflow-hidden bg-[radial-gradient(ellipse_at_50%_45%,#1d2230_0%,#13161d_75%)]">
@@ -328,7 +335,7 @@ function Card({ c, active, onOpen }) {
             decoding="async"
             alt=""
             onError={() => setBroken(true)}
-            className="h-full w-full object-contain p-2 transition duration-300 group-hover:scale-105"
+            className="h-full w-full object-contain p-3 transition duration-300 group-hover:scale-105"
           />
         ) : (
           <Box size={30} strokeWidth={1.25} className="text-ink-600" />
@@ -347,7 +354,7 @@ function Card({ c, active, onOpen }) {
       </div>
       <div className="shrink-0 px-3 py-2.5 leading-tight">
         <div className="truncate text-sm capitalize">{c.name}</div>
-        <div className="mt-1 truncate text-[11px] text-ink-400 capitalize">{[c.heroName, c.group, c.theme].filter(Boolean).join(" · ") || c.type}</div>
+        <div className="mt-1 truncate text-xs text-ink-400 capitalize">{[c.heroName, c.group, c.theme].filter(Boolean).join(" · ") || c.type}</div>
       </div>
     </div>
   );

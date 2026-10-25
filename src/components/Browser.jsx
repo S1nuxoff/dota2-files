@@ -10,11 +10,13 @@ import { navigate } from "../lib/route.js";
 import { startJob } from "../lib/jobs.js";
 import { canSaveToFolder } from "../lib/download.js";
 import { heroPortrait, imageUrl } from "../lib/catalog.js";
+import { useRem } from "../lib/scale.js";
 import { Check, EntryIcon } from "./icons.jsx";
 import CopyButton from "./CopyButton.jsx";
 
-const ROW = 44;
-const CELL = 176;
+// In rem (lib/scale.js)
+const ROW = 2.75;
+const CELL = 11;
 
 function readView() {
   try {
@@ -82,9 +84,10 @@ export default function Browser({ ds, route, index, error, indexes, catalog, wit
     ro.observe(el);
     return () => ro.disconnect();
   }, [ready]);
-  const columns = view === "grid" ? Math.max(1, Math.floor((width - 24) / CELL)) : 1;
+  const rem = useRem();
+  const columns = view === "grid" ? Math.max(1, Math.floor((width - 24) / (CELL * rem))) : 1;
   const lines = Math.ceil(rows.length / columns);
-  const virtual = useVirtualizer({ count: lines, getScrollElement: () => scroller.current, estimateSize: () => (view === "grid" ? CELL + 8 : ROW), overscan: 6 });
+  const virtual = useVirtualizer({ count: lines, getScrollElement: () => scroller.current, estimateSize: () => (view === "grid" ? (CELL + 0.5) * rem : ROW * rem), overscan: 6 });
   useEffect(() => {
     scroller.current?.scrollTo(0, 0);
   }, [route.ds, route.dir, route.q, kind]);
@@ -325,7 +328,7 @@ function ListRow({ row, ds, searching, allMode, picked, active, onPick, onOpen }
   return (
     <div
       onClick={onOpen}
-      style={{ height: ROW }}
+      style={{ height: `${ROW}rem` }}
       className={`group grid cursor-pointer grid-cols-[44px_1fr_110px_90px_44px] items-center px-3 text-sm ${active ? "bg-ink-850" : "hover:bg-ink-900"}`}
     >
       <Check picked={picked} onClick={onPick} />
@@ -363,7 +366,7 @@ function GridCell({ row, picked, active, onPick, onOpen }) {
   return (
     <div
       onClick={onOpen}
-      style={{ height: CELL }}
+      style={{ height: `${CELL}rem` }}
       className={`group relative flex cursor-pointer flex-col overflow-hidden rounded-lg border transition ${active ? "border-ink-400 bg-ink-850" : "border-ink-800 bg-ink-900 hover:border-ink-600"}`}
     >
       <div className={`flex min-h-0 flex-1 items-center justify-center ${thumb ? "checker" : ""}`}>

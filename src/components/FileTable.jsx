@@ -4,10 +4,12 @@ import { Download } from "lucide-react";
 import { datasetById, fileUrl } from "../datasets.js";
 import { formatSize } from "../lib/format.js";
 import { navigate } from "../lib/route.js";
+import { useRem } from "../lib/scale.js";
 import { EntryIcon } from "./icons.jsx";
 
-const ROW = 44;
-const CELL = 168;
+// In rem (lib/scale.js)
+const ROW = 2.75;
+const CELL = 10.5;
 
 // A flat list (or a grid of pictures) of files from any datasets, inside a page that scrolls itself.
 // Clicking a file opens it in the preview (<dataset>:<path> in the route)
@@ -20,11 +22,12 @@ export default function FileTable({ entries, route, grid, height = "100%" }) {
     ro.observe(el);
     return () => ro.disconnect();
   }, []);
-  const columns = grid ? Math.max(1, Math.floor((width - 8) / CELL)) : 1;
+  const rem = useRem();
+  const columns = grid ? Math.max(1, Math.floor((width - 8) / (CELL * rem))) : 1;
   const virtual = useVirtualizer({
     count: Math.ceil(entries.length / columns),
     getScrollElement: () => scroller.current,
-    estimateSize: () => (grid ? CELL + 8 : ROW),
+    estimateSize: () => (grid ? (CELL + 0.5) * rem : ROW * rem),
     overscan: 6,
   });
   useEffect(() => {
@@ -60,7 +63,7 @@ function Row({ e, active, onOpen }) {
   return (
     <div
       onClick={onOpen}
-      style={{ height: ROW }}
+      style={{ height: `${ROW}rem` }}
       className={`group flex cursor-pointer items-center gap-3 rounded-md px-3 text-sm ${active ? "bg-ink-850" : "hover:bg-ink-900"}`}
     >
       <EntryIcon entry={e} />
@@ -94,7 +97,7 @@ function Cell({ e, active, onOpen }) {
   return (
     <div
       onClick={onOpen}
-      style={{ height: CELL }}
+      style={{ height: `${CELL}rem` }}
       className={`flex cursor-pointer flex-col overflow-hidden rounded-lg border transition ${active ? "border-ink-400" : "border-ink-800 hover:border-ink-600"}`}
     >
       <div className="checker flex min-h-0 flex-1 items-center justify-center">

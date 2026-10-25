@@ -22,6 +22,11 @@ body,
   height: 100%;
 }
 
+/* Everything grows with wide screens: 16px up to a laptop's width, about 18px at 1920, 22px at 2560 */
+html {
+  font-size: clamp(16px, 0.55vw + 8px, 22px);
+}
+
 body {
   background: var(--color-ink-950);
   color: var(--color-ink-100);
