@@ -9,6 +9,7 @@
   },
   "dependencies": {
     "@google/model-viewer": "4.0.0",
+    "@huggingface/transformers": "3.8.1",
     "@tanstack/react-virtual": "3.14.13",
     "client-zip": "2.5.0",
     "lucide-react": "1.49.0",

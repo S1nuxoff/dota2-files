@@ -1,11 +1,13 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useVirtualizer } from "@tanstack/react-virtual";
-import { Box, Download, LoaderCircle, Search } from "lucide-react";
+import { Box, Download, LoaderCircle, ScanSearch, Search, Sparkles, X } from "lucide-react";
 import { datasetById, fileUrl } from "../datasets.js";
 import { SIZES, loadModels, sizeOf } from "../lib/catalog.js";
 import { formatCount } from "../lib/format.js";
 import { useRem } from "../lib/scale.js";
 import ModelPanel from "./ModelPanel.jsx";
+import ImageSearch from "./ImageSearch.jsx";
+import { searchByWords } from "../lib/visual.js";
 
 // In rem (lib/scale.js)
 const CARD_W = 15;
@@ -53,6 +55,11 @@ export default function ModelsPage({ catalog, indexes }) {
   const [filter, setFilter] = useState("");
   const [sort, setSort] = useState("name");
   const [open, setOpen] = useState(null);
+  // Results of a search by picture or by meaning: { label, picture, rank: model path -> place }
+  const [similar, setSimilar] = useState(null);
+  const [picking, setPicking] = useState(false);
+  const [meaning, setMeaning] = useState(false);
+  const [thinking, setThinking] = useState("");
 
   const ready = models && catalog && indexes.models && indexes.maps && indexes.textures;
 
@@ -113,7 +120,7 @@ export default function ModelsPage({ catalog, indexes }) {
   const heroes = useMemo(() => count(ofType, (c) => c.hero), [ofType]);
 
   const shown = useMemo(() => {
-    const words = filter.toLowerCase().split(/\s+/).filter(Boolean);
+    const words = similar || meaning ? [] : filter.toLowerCase().split(/\s+/).filter(Boolean);
     const list = ofType.filter(
       (c) =>
         (!group || c.group === group) &&
@@ -123,6 +130,15 @@ export default function ModelsPage({ catalog, indexes }) {
         (!animated || c.animated) &&
         words.every((w) => c.hay.includes(w))
     );
+    // Nearest first: a card's place is its best variant's
+    if (similar) {
+      const place = (c) => Math.min(...c.models.map((m) => similar.rank.get(m.path) ?? Infinity));
+      return list
+        .map((c) => [place(c), c])
+        .filter(([at]) => at < Infinity)
+        .sort((a, b) => a[0] - b[0])
+        .map(([, c]) => c);
+    }
     const byName = (a, b) => a.name.localeCompare(b.name, "en", { numeric: true });
     const order = {
       name: byName,
@@ -132,7 +148,7 @@ export default function ModelsPage({ catalog, indexes }) {
       "tris-asc": (a, b) => (a.triangles < 0) - (b.triangles < 0) || a.triangles - b.triangles,
     }[sort];
     return list.sort(order);
-  }, [ofType, group, theme, heroKey, size, animated, filter, sort]);
+  }, [ofType, group, theme, heroKey, size, animated, filter, sort, similar, meaning]);
 
   const scroller = useRef(null);
   const [width, setWidth] = useState(1000);
@@ -156,7 +172,25 @@ export default function ModelsPage({ catalog, indexes }) {
   }, [columns]); // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => {
     scroller.current?.scrollTo(0, 0);
-  }, [type, group, theme, heroKey, size, animated, filter, sort]);
+  }, [type, group, theme, heroKey, size, animated, filter, sort, similar]);
+
+  const findByMeaning = async () => {
+    const words = filter.trim();
+    if (!words) return;
+    setThinking("Getting ready…");
+    try {
+      const results = await searchByWords(words, {
+        onProgress: (share, bytes) =>
+          setThinking(`Downloading the words model (once, about 65 MB): ${share == null ? `${Math.round(bytes / 1e6)} MB` : `${Math.round(share * 100)}%`}`),
+      });
+      setSimilar({ label: `“${words}”`, rank: new Map(results.map((r, i) => [r.path, i])) });
+      setType("");
+    } catch (e) {
+      setThinking(`Could not search: ${e.message || e}`);
+      return;
+    }
+    setThinking("");
+  };
 
   const pickType = (t) => {
     setType(t);
@@ -189,23 +223,58 @@ export default function ModelsPage({ catalog, indexes }) {
                 animations
               </p>
             </div>
-            <label className="flex h-9 w-72 items-center gap-2.5 rounded-lg border border-ink-800 bg-ink-900 px-3 focus-within:border-ink-600">
-              <Search size={14} className="text-ink-400" />
-              <input
-                value={filter}
-                onChange={(e) => setFilter(e.target.value)}
-                placeholder="rock, pine, courier, axe…"
-                className="min-w-0 flex-1 bg-transparent text-sm outline-none placeholder:text-ink-400"
-              />
-            </label>
-            <select value={sort} onChange={(e) => setSort(e.target.value)} className="h-9 rounded-lg border border-ink-800 bg-ink-900 px-2.5 text-sm text-ink-300 outline-none">
-              {SORTS.map(([v, t]) => (
-                <option key={v} value={v}>
-                  Sort: {t}
-                </option>
-              ))}
-            </select>
+            <div className="flex flex-col items-end gap-1">
+              <div className="flex items-center gap-2">
+                <label className="flex h-9 w-80 items-center gap-2.5 rounded-lg border border-ink-800 bg-ink-900 px-3 focus-within:border-ink-600">
+                  {meaning ? <Sparkles size={14} className="text-accent" /> : <Search size={14} className="text-ink-400" />}
+                  <input
+                    value={filter}
+                    onChange={(e) => setFilter(e.target.value)}
+                    onKeyDown={(e) => e.key === "Enter" && meaning && findByMeaning()}
+                    placeholder={meaning ? "Describe it, then Enter: snowy pine…" : "rock, pine, courier, axe…"}
+                    className="min-w-0 flex-1 bg-transparent text-sm outline-none placeholder:text-ink-400"
+                  />
+                  <button
+                    onClick={() => setMeaning(!meaning)}
+                    title="Search by meaning: words that say how it looks, not its name"
+                    className={`rounded-md px-1.5 py-0.5 text-xs transition ${meaning ? "bg-accent-soft text-accent" : "text-ink-400 hover:text-ink-100"}`}
+                  >
+                    By meaning
+                  </button>
+                </label>
+                <button
+                  onClick={() => setPicking(true)}
+                  className="inline-flex h-9 items-center gap-2 rounded-lg border border-ink-700 bg-ink-850 px-3 text-sm text-ink-300 hover:border-ink-600 hover:text-ink-100"
+                >
+                  <ScanSearch size={15} /> Search by picture
+                </button>
+                <select value={sort} onChange={(e) => setSort(e.target.value)} className="h-9 rounded-lg border border-ink-800 bg-ink-900 px-2.5 text-sm text-ink-300 outline-none">
+                  {SORTS.map(([v, t]) => (
+                    <option key={v} value={v}>
+                      Sort: {t}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              {thinking && (
+                <div className="flex items-center gap-2 text-xs text-ink-400">
+                  <LoaderCircle size={12} className="animate-spin" /> {thinking}
+                </div>
+              )}
+            </div>
           </div>
+          {similar && (
+            <div className="mt-4 flex items-center gap-3 rounded-lg border border-ink-700 bg-ink-850 p-2 pr-3">
+              {similar.picture && <img src={similar.picture} alt="" className="h-12 max-w-24 rounded object-contain" />}
+              <div className="flex-1 text-sm">
+                Most like {similar.label}, nearest first
+                <span className="ml-2 text-ink-400">the filters still apply</span>
+              </div>
+              <button onClick={() => setSimilar(null)} className="inline-flex items-center gap-1.5 text-sm text-ink-400 hover:text-ink-100">
+                <X size={14} /> Clear
+              </button>
+            </div>
+          )}
           <div className="mt-4 flex gap-1">
             {TYPES.map(([t, title]) => {
               const n = t ? cards.filter((c) => c.type === t).length : cards.filter((c) => c.type !== "technical").length;
@@ -279,6 +348,16 @@ export default function ModelsPage({ catalog, indexes }) {
           </div>
         </div>
       </div>
+      {picking && (
+        <ImageSearch
+          onClose={() => setPicking(false)}
+          onResults={(results, picture) => {
+            setPicking(false);
+            setType("");
+            setSimilar({ label: "your picture", picture, rank: new Map(results.map((r, i) => [r.path, i])) });
+          }}
+        />
+      )}
       {open && <ModelPanel key={open.key} card={open} entries={entries} onClose={() => setOpen(null)} onPrev={() => step(-1)} onNext={() => step(1)} />}
     </div>
   );
