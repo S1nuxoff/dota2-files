@@ -7,6 +7,7 @@ import { startJob } from "../lib/jobs.js";
 import FileTable from "./FileTable.jsx";
 import ItemCard from "./ItemCard.jsx";
 import Loot from "./Loot.jsx";
+import { eventKind } from "./CosmeticsPage.jsx";
 import SoundList from "./SoundList.jsx";
 import { link } from "../lib/route.js";
 import { Spinner } from "./ui.jsx";
@@ -87,6 +88,11 @@ export default function ItemPage({ itemId, catalog, indexes, withCopies, route }
                     {t}
                   </span>
                 ))}
+                {item.event && catalog.events?.[item.event] && (
+                  <a href={link(`/cosmetics/${eventKind(item.event)}`)} className={`${chip} text-ink-100 hover:bg-black/55`}>
+                    {catalog.events[item.event]}
+                  </a>
+                )}
                 {heroes.map((h) => (
                   <a key={h.id} href={link(`/hero/${h.key}`)} className={`${chip} text-ink-100 hover:bg-black/55`}>
                     {h.name}

@@ -8,6 +8,7 @@ import { closeItem, link, openItem, openItems } from "../lib/route.js";
 import { Button } from "./ui.jsx";
 import EmbedButton from "./EmbedButton.jsx";
 import Loot from "./Loot.jsx";
+import { eventKind } from "./CosmeticsPage.jsx";
 import SoundList from "./SoundList.jsx";
 import GameStage, { LookSwitch, useLook } from "./GameStage.jsx";
 
@@ -140,6 +141,11 @@ export default function ItemModal({ itemId, catalog, indexes, withCopies }) {
                 {t}
               </span>
             ))}
+            {item.event && catalog.events?.[item.event] && (
+              <a href={link(`/cosmetics/${eventKind(item.event)}`)} className="rounded-full bg-ink-800 px-3 py-1 text-[0.8rem] text-ink-100 transition-colors hover:bg-ink-700">
+                {catalog.events[item.event]}
+              </a>
+            )}
           </div>
           {item.text && <p className="mt-4 line-clamp-5 px-6 text-[0.86rem] leading-relaxed whitespace-pre-line text-ink-300" title={item.text}>{item.text}</p>}
 

@@ -35,7 +35,11 @@ const TITLES = {
 const titleOf = (prefab) => TITLES[prefab] || prefabTitle(prefab);
 // Kinds shown together as one: every treasure and capsule, what they give inside
 const MERGED = { treasures: ["treasure_chest", "retired_treasure_chest", "sticker_capsule"] };
-const inKind = (prefab) => (MERGED[prefab] ? (i) => MERGED[prefab].includes(i.prefab) : (i) => i.prefab === prefab);
+// An event's page: /cosmetics/event-international_2026 (EVENT_ID_INTERNATIONAL_2026)
+export const eventKind = (id) => `event-${id.replace(/^EVENT_ID_/, "").toLowerCase()}`;
+const eventOf = (prefab) => (prefab.startsWith("event-") ? `EVENT_ID_${prefab.slice(6).toUpperCase()}` : "");
+const inKind = (prefab) =>
+  eventOf(prefab) ? (i) => i.event === eventOf(prefab) : MERGED[prefab] ? (i) => MERGED[prefab].includes(i.prefab) : (i) => i.prefab === prefab;
 
 const SORTS = [
   ["new", "Newest first"],
@@ -74,6 +78,21 @@ function Kinds({ catalog }) {
     .sort((a, b) => count[b] - count[a]);
   const sections = [...SECTIONS, ["Other", other]].map(([title, kinds]) => [title, kinds.filter((k) => count[k])]).filter(([, kinds]) => kinds.length);
   const firstSet = [...catalog.setByKey.values()].find((s) => s.icon);
+  // The events and battle passes, the latest first, each pictured by one of its treasures
+  const events = useMemo(() => {
+    const by = new Map();
+    for (const item of Object.values(catalog.items)) {
+      if (!item.event) continue;
+      const e = by.get(item.event) || by.set(item.event, { id: item.event, n: 0, date: "", icon: "" }).get(item.event);
+      e.n++;
+      if (item.date > e.date) e.date = item.date;
+      if (item.icon && (!e.icon || (item.loot && !e.chest))) {
+        e.icon = item.icon;
+        e.chest = !!item.loot;
+      }
+    }
+    return [...by.values()].sort((a, b) => b.date.localeCompare(a.date));
+  }, [catalog]);
 
   const tile = (href, title, n, icon, i) => (
     <a
@@ -106,6 +125,14 @@ function Kinds({ catalog }) {
             </div>
           </section>
         ))}
+        {events.length > 0 && (
+          <section>
+            <h2 className="text-[1.15rem] font-semibold tracking-[-0.02em]">Events and battle passes</h2>
+            <div className="mt-4 grid grid-cols-[repeat(auto-fill,minmax(15rem,1fr))] gap-4">
+              {events.map((e) => tile(`/cosmetics/${eventKind(e.id)}`, catalog.events?.[e.id] || e.id, e.n, e.icon, i++))}
+            </div>
+          </section>
+        )}
       </div>
     </div>
   );
@@ -126,12 +153,13 @@ function Kind({ prefab, catalog }) {
     if (distinct((i) => i.type) > 1) out.push(["type", "By type"]);
     if (distinct((i) => i.rarity) > 1) out.push(["rarity", "By rarity"]);
     if (distinct((i) => i.date?.slice(0, 4)) > 1) out.push(["year", "By year"]);
+    if (distinct((i) => i.prefab) > 1) out.push(["prefab", "By kind"]);
     return out;
   }, [all]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const [filter, setFilter] = useState("");
   const [sort, setSort] = useState("new");
-  const [group, setGroup] = useState(() => (groupings.some(([g]) => g === "hero") ? "hero" : groupings.some(([g]) => g === "year") && all.some((i) => i.loot) ? "year" : "none"));
+  const [group, setGroup] = useState(() => (eventOf(prefab) ? "prefab" : groupings.some(([g]) => g === "hero") ? "hero" : groupings.some(([g]) => g === "year") && all.some((i) => i.loot) ? "year" : "none"));
   const [heroKey, setHeroKey] = useState("");
   const [rarity, setRarity] = useState("");
   const [limit, setLimit] = useState(PAGE);
@@ -165,7 +193,7 @@ function Kind({ prefab, catalog }) {
   // Sections in the order of their names (heroes, slots, types) or of rarity; items without one last
   const sections = useMemo(() => {
     if (group === "none") return [["", shown]];
-    const keyOf = { hero: (i) => heroOf(i)?.name, slot: (i) => i.slot, type: (i) => i.type, rarity: (i) => catalog.rarities[i.rarity]?.name, year: (i) => i.date?.slice(0, 4) }[group];
+    const keyOf = { hero: (i) => heroOf(i)?.name, slot: (i) => i.slot, type: (i) => i.type, rarity: (i) => catalog.rarities[i.rarity]?.name, year: (i) => i.date?.slice(0, 4), prefab: (i) => titleOf(i.prefab) }[group];
     const by = new Map();
     for (const i of shown) {
       const k = keyOf(i) || "";
@@ -178,7 +206,7 @@ function Kind({ prefab, catalog }) {
 
   const ids = useMemo(() => sections.flatMap(([, l]) => l.map((i) => i.id)), [sections]);
   let left = limit;
-  const none = { hero: "Without a hero", slot: "Without a slot", type: "Without a type", rarity: "Without a rarity", year: "Without a date" }[group];
+  const none = { hero: "Without a hero", slot: "Without a slot", type: "Without a type", rarity: "Without a rarity", year: "Without a date", prefab: "Other" }[group];
 
   return (
     <div
@@ -193,7 +221,7 @@ function Kind({ prefab, catalog }) {
           <ChevronLeft size={16} /> Cosmetics
         </a>
       </div>
-      <PageHead title={titleOf(prefab)} sub={`${formatCount(all.length)} of them, each with its model, textures and icon.`}>
+      <PageHead title={eventOf(prefab) ? catalog.events?.[eventOf(prefab)] || eventOf(prefab) : titleOf(prefab)} sub={`${formatCount(all.length)} of them, each with its model, textures and icon.`}>
         <SearchField
           value={filter}
           onChange={(v) => {
