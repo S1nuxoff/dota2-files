@@ -400,7 +400,7 @@ function HeroSlider({ heroes }) {
                 alt=""
                 loading="lazy"
                 onError={(e) => (e.currentTarget.src = heroPortrait(h))}
-                className="aspect-[448/678] w-full object-contain object-bottom mix-blend-lighten transition-transform duration-500 [mask-image:linear-gradient(to_bottom,black_85%,transparent)] group-hover:-translate-y-1.5"
+                className="aspect-[448/678] w-full object-contain object-bottom mix-blend-lighten transition-transform duration-500 [mask-composite:intersect] [mask-image:linear-gradient(to_bottom,black_85%,transparent),linear-gradient(to_right,transparent,black_14%,black_86%,transparent)] group-hover:-translate-y-1.5"
               />
               <div className="mt-2 text-center">
                 <div className="text-[1.02rem] font-medium">{h.name}</div>
