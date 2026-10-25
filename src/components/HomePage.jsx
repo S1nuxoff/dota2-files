@@ -1,4 +1,4 @@
-import { lazy, Suspense, useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   ArrowRight,
   Box,
@@ -28,8 +28,6 @@ const OWNER_URL = "https://huggingface.co/Sqls1";
 const SOURCE_URL = "https://github.com/S1nuxoff/dota2-files";
 const SUPPORT_URL = "https://ko-fi.com/s1nuxoff";
 
-const HeroViewer = lazy(() => import("./HeroViewer.jsx"));
-
 // A fine noise, drawn by the browser (an SVG turbulence), laid over the light as grain
 const GRAIN = `url("data:image/svg+xml,${encodeURIComponent(
   '<svg xmlns="http://www.w3.org/2000/svg" width="220" height="220"><filter id="n"><feTurbulence type="fractalNoise" baseFrequency="0.85" numOctaves="3" stitchTiles="stitch"/><feColorMatrix values="0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 1.4 -0.25"/></filter><rect width="100%" height="100%" filter="url(#n)"/></svg>'
@@ -47,8 +45,6 @@ function ago(iso) {
 // The front page: what the site holds and a way into each part of it
 export default function HomePage({ catalog, indexes }) {
   const [query, setQuery] = useState("");
-  // How far the side heroes are turned: facing the middle, then round with the scroll
-  const turns = [useRef(0.55), useRef(-0.55)];
   // Blocks below the opening show as they scroll into view
   const page = useRef(null);
   useEffect(() => {
@@ -135,8 +131,6 @@ export default function HomePage({ catalog, indexes }) {
       onScroll={(e) => {
         const top = e.currentTarget.scrollTop;
         e.currentTarget.style.setProperty("--p", String(Math.min(1, top / 520)));
-        turns[0].current = 0.55 + top * 0.006;
-        turns[1].current = -0.55 - top * 0.006;
       }}
     >
       <div ref={page}>
@@ -188,7 +182,6 @@ export default function HomePage({ catalog, indexes }) {
               ))}
             </nav>
           </div>
-          {catalog && <SideHeroes catalog={catalog} indexes={indexes} turn={turns} />}
         </section>
 
         {/* Every way in */}
@@ -296,39 +289,6 @@ export default function HomePage({ catalog, indexes }) {
       </div>
     </div>
   );
-}
-
-// Two heroes in 3D at the sides of the opening, in their default look on a lit floor,
-// turning as the page scrolls (each its own way); they show once they stand
-function SideHeroes({ catalog, indexes, turn }) {
-  const [ready, setReady] = useState([false, false]);
-  // Pudge at the left, Invoker at the right (any two with a model if the game ever drops one)
-  const heroes = useMemo(() => {
-    const withModel = catalog.heroes.filter((h) => h.model);
-    return ["pudge", "invoker"].map((key, i) => withModel.find((h) => h.key === key) || withModel[i]);
-  }, [catalog]);
-  const looks = useMemo(() => {
-    if (!indexes.models) return [];
-    const byPath = new Map(indexes.models.entries.map((e) => [e.path, e]));
-    return heroes.map((h) => [h.model, ...(h.look || [])].map((p) => byPath.get(p)).filter(Boolean));
-  }, [heroes, indexes.models]);
-  if (!looks.length) return null;
-  return heroes.map((hero, i) => (
-    <a
-      key={hero.id}
-      href={link(`/hero/${hero.key}`)}
-      title={hero.name}
-      className={`absolute bottom-0 hidden h-[min(100dvh,70rem)] w-[min(42vw,50rem)] transition-opacity duration-1000 xl:block ${i ? "-right-[4vw]" : "-left-[4vw]"} ${ready[i] ? "opacity-100" : "opacity-0"}`}
-    >
-      <div
-        style={{ background: `radial-gradient(closest-side, ${i ? "rgba(178,34,24,0.22)" : "rgba(214,96,28,0.2)"}, transparent)` }}
-        className="pointer-events-none absolute inset-x-[10%] bottom-[6%] h-32 rounded-[100%] blur-2xl"
-      />
-      <Suspense fallback={null}>
-        <HeroViewer models={looks[i]} bare showcase turn={turn[i]} onReady={() => setReady((r) => r.map((v, n) => v || n === i))} />
-      </Suspense>
-    </a>
-  ));
 }
 
 // A strip of up to three pictures at the foot of a door: model renders standing on a dark floor, or
