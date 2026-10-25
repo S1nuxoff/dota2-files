@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   ArrowRight,
   Box,
@@ -40,6 +40,26 @@ function ago(iso) {
 // The front page: what the site holds and a way into each part of it
 export default function HomePage({ catalog, indexes }) {
   const [query, setQuery] = useState("");
+  // Blocks below the opening show as they scroll into view
+  const page = useRef(null);
+  useEffect(() => {
+    const root = page.current;
+    if (!root) return;
+    const seen = new IntersectionObserver(
+      (list) => {
+        for (const e of list) if (e.isIntersecting) (e.target.classList.add("is-shown"), seen.unobserve(e.target));
+      },
+      { rootMargin: "0px 0px -8% 0px" }
+    );
+    const watch = () => root.querySelectorAll("[data-reveal]:not(.is-shown)").forEach((el) => seen.observe(el));
+    watch();
+    const later = new MutationObserver(watch);
+    later.observe(root, { childList: true, subtree: true });
+    return () => {
+      seen.disconnect();
+      later.disconnect();
+    };
+  }, []);
   const search = () => query.trim() && navigate({ ds: "all", q: query.trim() });
 
   const stats = useMemo(() => {
@@ -111,20 +131,19 @@ export default function HomePage({ catalog, indexes }) {
 
   return (
     <div className="min-h-0 flex-1 overflow-y-auto">
-      <div className="anim-page">
+      <div ref={page}>
         <section className="relative flex min-h-[calc(100dvh-3.5rem)] flex-col">
-          <div className="pointer-events-none absolute inset-x-0 top-0 h-[44rem] bg-[radial-gradient(60%_50%_at_50%_0%,rgba(255,255,255,0.07),transparent_70%)]" />
+          <div className="anim-fade pointer-events-none absolute inset-x-0 top-0 h-[44rem] bg-[radial-gradient(60%_50%_at_50%_0%,rgba(255,255,255,0.07),transparent_70%)]" />
           <div className="relative mx-auto flex w-full max-w-5xl flex-1 flex-col items-center justify-center px-8 pt-16 text-center">
-            <h1 className="text-[clamp(2.8rem,5.6vw,5.4rem)] leading-[1.02] font-semibold tracking-[-0.05em]">
+            <h1 className="anim-card text-[clamp(2.8rem,5.6vw,5.4rem)] leading-[1.02] font-semibold tracking-[-0.05em]">
               All of Dota 2, taken apart
             </h1>
-            <p className="mt-7 max-w-3xl text-[clamp(1.02rem,1.2vw,1.2rem)] leading-relaxed text-ink-400">
-              Every hero, item, courier and chest, pulled out of the game files and put back together: models with their animations and textures,
-              voice lines with the moment the hero says them, effects, music, and what drops from every treasure.{" "}
-              {stats ? `${formatCount(stats.files)} files, ${formatSize(stats.bytes)}, free to download.` : "Free to download."}
-              {catalog?.updated && ` Last updated ${ago(catalog.updated)}.`}
+            <p style={{ animationDelay: "90ms" }} className="anim-card mt-7 max-w-2xl text-[clamp(1.02rem,1.2vw,1.2rem)] leading-relaxed text-ink-400">
+              Models, voice lines, effects and what drops from every chest, pulled straight from the game files.
+              <br />
+              {stats ? `${formatCount(stats.files)} files, free to download.` : "Free to download."}
             </p>
-            <label className="mt-10 flex h-14 w-full max-w-2xl items-center gap-3 rounded-xl border border-white/[0.08] bg-ink-900 pr-2 pl-5 transition-colors focus-within:border-white/20">
+            <label style={{ animationDelay: "180ms" }} className="anim-card mt-10 flex h-14 w-full max-w-2xl items-center gap-3 rounded-xl border border-white/[0.08] bg-ink-900 pr-2 pl-5 transition-colors focus-within:border-white/20">
               <Search size={19} className="shrink-0 text-ink-400" />
               <input
                 value={query}
@@ -134,11 +153,24 @@ export default function HomePage({ catalog, indexes }) {
                 className="h-12 min-w-0 flex-1 bg-transparent text-[1rem] outline-none placeholder:text-ink-400"
               />
             </label>
+            <div style={{ animationDelay: "260ms" }} className="anim-card mt-5 flex flex-wrap justify-center gap-2.5">
+              <a href={link("/heroes")} className="flex h-11 items-center gap-2 rounded-xl bg-ink-100 px-5 text-[0.92rem] font-medium text-ink-950 transition-colors hover:bg-white">
+                Browse the heroes <ArrowRight size={16} />
+              </a>
+              <a href={link("/3d")} className="flex h-11 items-center gap-2 rounded-xl border border-white/[0.1] bg-ink-900 px-5 text-[0.92rem] text-ink-100 transition-colors hover:border-white/25">
+                <Box size={16} /> Find a model by screenshot
+              </a>
+            </div>
           </div>
           <div className="relative mx-auto mt-10 w-full px-4">
             <div className="flex items-end justify-center [mask-image:linear-gradient(to_right,transparent,black_6%,black_94%,transparent)]">
               {lineup.map((hero, i) => (
-                <a key={hero.id} href={link(`/hero/${hero.key}`)} title={hero.name} className={`group relative -mx-2 flex-1 ${i === 4 ? "z-10 max-w-[17rem]" : "max-w-[15rem]"}`}>
+                <a
+                  key={hero.id}
+                  href={link(`/hero/${hero.key}`)}
+                  title={hero.name}
+                  style={{ animationDelay: `${360 + Math.abs(i - 4) * 80}ms` }}
+                  className={`anim-stand group relative -mx-2 flex-1 ${i === 4 ? "z-10 max-w-[17rem]" : "max-w-[15rem]"}`}>
                   <img
                     src={heroCard(hero)}
                     alt={hero.name}
@@ -154,7 +186,7 @@ export default function HomePage({ catalog, indexes }) {
         </section>
 
         {/* Every way in */}
-        <section className="mx-auto mt-20 max-w-[80rem] px-8">
+        <section data-reveal className="mx-auto mt-20 max-w-[80rem] px-8">
           <div className="grid gap-4 md:grid-flow-dense md:grid-cols-3">
             <Door
               href="/heroes"
@@ -191,7 +223,7 @@ export default function HomePage({ catalog, indexes }) {
         </section>
 
         {latest.length > 0 && (
-          <section className="mx-auto mt-20 max-w-[80rem] px-8">
+          <section data-reveal className="mx-auto mt-20 max-w-[80rem] px-8">
             <div className="flex items-baseline gap-4">
               <h2 className="text-[1.25rem] font-semibold tracking-[-0.02em]">New in the game</h2>
               <span className="text-[0.9rem] text-ink-400">{latest[0].date}</span>
@@ -208,7 +240,7 @@ export default function HomePage({ catalog, indexes }) {
         )}
 
         {catalog && (
-          <section className="mx-auto mt-20 max-w-[80rem] px-8">
+          <section data-reveal className="mx-auto mt-20 max-w-[80rem] px-8">
             <div className="flex items-baseline gap-4">
               <h2 className="text-[1.25rem] font-semibold tracking-[-0.02em]">All {catalog.heroes.length} heroes</h2>
               <a href={link("/heroes")} className="ml-auto inline-flex items-center gap-1.5 text-[0.9rem] text-ink-300 hover:text-ink-100">
@@ -226,7 +258,7 @@ export default function HomePage({ catalog, indexes }) {
           </section>
         )}
 
-        <section className="mx-auto mt-20 max-w-[80rem] px-8">
+        <section data-reveal className="mx-auto mt-20 max-w-[80rem] px-8">
           <h2 className="text-[1.25rem] font-semibold tracking-[-0.02em]">Download and embed</h2>
           <div className="mt-5 grid gap-4 md:grid-cols-2">
             <Take icon={Database} title="Open datasets" href={OWNER_URL} link="Hugging Face">
@@ -239,7 +271,7 @@ export default function HomePage({ catalog, indexes }) {
           </div>
         </section>
 
-        <section className="mx-auto mt-20 max-w-[80rem] px-8">
+        <section data-reveal className="mx-auto mt-20 max-w-[80rem] px-8">
           <div className="flex flex-wrap items-center gap-6 rounded-2xl border border-white/[0.06] bg-ink-900 p-7">
             <Heart size={22} className="shrink-0 text-ink-200" />
             <div className="min-w-0 flex-1">
