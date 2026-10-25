@@ -43,6 +43,8 @@ export function useCatalog() {
 
 export const heroPortrait = (hero) => fileUrl(datasetById("images"), `panorama/images/heroes/${hero.id}_png.png`);
 export const imageUrl = (path) => (path ? fileUrl(datasetById("images"), path) : "");
+// The hero standing whole in its default set, as the game's set pages show it (448 x 678)
+export const heroCard = (hero) => fileUrl(datasetById("images"), `panorama/images/econ/sets/v2/${hero.id}_0_png.png`);
 
 function lowerBound(entries, prefix) {
   let lo = 0;

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Search } from "lucide-react";
-import { heroPortrait } from "../lib/catalog.js";
+import { heroCard } from "../lib/catalog.js";
 import { link } from "../lib/route.js";
 import { Card, PageHead, SearchField, Spinner } from "./ui.jsx";
 
@@ -15,17 +15,17 @@ export default function HeroesPage({ catalog, error }) {
         <PageHead title="Every file of Dota 2" sub="Pick a hero to get its 3D model, items, sounds, effects and pictures, or search all of them at once.">
           <SearchField value={filter} onChange={setFilter} icon={Search} placeholder={`Find one of ${catalog.heroes.length} heroes`} />
         </PageHead>
-        <div className="mx-auto grid max-w-[100rem] grid-cols-[repeat(auto-fill,minmax(14rem,1fr))] gap-5 px-8 pb-20">
+        <div className="mx-auto grid max-w-[100rem] grid-cols-[repeat(auto-fill,minmax(12rem,1fr))] gap-5 px-8 pb-20">
           {heroes.map((hero, i) => (
             <Card
               key={hero.id}
               href={link(`/hero/${hero.id.slice("npc_dota_hero_".length)}`)}
-              ratio="aspect-[16/9]"
+              ratio="aspect-[448/678]"
               className="anim-card"
               style={{ animationDelay: `${Math.min(i, 30) * 18}ms` }}
               title={hero.name}
               meta={`${hero.items.length} items${hero.personas.length ? `, ${hero.personas.length} persona${hero.personas.length > 1 ? "s" : ""}` : ""}`}
-              picture={<img src={heroPortrait(hero)} loading="lazy" alt="" className="h-full w-full object-cover transition-transform duration-500 ease-out group-hover:scale-[1.04]" />}
+              picture={<img src={heroCard(hero)} loading="lazy" decoding="async" alt="" className="h-full w-full object-cover object-top transition-transform duration-500 ease-out group-hover:scale-[1.04]" />}
             />
           ))}
         </div>
