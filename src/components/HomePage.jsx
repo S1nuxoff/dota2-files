@@ -373,7 +373,7 @@ function HeroSlider({ heroes }) {
   const step = (dir) => row.current?.scrollBy({ left: dir * row.current.clientWidth * 0.8, behavior: "smooth" });
   const arrow = "flex h-11 w-11 items-center justify-center rounded-full border border-white/[0.1] bg-ink-900/80 text-ink-100 backdrop-blur transition-[opacity,background-color] hover:bg-ink-800 disabled:opacity-0";
   return (
-    <section data-reveal className="mt-32">
+    <section data-reveal className="flex min-h-[100dvh] flex-col justify-center py-16">
       <div className="mx-auto flex max-w-[128rem] flex-col items-center px-8 text-center">
         <a href={link("/heroes")} className="group inline-flex items-center gap-2 text-[0.92rem] text-ink-300 transition-colors hover:text-ink-100">
           <Users size={16} /> Heroes <ArrowRight size={14} className="transition-transform group-hover:translate-x-0.5" />
