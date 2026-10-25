@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
-import { ChevronLeft, Search } from "lucide-react";
+import { ChevronLeft, Music, CreditCard, Flag, Gem, Image as ImageIcon, KeyRound, Map as MapIcon, Mic, Monitor, MousePointer2, Package, Search, Shield, Smile, Sticker, Swords } from "lucide-react";
+import { datasetById, fileUrl } from "../datasets.js";
 import { imageUrl, prefabTitle } from "../lib/catalog.js";
 import { formatCount } from "../lib/format.js";
 import ItemCard from "./ItemCard.jsx";
@@ -82,14 +83,38 @@ export default function CosmeticsPage({ prefab, catalog }) {
   );
 }
 
-// Up to four pictures of a list of items: the latest first, one each
-const picturesOf = (items) => {
+// A kind pictured by the site's own renders of its latest models (previews/<model>.webp, one look
+// for all), up to three; an item without a model of its own lends its bundle's
+const previewOf = (item, catalog) => {
+  const own = item.refs.models?.[0] || item.bundle?.map((id) => catalog.items[id]?.refs.models?.[0]).find(Boolean);
+  return own ? fileUrl(datasetById("models"), `previews/${own.replace(/\.$/, "")}.webp`) : "";
+};
+const picturesOf = (items, catalog) => {
   const out = [];
   for (const it of [...items].sort((x, y) => (y.date || "").localeCompare(x.date || ""))) {
-    if (it.icon && !out.includes(it.icon)) out.push(it.icon);
-    if (out.length === 4) break;
+    const url = previewOf(it, catalog);
+    if (url && !out.includes(url)) out.push(url);
+    if (out.length === 3) break;
   }
   return out;
+};
+// The kinds without models, by a sign of what they are
+const SIGNS = {
+  loading_screen: ImageIcon,
+  versus_screen: Swords,
+  hud_skin: Monitor,
+  cursor_pack: MousePointer2,
+  emoticon_tool: Smile,
+  emblem: Shield,
+  player_card: CreditCard,
+  announcer: Mic,
+  terrain: MapIcon,
+  weather: MapIcon,
+  sticker: Sticker,
+  sticker_capsule: Sticker,
+  pennant: Flag,
+  socket_gem: Gem,
+  key: KeyRound,
 };
 
 function Kinds({ catalog }) {
@@ -98,7 +123,7 @@ function Kinds({ catalog }) {
     for (const item of Object.values(catalog.items)) (byKind[item.prefab] ??= []).push(item);
     for (const [k, kinds] of Object.entries(MERGED)) byKind[k] = kinds.flatMap((p) => byKind[p] || []);
     const count = Object.fromEntries(Object.entries(byKind).map(([k, l]) => [k, l.length]));
-    const covers = Object.fromEntries(Object.entries(byKind).map(([k, l]) => [k, picturesOf(l)]));
+    const covers = Object.fromEntries(Object.entries(byKind).map(([k, l]) => [k, picturesOf(l, catalog)]));
     return { count, covers };
   }, [catalog]);
   const known = new Set(["music", ...SECTIONS.flatMap(([, kinds]) => kinds), ...Object.values(MERGED).flat()]);
@@ -108,8 +133,7 @@ function Kinds({ catalog }) {
   const sections = [...SECTIONS, ["Other", other]].map(([title, kinds]) => [title, kinds.filter((k) => count[k])]).filter(([, kinds]) => kinds.length);
   // The sets pictured by the latest ones
   const setCovers = useMemo(() => {
-    const dated = [...catalog.setByKey.values()].filter((s) => s.icon).map((s) => [s.items.reduce((d, id) => ((catalog.items[id]?.date || "") > d ? catalog.items[id].date : d), ""), s.icon]);
-    return dated.sort((a, b) => b[0].localeCompare(a[0])).slice(0, 4).map(([, icon]) => icon);
+    return picturesOf(Object.values(catalog.items).filter((i) => i.set && i.prefab === "wearable"), catalog);
   }, [catalog]);
   // The events and battle passes, the latest first, each pictured by its treasures first
   const events = useMemo(() => {
@@ -122,30 +146,41 @@ function Kinds({ catalog }) {
     }
     return [...by.values()]
       .sort((a, b) => b.date.localeCompare(a.date))
-      .map((e) => ({ ...e, n: e.items.length, icons: picturesOf([...e.items.filter((i) => i.loot), ...e.items.filter((i) => !i.loot)].slice(0, 40)) }));
+      .map((e) => ({ ...e, n: e.items.length, icons: picturesOf(e.items, catalog) }));
   }, [catalog]);
 
-  const tile = (href, title, n, icons, i) => (
-    <a
-      key={href}
-      href={link(href)}
-      style={{ animationDelay: `${Math.min(i, 30) * 18}ms` }}
-      className="anim-card group overflow-hidden rounded-2xl border border-white/[0.06] bg-ink-900 transition-colors hover:border-white/[0.16]"
-    >
-      <div className={`grid aspect-[16/10] gap-px overflow-hidden bg-ink-950 ${icons.length >= 4 ? "grid-cols-2 grid-rows-2" : ""}`}>
-        {icons.length === 0 && <div className="bg-ink-850" />}
-        {(icons.length >= 4 ? icons : icons.slice(0, 1)).map((icon) => (
-          <div key={icon} className="overflow-hidden bg-[radial-gradient(circle_at_50%_45%,#26262a_0%,#18181b_72%)]">
-            <img src={imageUrl(icon)} alt="" loading="lazy" className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.05]" />
-          </div>
-        ))}
-      </div>
-      <div className="flex items-baseline justify-between gap-3 px-4 py-3">
-        <span className="truncate text-[0.95rem] font-medium">{title}</span>
-        <span className="shrink-0 text-[0.82rem] text-ink-400 tabular-nums">{formatCount(n)}</span>
-      </div>
-    </a>
-  );
+  const tile = (href, title, n, pictures, i, sign = Package) => {
+    const Sign = sign;
+    return (
+      <a
+        key={href}
+        href={link(href)}
+        style={{ animationDelay: `${Math.min(i, 30) * 18}ms` }}
+        className="anim-card group overflow-hidden rounded-2xl border border-white/[0.06] bg-ink-900 transition-colors hover:border-white/[0.16]"
+      >
+        <div className="flex aspect-[16/9] items-center justify-center bg-[radial-gradient(circle_at_50%_60%,#2c2c31_0%,#18181b_70%)] px-4">
+          {pictures.length ? (
+            pictures.map((url, n) => (
+              <img
+                key={url}
+                src={url}
+                alt=""
+                loading="lazy"
+                onError={(e) => (e.currentTarget.style.display = "none")}
+                className={`h-[78%] min-w-0 flex-1 object-contain transition-transform duration-500 group-hover:scale-[1.06] ${pictures.length > 1 && n !== 1 ? "opacity-80" : ""}`}
+              />
+            ))
+          ) : (
+            <Sign size={40} strokeWidth={1.25} className="text-ink-400 transition-colors group-hover:text-ink-200" />
+          )}
+        </div>
+        <div className="flex items-baseline justify-between gap-3 px-4 py-3">
+          <span className="truncate text-[0.95rem] font-medium">{title}</span>
+          <span className="shrink-0 text-[0.82rem] text-ink-400 tabular-nums">{formatCount(n)}</span>
+        </div>
+      </a>
+    );
+  };
 
   let i = 0;
   return (
@@ -157,8 +192,8 @@ function Kinds({ catalog }) {
             <h2 className="text-[1.15rem] font-semibold tracking-[-0.02em]">{title}</h2>
             <div className="mt-4 grid grid-cols-[repeat(auto-fill,minmax(16rem,1fr))] gap-4">
               {title === "Hero items" && tile("/sets", "Sets", catalog.setByKey.size, setCovers, i++)}
-              {title === "Music and voices" && tile("/music", "Music Packs", count.music || 0, covers.music || [], i++)}
-              {kinds.map((k) => tile(`/cosmetics/${k}`, titleOf(k), count[k], covers[k] || [], i++))}
+              {title === "Music and voices" && tile("/music", "Music Packs", count.music || 0, [], i++, Music)}
+              {kinds.map((k) => tile(`/cosmetics/${k}`, titleOf(k), count[k], covers[k] || [], i++, SIGNS[k]))}
             </div>
           </section>
         ))}
