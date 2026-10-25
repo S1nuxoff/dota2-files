@@ -13,6 +13,7 @@ import CosmeticsPage from "./components/CosmeticsPage.jsx";
 import ModelsPage from "./components/ModelsPage.jsx";
 import ItemModal from "./components/ItemModal.jsx";
 import SetPage from "./components/SetPage.jsx";
+import SetsPage from "./components/SetsPage.jsx";
 import Preview from "./components/Preview.jsx";
 import SelectionBar from "./components/SelectionBar.jsx";
 import Tray from "./components/Tray.jsx";
@@ -113,6 +114,7 @@ export default function App() {
       />
     );
   } else if (route.ds === "hero") page = <HeroPage key={route.dir} heroKey={route.dir} {...common} />;
+  else if (route.ds === "sets") page = <SetsPage catalog={catalog} />;
   else if (route.ds === "set") page = <SetPage key={route.dir} setKey={route.dir} {...common} />;
   else if (route.ds === "item") page = <ItemPage key={route.dir} itemId={route.dir} {...common} />;
   else if (route.ds === "cosmetics") page = <CosmeticsPage key={route.dir} prefab={route.dir} catalog={catalog} />;

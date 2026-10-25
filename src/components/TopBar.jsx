@@ -12,6 +12,7 @@ const KOFI = "https://ko-fi.com/s1nuxoff";
 
 const SECTIONS = [
   ["/", "Heroes", (r) => !r.ds || r.ds === "hero"],
+  ["/sets", "Sets", (r) => r.ds === "sets" || r.ds === "set"],
   ["/3d", "3D models", (r) => r.ds === "3d"],
   ["/cosmetics", "Cosmetics", (r) => r.ds === "cosmetics" || r.ds === "item"],
   ["/files", "Files", (r) => r.ds === "files" || !!datasetById(r.ds) || r.ds === "all"],

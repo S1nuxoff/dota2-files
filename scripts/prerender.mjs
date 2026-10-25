@@ -164,6 +164,11 @@ for (const [prefab, its] of byPrefab) {
   });
 }
 
+page("/sets", {
+  title: "Every Dota 2 set: 3D models, textures and icons",
+  description: "Every Dota 2 cosmetic set on its hero, with the 3D models, textures and icons of all its items to download at once, by hero or by name.",
+  body: "<h1>Sets</h1><p>Every set of the game on its hero, each with every file of its items.</p>",
+});
 page("/3d", {
   title: "Every Dota 2 3D model: heroes, items, creeps, props, scenes",
   description: "Browse and download every Dota 2 3D model as glb with textures and animations: heroes, cosmetics, couriers, creeps, trees, rocks, buildings and scenes, by type, theme, size and hero.",

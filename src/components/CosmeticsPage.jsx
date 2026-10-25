@@ -83,7 +83,7 @@ export default function CosmeticsPage({ prefab, catalog }) {
               {[["sets", catalog.setByKey.size], ...kinds].map(([kind, n], i) => (
                 <a
                   key={kind}
-                  href={link(`/cosmetics/${kind}`)}
+                  href={link(kind === "sets" ? "/sets" : `/cosmetics/${kind}`)}
                   style={{ animationDelay: `${Math.min(i, 30) * 18}ms` }}
                   className="anim-card group flex items-center gap-4 rounded-2xl border border-white/[0.06] bg-ink-850 p-3 transition-colors hover:border-white/[0.14]"
                 >
