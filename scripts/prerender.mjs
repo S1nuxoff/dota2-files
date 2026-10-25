@@ -164,6 +164,15 @@ for (const [prefab, its] of byPrefab) {
   });
 }
 
+{
+  const its = [...byPrefab.entries()].filter(([p]) => ["treasure_chest", "retired_treasure_chest", "sticker_capsule"].includes(p)).flatMap(([, l]) => l);
+  page("/cosmetics/treasures", {
+    title: "Every Dota 2 treasure and capsule, and what drops from it",
+    description: `All ${its.length} Dota 2 treasures, chests and capsules with their contents and rare bonus drops, by year.`,
+    body: `<h1>Treasures</h1>${list(its.slice(0, 1000).map(([id, it]) => [`/item/${id}`, it.name]))}`,
+  });
+}
+
 page("/sets", {
   title: "Every Dota 2 set: 3D models, textures and icons",
   description: "Every Dota 2 cosmetic set on its hero, with the 3D models, textures and icons of all its items to download at once, by hero or by name.",

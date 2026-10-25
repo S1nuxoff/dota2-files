@@ -13,13 +13,13 @@ const PAGE = 240;
 // later lands in Other until it gets a place here
 const SECTIONS = [
   ["Hero items", ["wearable", "bundle", "taunt", "default_item"]],
+  ["Treasures", ["treasures", "treasure_chest", "retired_treasure_chest", "sticker_capsule", "key"]],
   ["Couriers and wards", ["courier", "courier_wearable", "courier_effect", "ward"]],
   ["Screens and interface", ["loading_screen", "hud_skin", "cursor_pack", "versus_screen", "emblem", "emoticon_tool", "player_card"]],
   ["Music and voices", ["music", "announcer"]],
   ["The map", ["terrain", "weather", "map_effect", "radiantcreeps", "direcreeps", "radiantsiegecreeps", "diresiegecreeps", "radianttowers", "diretowers", "roshan", "tormentor", "ancient", "summons"]],
   ["Effects", ["teleport_effect", "streak_effect", "kill_effect", "blink_effect", "head_effect", "death_effect"]],
-  ["Collectibles", ["sticker", "sticker_capsule", "pennant", "socket_gem", "showcase_decoration", "misc"]],
-  ["Treasures", ["treasure_chest", "retired_treasure_chest", "key"]],
+  ["Collectibles", ["sticker", "pennant", "socket_gem", "showcase_decoration", "misc"]],
 ];
 // The prefabs whose own words run together
 const TITLES = {
@@ -30,8 +30,12 @@ const TITLES = {
   radianttowers: "Radiant Towers",
   diretowers: "Dire Towers",
   default_item: "Default Items",
+  treasures: "All treasures and capsules",
 };
 const titleOf = (prefab) => TITLES[prefab] || prefabTitle(prefab);
+// Kinds shown together as one: every treasure and capsule, what they give inside
+const MERGED = { treasures: ["treasure_chest", "retired_treasure_chest", "sticker_capsule"] };
+const inKind = (prefab) => (MERGED[prefab] ? (i) => MERGED[prefab].includes(i.prefab) : (i) => i.prefab === prefab);
 
 const SORTS = [
   ["new", "Newest first"],
@@ -58,9 +62,13 @@ function Kinds({ catalog }) {
       count[item.prefab] = (count[item.prefab] || 0) + 1;
       if (item.icon && !covers[item.prefab]) covers[item.prefab] = item.icon;
     }
+    for (const [k, kinds] of Object.entries(MERGED)) {
+      count[k] = kinds.reduce((n, p) => n + (count[p] || 0), 0);
+      covers[k] = covers[kinds[0]];
+    }
     return { count, covers };
   }, [catalog]);
-  const known = new Set(SECTIONS.flatMap(([, kinds]) => kinds));
+  const known = new Set([...SECTIONS.flatMap(([, kinds]) => kinds), ...Object.values(MERGED).flat()]);
   const other = Object.keys(count)
     .filter((k) => !known.has(k))
     .sort((a, b) => count[b] - count[a]);
@@ -106,7 +114,7 @@ function Kinds({ catalog }) {
 // One kind's items: searched, filtered to a hero and a rarity, sorted, and in sections by hero,
 // rarity, type or slot where the kind has more than one of them
 function Kind({ prefab, catalog }) {
-  const all = useMemo(() => Object.values(catalog.items).filter((i) => i.prefab === prefab), [catalog, prefab]);
+  const all = useMemo(() => Object.values(catalog.items).filter(inKind(prefab)), [catalog, prefab]);
   const heroOf = (item) => catalog.heroById.get(item.heroes.find((h) => h.startsWith("npc_dota_hero_")));
 
   // The ways to group that tell this kind's items apart
