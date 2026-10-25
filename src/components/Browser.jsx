@@ -10,7 +10,7 @@ import { canSaveToFolder } from "../lib/download.js";
 import { heroPortrait, imageUrl } from "../lib/catalog.js";
 import { useRem } from "../lib/scale.js";
 import { Check, EntryIcon } from "./icons.jsx";
-import { Button, Crumbs, Empty, Page, SearchField, Segmented, Toolbar, HeadGlow } from "./ui.jsx";
+import { Button, Crumbs, Empty, Page, SearchField, Segmented, Toolbar } from "./ui.jsx";
 import CopyButton from "./CopyButton.jsx";
 
 // In rem (lib/scale.js)
@@ -148,8 +148,7 @@ export default function Browser({ ds, route, index, error, indexes, catalog, wit
 
   return (
     <Page className="flex flex-1 flex-col">
-      <header className="relative isolate page-x flex flex-col items-center pt-12 pb-4 text-center sm:pt-20 sm:pb-5 lg:pt-24">
-        <HeadGlow />
+      <header className="page-x flex flex-col items-center pt-12 pb-4 text-center sm:pt-20 sm:pb-5 lg:pt-24">
         <Crumbs items={crumbs} className="[&>ol]:justify-center" />
         <div className="mt-5 flex max-w-full flex-col items-center gap-5">
           <div className="max-w-full min-w-0">

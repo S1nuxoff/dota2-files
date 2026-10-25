@@ -5,8 +5,14 @@ import { link } from "../lib/route.js";
 // chips, tabs, buttons, cards, windows
 
 // A page under the site's bar
+// Every page has the front page's light from its very top, under the site's bar
 export function Page({ children, className = "" }) {
-  return <div className={`pt-14 ${className}`}>{children}</div>;
+  return (
+    <div className={`relative isolate pt-14 ${className}`}>
+      <HeadGlow />
+      {children}
+    </div>
+  );
 }
 
 // Where a page sits: Heroes / Pudge. items: [[path, title]], the last one the page itself
@@ -40,8 +46,7 @@ export function Crumbs({ items, className = "" }) {
 // to do with the whole of it (a search, tabs) under them
 export function PageHead({ crumbs, title, sub, search, actions, children, className = "" }) {
   return (
-    <header className={`relative isolate page-x flex flex-col items-center pt-14 pb-4 text-center sm:pt-24 sm:pb-5 lg:pt-28 ${className}`}>
-      <HeadGlow />
+    <header className={`page-x flex flex-col items-center pt-14 pb-4 text-center sm:pt-24 sm:pb-5 lg:pt-28 ${className}`}>
       {crumbs && <Crumbs items={crumbs} className="mb-6 [&>ol]:justify-center" />}
       <h1 className="max-w-4xl text-[clamp(2.1rem,4.6vw,3.6rem)] leading-[1.02] font-semibold tracking-[-0.045em] text-balance">{title}</h1>
       {sub && <p className="mt-4 max-w-2xl text-[1rem] leading-relaxed text-balance text-ink-400">{sub}</p>}
@@ -52,11 +57,11 @@ export function PageHead({ crumbs, title, sub, search, actions, children, classN
   );
 }
 
-// The front page's light behind a page's head: the red of the Dotadex mark from above, fading down.
+// The front page's light at the top of a page: the red of the Dotadex mark from above, fading down.
 // Put inside a relative, isolated parent
 export const TOP_LIGHT = "bg-[radial-gradient(50%_60%_at_50%_0%,rgba(229,70,46,0.16),rgba(150,30,18,0.05)_50%,transparent_78%)]";
 export function HeadGlow() {
-  return <div aria-hidden="true" className={`anim-fade pointer-events-none absolute inset-x-0 -top-14 -z-10 h-[42rem] ${TOP_LIGHT}`} />;
+  return <div aria-hidden="true" className={`anim-fade pointer-events-none absolute inset-x-0 top-0 -z-10 h-[42rem] ${TOP_LIGHT}`} />;
 }
 
 // Is the element scrolled past the top bar: a sticky bar takes its own background from then on

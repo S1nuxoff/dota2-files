@@ -1,4 +1,4 @@
-import { Crumbs, HeadGlow } from "./ui.jsx";
+import { Crumbs } from "./ui.jsx";
 import { imageUrl } from "../lib/catalog.js";
 // The parts a hero's, a set's and an item's pages share, so the three read alike: where it sits, then
 // three columns under the front page's light: what it is on the left, the model standing on the page
@@ -11,8 +11,7 @@ export function DetailTop({ crumbs, stage, left, children }) {
       <div className="page-x pt-5 sm:pt-6">
         <Crumbs items={crumbs} />
       </div>
-      <section className="relative isolate">
-        <HeadGlow />
+      <section>
         <div className="page-x grid items-center gap-6 pt-4 lg:grid-cols-[minmax(17rem,23rem)_minmax(0,1fr)_minmax(17rem,23rem)] lg:gap-6 lg:pt-0 xl:gap-10">
           <div className="flex min-w-0 flex-col gap-5 max-lg:items-center max-lg:text-center">{left}</div>
           <div className="relative h-[min(58svh,30rem)] lg:h-[min(80vh,52rem)]">
