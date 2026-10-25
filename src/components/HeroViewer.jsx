@@ -4,6 +4,7 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import { RoomEnvironment } from "three/addons/environments/RoomEnvironment.js";
 import { LoaderCircle } from "lucide-react";
+import { Dropdown } from "./ui.jsx";
 import { datasetById, fileUrl } from "../datasets.js";
 
 // A hero as the game dresses it: its model with the models of its default items worn on its skeleton
@@ -208,15 +209,14 @@ export default function HeroViewer({ models, bare = false }) {
         </div>
       )}
       {clips.length > 0 && (
-        <select
+        <Dropdown
+          up
           value={clip}
-          onChange={(e) => play(e.target.value)}
-          className="glass absolute bottom-4 left-4 max-w-[50%] rounded-full px-3 py-1.5 text-[0.8rem] text-ink-300 outline-none"
-        >
-          {clips.map((c) => (
-            <option key={c}>{c}</option>
-          ))}
-        </select>
+          onChange={play}
+          options={clips.map((c) => [c, c])}
+          className="absolute bottom-4 left-4"
+          buttonClass="flex h-9 max-w-[16rem] min-w-[9rem] items-center gap-2 rounded-full bg-black/45 pr-3 pl-4 text-[0.82rem] text-ink-100 backdrop-blur-md transition-colors hover:bg-black/65"
+        />
       )}
     </div>
   );

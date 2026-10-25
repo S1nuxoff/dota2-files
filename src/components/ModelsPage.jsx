@@ -6,8 +6,9 @@ import { SIZES, loadModels, sizeOf } from "../lib/catalog.js";
 import { formatCount } from "../lib/format.js";
 import { useRem } from "../lib/scale.js";
 import ModelPanel from "./ModelPanel.jsx";
-import { Button, Card, Chip, PageHead, SearchField, Spinner } from "./ui.jsx";
+import { Button, Card, Chip, PageHead, SearchField, Spinner, Dropdown } from "./ui.jsx";
 import ImageSearch from "./ImageSearch.jsx";
+import HeroPicker from "./HeroPicker.jsx";
 import { searchByWords } from "../lib/visual.js";
 
 // The narrowest a card gets, in rem (lib/scale.js)
@@ -346,18 +347,7 @@ export default function ModelsPage({ catalog, indexes }) {
 }
 
 function Select({ value, onChange, options }) {
-  return (
-    <label className="relative flex h-10 items-center rounded-lg border border-white/[0.08] bg-ink-850 pr-9 pl-3.5 text-[0.88rem] text-ink-100 transition-colors focus-within:border-white/25 hover:bg-ink-800">
-      <select value={value} onChange={(e) => onChange(e.target.value)} className="appearance-none bg-transparent outline-none">
-        {options.map(([v, t]) => (
-          <option key={v} value={v} className="bg-ink-900">
-            {t}
-          </option>
-        ))}
-      </select>
-      <ChevronDown size={15} className="pointer-events-none absolute right-3 text-ink-400" />
-    </label>
-  );
+  return <Dropdown value={value} onChange={onChange} options={options} />;
 }
 
 // The filters, in a panel under their button
@@ -391,19 +381,15 @@ function Filters({ onClose, size, setSize, animated, setAnimated, heroKey, setHe
       {heroes.length > 1 && (
         <section>
           <h3 className="mb-2.5 text-[0.84rem] text-ink-400">Hero</h3>
-          <select value={heroKey} onChange={(e) => setHeroKey(e.target.value)} className="h-10 w-full rounded-lg border border-white/[0.08] bg-ink-850 px-3 text-[0.9rem] text-ink-100 outline-none focus:border-white/25">
-            <option value="" className="bg-ink-900">
-              Any hero
-            </option>
-            {heroes
-              .map(([k, n]) => [k, catalog.heroByKey.get(k)?.name || k, n])
-              .sort((a, b) => a[1].localeCompare(b[1]))
-              .map(([k, name, n]) => (
-                <option key={k} value={k} className="bg-ink-900">
-                  {name} ({n})
-                </option>
-              ))}
-          </select>
+          <HeroPicker
+            heroes={heroes
+              .map(([k, n]) => ({ hero: catalog.heroByKey.get(k), count: n }))
+              .filter((h) => h.hero)
+              .sort((a, b) => a.hero.name.localeCompare(b.hero.name))}
+            value={heroKey}
+            onChange={setHeroKey}
+            className="[&>button]:w-full"
+          />
         </section>
       )}
       {groups.length > 1 && <Chips title="Kind" items={groups} value={group} onPick={setGroup} />}

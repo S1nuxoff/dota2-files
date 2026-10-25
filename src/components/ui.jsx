@@ -1,3 +1,5 @@
+import { useEffect, useRef, useState } from "react";
+import { Check, ChevronDown } from "lucide-react";
 // The pieces every page is built of, so they look one: a section's head, chips, buttons, cards
 
 // A section opens with its title and one line under it, centred, and what to do first (a search)
@@ -79,6 +81,58 @@ export function Spinner({ text }) {
   return (
     <div className="flex flex-1 items-center justify-center gap-3 py-24 text-ink-400">
       <span className="h-4 w-4 animate-spin rounded-full border-2 border-ink-600 border-t-ink-100" /> {text}
+    </div>
+  );
+}
+
+// A list to pick one of, in the site's own panel (the browser's own list does not match it);
+// up: it opens above (at the foot of a stage); a long one scrolls
+export function Dropdown({ value, onChange, options, className = "", up = false, buttonClass = "" }) {
+  const [open, setOpen] = useState(false);
+  const box = useRef(null);
+  useEffect(() => {
+    if (!open) return;
+    const onDown = (e) => !box.current?.contains(e.target) && setOpen(false);
+    const onKey = (e) => e.key === "Escape" && setOpen(false);
+    window.addEventListener("pointerdown", onDown);
+    window.addEventListener("keydown", onKey);
+    return () => {
+      window.removeEventListener("pointerdown", onDown);
+      window.removeEventListener("keydown", onKey);
+    };
+  }, [open]);
+  const current = options.find(([v]) => v === value)?.[1] ?? options[0]?.[1];
+  return (
+    <div ref={box} className={`relative ${className}`}>
+      <button
+        onClick={() => setOpen(!open)}
+        aria-expanded={open}
+        className={buttonClass || "flex h-10 min-w-[10rem] items-center gap-2 rounded-lg border border-white/[0.08] bg-ink-850 pr-3 pl-3.5 text-[0.88rem] text-ink-100 transition-colors hover:bg-ink-800"}
+      >
+        <span className="flex-1 truncate text-left">{current}</span>
+        <ChevronDown size={15} className={`text-ink-400 transition-transform ${open ? "rotate-180" : ""}`} />
+      </button>
+      {open && (
+        <div
+          className={`anim-open absolute z-30 max-h-80 min-w-full overflow-y-auto rounded-xl border border-white/[0.08] bg-ink-900 p-1.5 shadow-2xl shadow-black/60 ${
+            up ? "bottom-full left-0 mb-2" : "top-full right-0 mt-2"
+          }`}
+        >
+          {options.map(([v, title]) => (
+            <button
+              key={v}
+              onClick={() => {
+                onChange(v);
+                setOpen(false);
+              }}
+              className={`flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-[0.88rem] whitespace-nowrap transition-colors ${v === value ? "bg-ink-800 text-ink-100" : "text-ink-300 hover:bg-ink-850 hover:text-ink-100"}`}
+            >
+              <span className="flex-1">{title}</span>
+              {v === value && <Check size={15} />}
+            </button>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

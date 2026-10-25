@@ -3,7 +3,8 @@ import { ChevronDown, Search } from "lucide-react";
 import { formatCount } from "../lib/format.js";
 import { link } from "../lib/route.js";
 import SetCard from "./SetCard.jsx";
-import { Chip, PageHead, SearchField, Spinner } from "./ui.jsx";
+import HeroPicker from "./HeroPicker.jsx";
+import { Chip, PageHead, SearchField, Spinner, Dropdown } from "./ui.jsx";
 
 const PAGE = 240;
 
@@ -69,13 +70,13 @@ export default function SetsPage({ catalog }) {
               Grouped by hero
             </Chip>
             <div className="flex-1 pl-3 text-[0.88rem] text-ink-400">{formatCount(shown.length)} shown</div>
-            <Select
+            <HeroPicker
+              heroes={heroesWithSets.map((hero) => ({ hero, count: hero.sets.length }))}
               value={heroKey}
               onChange={(v) => {
                 setHeroKey(v);
                 reset();
               }}
-              options={[["", "Any hero"], ...heroesWithSets.map((h) => [h.key, `${h.name} (${h.sets.length})`])]}
             />
             <Select value={sort} onChange={setSort} options={[["name", "By name"], ["items", "Most items first"]]} />
           </div>
@@ -119,16 +120,5 @@ export default function SetsPage({ catalog }) {
 }
 
 function Select({ value, onChange, options }) {
-  return (
-    <label className="relative flex h-10 items-center rounded-lg border border-white/[0.08] bg-ink-850 pr-9 pl-3.5 text-[0.88rem] text-ink-100 transition-colors focus-within:border-white/25 hover:bg-ink-800">
-      <select value={value} onChange={(e) => onChange(e.target.value)} className="max-w-[16rem] appearance-none bg-transparent outline-none">
-        {options.map(([v, t]) => (
-          <option key={v} value={v} className="bg-ink-900">
-            {t}
-          </option>
-        ))}
-      </select>
-      <ChevronDown size={15} className="pointer-events-none absolute right-3 text-ink-400" />
-    </label>
-  );
+  return <Dropdown value={value} onChange={onChange} options={options} />;
 }
