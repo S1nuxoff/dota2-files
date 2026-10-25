@@ -131,11 +131,13 @@ export default function HomePage({ catalog, indexes }) {
       onScroll={(e) => {
         const top = e.currentTarget.scrollTop;
         e.currentTarget.style.setProperty("--p", String(Math.min(1, top / 520)));
+        e.currentTarget.style.setProperty("--s", String(top));
       }}
     >
       <div ref={page}>
         {/* The opening reaches up under the top bar, so its light shows through the bar's blur */}
         <section className="relative flex min-h-[100dvh] flex-col pt-14">
+          {catalog && <HeroField heroes={catalog.heroes} />}
           {/* Light as in the game's menu: the deep red of the Dota mark from above, embers rising from below */}
           <div aria-hidden="true" className="anim-fade pointer-events-none absolute inset-0 overflow-hidden [mask-image:linear-gradient(to_bottom,black_65%,transparent)]">
             <div className="absolute inset-x-0 top-0 h-[46rem] bg-[radial-gradient(55%_55%_at_50%_0%,rgba(178,34,24,0.28),rgba(120,20,14,0.10)_45%,transparent_75%)]" />
@@ -182,7 +184,7 @@ export default function HomePage({ catalog, indexes }) {
               ))}
             </nav>
           </div>
-          {catalog && <HeroBelt heroes={catalog.heroes} />}
+
         </section>
 
         {/* Every way in */}
@@ -292,24 +294,59 @@ export default function HomePage({ catalog, indexes }) {
   );
 }
 
-// Every hero's icon on two rows sliding past at the foot of the opening, one each way, fading out at
-// the sides; a row stops under the pointer, an icon leads to its hero
-function HeroBelt({ heroes }) {
-  const half = Math.ceil(heroes.length / 2);
-  const rows = [heroes.slice(0, half), heroes.slice(half)];
+// Hero icons drifting all over the opening, clear of the words in its middle: each at its own depth
+// (the far ones smaller, fainter, a little blurred, moving less as the page scrolls), each on its own
+// slow path. Placed by a seeded random, so the same each visit of a day
+function HeroField({ heroes }) {
+  const icons = useMemo(() => {
+    let seed = Math.floor(Date.now() / 86400000);
+    const rand = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
+    for (let i = 0; i < 5; i++) rand();
+    const out = [];
+    for (let tries = 0; out.length < 34 && tries < 2000; tries++) {
+      const x = rand() * 100;
+      const y = 8 + rand() * 84;
+      // the words' ground: an ellipse in the middle
+      if (((x - 50) / 31) ** 2 + ((y - 50) / 30) ** 2 < 1) continue;
+      if (out.some((o) => Math.hypot((o.x - x) * 1.6, o.y - y) < 9)) continue;
+      const depth = 0.25 + rand() * 0.75;
+      out.push({
+        x,
+        y,
+        depth,
+        hero: heroes[Math.floor(rand() * heroes.length)],
+        drift: `${12 + rand() * 14}s`,
+        delay: `${-rand() * 20}s`,
+        dx: `${(rand() - 0.5) * 50}px`,
+        dy: `${(rand() - 0.5) * 50}px`,
+        dr: `${(rand() - 0.5) * 16}deg`,
+      });
+    }
+    return out;
+  }, [heroes]);
   return (
-    <div className="relative z-10 mx-auto mb-10 w-full max-w-[90rem] space-y-3 overflow-hidden [mask-image:linear-gradient(to_right,transparent,black_12%,black_88%,transparent)]">
-      {rows.map((row, r) => (
+    <div aria-hidden="true" className="anim-fade pointer-events-none absolute inset-0 overflow-hidden">
+      {icons.map((o, i) => (
         <div
-          key={r}
-          style={{ "--slide": `${row.length * 1.6}s`, animationDirection: r ? "reverse" : "normal" }}
-          className="anim-slide flex w-max gap-3 hover:[animation-play-state:paused]"
+          key={i}
+          className="absolute"
+          style={{ left: `${o.x}%`, top: `${o.y}%`, transform: `translate(-50%, -50%) translateY(calc(var(--s, 0) * ${-0.35 * o.depth}px))` }}
         >
-          {[...row, ...row].map((h, i) => (
-            <a key={`${h.id}${i}`} href={link(`/hero/${h.key}`)} title={h.name} className="shrink-0 opacity-60 transition-opacity hover:opacity-100">
-              <img src={heroIcon(h)} alt={h.name} loading="lazy" className="h-10 w-10" />
-            </a>
-          ))}
+          <img
+            src={heroIcon(o.hero)}
+            alt=""
+            style={{
+              "--drift": o.drift,
+              "--dx": o.dx,
+              "--dy": o.dy,
+              "--dr": o.dr,
+              animationDelay: o.delay,
+              width: `${1.4 + o.depth * 2.2}rem`,
+              opacity: 0.15 + o.depth * 0.55,
+              filter: o.depth < 0.5 ? `blur(${((0.5 - o.depth) * 4).toFixed(1)}px)` : undefined,
+            }}
+            className="anim-drift block h-auto max-w-none"
+          />
         </div>
       ))}
     </div>

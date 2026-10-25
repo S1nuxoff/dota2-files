@@ -187,17 +187,23 @@ model-viewer {
 
 
 
-/* Front page: rows of hero icons sliding past, paused under the pointer */
-@keyframes slide {
-  to {
-    transform: translateX(-50%);
+/* Front page: hero icons drifting about the opening, each on its own slow path */
+@keyframes drift {
+  0% {
+    transform: translate(0, 0) rotate(0deg);
+  }
+  50% {
+    transform: translate(var(--dx, 12px), var(--dy, -16px)) rotate(var(--dr, 4deg));
+  }
+  100% {
+    transform: translate(0, 0) rotate(0deg);
   }
 }
-@utility anim-slide {
-  animation: slide var(--slide, 90s) linear infinite;
+@utility anim-drift {
+  animation: drift var(--drift, 16s) ease-in-out infinite;
 }
 @media (prefers-reduced-motion: reduce) {
-  .anim-slide {
-    animation-duration: var(--slide, 90s) !important;
+  .anim-drift {
+    animation-duration: var(--drift, 16s) !important;
   }
 }
