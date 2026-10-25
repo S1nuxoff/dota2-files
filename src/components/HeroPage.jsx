@@ -5,12 +5,12 @@ import { heroFiles, heroPortrait, prefabTitle } from "../lib/catalog.js";
 import { formatCount, formatSize } from "../lib/format.js";
 import { startJob } from "../lib/jobs.js";
 import { canSaveToFolder } from "../lib/download.js";
-import FileTable from "./FileTable.jsx";
 import ItemCard from "./ItemCard.jsx";
 import SetCard from "./SetCard.jsx";
 import ModelGrid from "./ModelGrid.jsx";
 import SoundList from "./SoundList.jsx";
 import ImageGroups from "./ImageGroups.jsx";
+import GroupedFiles from "./GroupedFiles.jsx";
 import { link, navigate } from "../lib/route.js";
 import { Button, Chip, Spinner } from "./ui.jsx";
 import EmbedButton from "./EmbedButton.jsx";
@@ -250,8 +250,8 @@ export default function HeroPage({ heroKey, catalog, indexes, withCopies, route 
               <ModelGrid files={byDataset.models || []} catalog={catalog} indexes={indexes} heroName={hero.name} route={route} />
             </div>
           ) : (
-            <div key={tab} className="anim-page mt-6 overflow-hidden rounded-2xl border border-white/[0.06] bg-ink-900 p-2">
-                          <FileTable entries={byDataset[tab] || []} route={route} grid={tab === "images" || tab === "textures"} height="70vh" />
+            <div key={tab} className="anim-page mt-6">
+              <GroupedFiles files={byDataset[tab] || []} hero={hero} catalog={catalog} grid={tab === "textures"} route={route} />
             </div>
           )
         )}

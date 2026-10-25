@@ -58,7 +58,7 @@ export default function FileTable({ entries, route, grid, height = "100%" }) {
   );
 }
 
-function Row({ e, active, onOpen }) {
+export function Row({ e, active, onOpen }) {
   const dir = e.path.slice(0, e.path.lastIndexOf("/"));
   return (
     <div
