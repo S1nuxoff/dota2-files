@@ -1,6 +1,9 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
   ArrowRight,
+  ChevronLeft,
+  ChevronRight,
+  Users,
   Box,
   Check,
   Code2,
@@ -15,7 +18,7 @@ import { formatCount } from "../lib/format.js";
 import { link, navigate, openItem } from "../lib/route.js";
 import { previewOf } from "./CosmeticsPage.jsx";
 import { heroIcon } from "./HeroPicker.jsx";
-import { imageUrl } from "../lib/catalog.js";
+import { heroCard, heroPortrait, imageUrl } from "../lib/catalog.js";
 
 const OWNER_URL = "https://huggingface.co/Sqls1";
 const SOURCE_URL = "https://github.com/S1nuxoff/dota2-files";
@@ -152,6 +155,8 @@ export default function HomePage({ catalog, indexes }) {
 
         {catalog && (
           <>
+            <HeroSlider heroes={catalog.heroes} />
+
             <Feature
               icon={Gift}
               label="Treasures"
@@ -352,6 +357,69 @@ function Feature({ icon: Icon, label, href, title, text, points = [], frame = tr
           ))}
         </div>
       )}
+    </section>
+  );
+}
+
+// Every hero as a card in a row that slides sideways: by the arrows, a wheel or a drag, each card
+// settling at the edge; the row fades out at both ends
+function HeroSlider({ heroes }) {
+  const row = useRef(null);
+  const [edge, setEdge] = useState([true, false]);
+  const update = () => {
+    const el = row.current;
+    if (el) setEdge([el.scrollLeft < 8, el.scrollLeft + el.clientWidth > el.scrollWidth - 8]);
+  };
+  const step = (dir) => row.current?.scrollBy({ left: dir * row.current.clientWidth * 0.8, behavior: "smooth" });
+  const arrow = "flex h-11 w-11 items-center justify-center rounded-full border border-white/[0.1] bg-ink-900/80 text-ink-100 backdrop-blur transition-[opacity,background-color] hover:bg-ink-800 disabled:opacity-0";
+  return (
+    <section data-reveal className="mt-32">
+      <div className="mx-auto flex max-w-[128rem] flex-col items-center px-8 text-center">
+        <a href={link("/heroes")} className="group inline-flex items-center gap-2 text-[0.92rem] text-ink-300 transition-colors hover:text-ink-100">
+          <Users size={16} /> Heroes <ArrowRight size={14} className="transition-transform group-hover:translate-x-0.5" />
+        </a>
+        <h2 className="mt-4 max-w-3xl text-[clamp(2rem,3.4vw,3rem)] leading-[1.06] font-semibold tracking-[-0.04em] text-balance">Every hero, down to the last voice line</h2>
+        <p className="mt-4 max-w-2xl text-[1.02rem] leading-relaxed text-balance text-ink-400">
+          {heroes.length} heroes, each with its model in 3D, its personas and abilities, its items by set, and every sound, effect and picture of it.
+        </p>
+      </div>
+      <div className="relative mt-12">
+        <div
+          ref={row}
+          onScroll={update}
+          className="flex snap-x snap-mandatory gap-5 overflow-x-auto scroll-smooth px-[max(2rem,calc((100%-128rem)/2+2rem))] pb-4 [scrollbar-width:none] [mask-image:linear-gradient(to_right,transparent,black_5%,black_95%,transparent)] [&::-webkit-scrollbar]:hidden"
+        >
+          {heroes.map((h) => (
+            <a
+              key={h.id}
+              href={link(`/hero/${h.key}`)}
+              className="group relative aspect-[448/678] w-[15rem] shrink-0 snap-start overflow-hidden rounded-2xl border border-white/[0.07] bg-[radial-gradient(circle_at_50%_35%,#2a2a2f_0%,#141416_75%)] transition-[transform,border-color] duration-300 hover:-translate-y-1.5 hover:border-white/20"
+            >
+              <img
+                src={heroCard(h)}
+                alt=""
+                loading="lazy"
+                onError={(e) => (e.currentTarget.src = heroPortrait(h))}
+                className="h-full w-full object-cover object-top transition-transform duration-500 group-hover:scale-[1.04]"
+              />
+              <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/85 via-black/40 to-transparent px-4 pt-14 pb-4">
+                <div className="text-[1.02rem] font-medium">{h.name}</div>
+                <div className="mt-0.5 text-[0.8rem] text-ink-300">
+                  {h.items.length} items{h.about?.attribute ? `, ${h.about.attribute}` : ""}
+                </div>
+              </div>
+            </a>
+          ))}
+        </div>
+        <div className="pointer-events-none absolute inset-y-0 left-0 right-0 mx-auto flex max-w-[132rem] items-center justify-between px-4">
+          <button onClick={() => step(-1)} disabled={edge[0]} aria-label="Earlier heroes" className={`pointer-events-auto ${arrow}`}>
+            <ChevronLeft size={20} />
+          </button>
+          <button onClick={() => step(1)} disabled={edge[1]} aria-label="More heroes" className={`pointer-events-auto ${arrow}`}>
+            <ChevronRight size={20} />
+          </button>
+        </div>
+      </div>
     </section>
   );
 }
