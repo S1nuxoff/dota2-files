@@ -216,14 +216,17 @@ export default function HeroViewer({ models, bare = false, showcase = false, tur
         </div>
       )}
       {clips.length > 0 && !showcase && (
-        <Dropdown
-          up
-          value={clip}
-          onChange={play}
-          options={clips.map((c) => [c, c])}
-          className="absolute bottom-4 left-4"
-          buttonClass="flex h-9 max-w-[16rem] min-w-[9rem] items-center gap-2 rounded-full bg-black/45 pr-3 pl-4 text-[0.82rem] text-ink-100 backdrop-blur-md transition-colors hover:bg-black/65"
-        />
+        <div className="absolute bottom-3 left-3 z-10 sm:bottom-4 sm:left-4">
+          <Dropdown
+            up
+            left
+            value={clip}
+            onChange={play}
+            options={clips.map((c) => [c, c])}
+            label="Animation"
+            buttonClass="flex h-9 max-w-[16rem] min-w-[9rem] items-center gap-2 rounded-full bg-black/45 pr-3 pl-4 text-[0.82rem] text-ink-100 backdrop-blur-md transition-colors hover:bg-black/65"
+          />
+        </div>
       )}
     </div>
   );
