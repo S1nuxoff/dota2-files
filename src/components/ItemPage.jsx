@@ -82,7 +82,7 @@ export default function ItemPage({ itemId, catalog, indexes, withCopies, route }
                     {rarity.name}
                   </span>
                 )}
-                {[item.slot, item.type || prefabTitle(item.prefab)].filter(Boolean).map((t) => (
+                {[item.slot, item.type || prefabTitle(item.prefab), item.date?.slice(0, 4)].filter(Boolean).map((t) => (
                   <span key={t} className={`${chip} text-ink-300`}>
                     {t}
                   </span>
@@ -162,6 +162,8 @@ export default function ItemPage({ itemId, catalog, indexes, withCopies, route }
             </div>
           </section>
         )}
+
+        {item.text && <p className="mt-10 max-w-[46rem] leading-relaxed whitespace-pre-line text-ink-300">{item.text}</p>}
 
         <Loot item={item} catalog={catalog} />
 

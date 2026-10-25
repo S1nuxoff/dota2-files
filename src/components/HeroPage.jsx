@@ -11,6 +11,7 @@ import ModelGrid from "./ModelGrid.jsx";
 import SoundList from "./SoundList.jsx";
 import ImageGroups from "./ImageGroups.jsx";
 import GroupedFiles from "./GroupedFiles.jsx";
+import HeroAbout, { HeroTags } from "./HeroAbout.jsx";
 import { link, navigate } from "../lib/route.js";
 import { Button, Chip, Spinner } from "./ui.jsx";
 import EmbedButton from "./EmbedButton.jsx";
@@ -66,7 +67,7 @@ export default function HeroPage({ heroKey, catalog, indexes, withCopies, route 
   }, [look, indexes.models]);
   const modelEntry = lookEntries[0];
 
-  const tab = route.kind && (route.kind === "items" || byDataset[route.kind]) ? route.kind : "items";
+  const tab = route.kind && (route.kind === "items" || route.kind === "about" || byDataset[route.kind]) ? route.kind : "items";
   const setTab = (t) => navigate({ ds: "hero", dir: heroKey, kind: t === "items" ? "" : t }, true);
 
   if (!catalog) return <Spinner text="Loading the catalog" />;
@@ -76,7 +77,7 @@ export default function HeroPage({ heroKey, catalog, indexes, withCopies, route 
   // The hero's items that no set of it holds
   const inSets = new Set(hero.sets.flatMap((s) => s.items));
   const loose = items.filter((i) => !inSets.has(i.id));
-  const tabs = [["items", "Items", items.length], ...DATASETS.filter((d) => byDataset[d.id]).map((d) => [d.id, d.title, byDataset[d.id].length])];
+  const tabs = [["items", "Items", items.length], ...(hero.about ? [["about", "About", null]] : []), ...DATASETS.filter((d) => byDataset[d.id]).map((d) => [d.id, d.title, byDataset[d.id].length])];
   const bytes = (list) => formatSize(list.reduce((n, e) => n + e.size, 0));
 
   return (
@@ -102,6 +103,7 @@ export default function HeroPage({ heroKey, catalog, indexes, withCopies, route 
             <p className="mt-3 text-[0.95rem] text-ink-300">
               {items.length} items{ready && `, ${formatCount(files.length)} files`}
             </p>
+            <HeroTags about={hero.about} />
           </div>
 
           <div className="absolute top-8 right-8 flex flex-col items-end gap-2">
@@ -173,7 +175,7 @@ export default function HeroPage({ heroKey, catalog, indexes, withCopies, route 
         <div className="mt-8 flex flex-wrap items-center gap-2">
           {tabs.map(([id, title, count]) => (
             <Chip key={id} active={tab === id} onClick={() => setTab(id)}>
-              {title} <span className="ml-1 opacity-50 tabular-nums">{formatCount(count)}</span>
+              {title} {count != null && <span className="ml-1 opacity-50 tabular-nums">{formatCount(count)}</span>}
             </Chip>
           ))}
           <div className="flex-1" />
@@ -237,7 +239,11 @@ export default function HeroPage({ heroKey, catalog, indexes, withCopies, route 
             )}
           </div>
         ) : (
-          tab === "images" ? (
+          tab === "about" ? (
+            <div key={tab} className="anim-page mt-6">
+              <HeroAbout about={hero.about} />
+            </div>
+          ) : tab === "images" ? (
             <div key={tab} className="anim-page mt-6">
               <ImageGroups files={byDataset.images || []} route={route} />
             </div>

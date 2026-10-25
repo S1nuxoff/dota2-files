@@ -103,7 +103,7 @@ for (const h of catalog.heroes) {
     title: `${h.name}: 3D models, items, textures and sounds`,
     description: `Download ${h.name} from Dota 2: the 3D model (glb) with animations${personas ? `, personas (${personas})` : ""}, ${items.length} cosmetic items, textures, voice lines, sounds, particles and icons.`,
     image: portrait(h),
-    body: `<h1>${esc(h.name)}</h1><img src="${esc(portrait(h))}" alt="${esc(h.name)}" width="256" /><p>${esc(h.name)}'s 3D model with animations, its default look and personas${personas ? ` (${esc(personas)})` : ""}, ${items.length} cosmetic items, and every texture, sound, voice line, particle effect and picture of the hero in Dota 2.</p><h2>Items</h2>${list(items.map(([id, it]) => [`/item/${id}`, it.name]))}<p><a href="${esc(href("/"))}">All heroes</a></p>`,
+    body: `<h1>${esc(h.name)}</h1><img src="${esc(portrait(h))}" alt="${esc(h.name)}" width="256" /><p>${esc(h.name)}'s 3D model with animations, its default look and personas${personas ? ` (${esc(personas)})` : ""}, ${items.length} cosmetic items, and every texture, sound, voice line, particle effect and picture of the hero in Dota 2.</p>${h.about?.hype ? `<p>${esc(h.about.hype)}</p>` : ""}${h.about?.bio ? `<h2>Story</h2><p>${esc(h.about.bio)}</p>` : ""}${h.about?.abilities.length ? `<h2>Abilities</h2>${h.about.abilities.map((a) => `<h3>${esc(a.name)}</h3><p>${esc(a.text)}</p>`).join("")}` : ""}<h2>Items</h2>${list(items.map(([id, it]) => [`/item/${id}`, it.name]))}<p><a href="${esc(href("/"))}">All heroes</a></p>`,
     jsonld: { "@context": "https://schema.org", "@type": "CreativeWork", name: `${h.name} (Dota 2)`, image: portrait(h), url: url(`/hero/${key}`), isPartOf: game },
   });
 }
@@ -120,7 +120,7 @@ for (const [id, it] of itemPages) {
     title: `${it.name}${forHero ? ` (${heroes[0].name})` : ""}: ${hasModel ? "3D model and textures" : "icon and files"}`,
     description: `${[rarity, kind].filter(Boolean).join(" ")}${forHero} in Dota 2. Download the ${what.join(", ") || "files"} of ${it.name}.`,
     image: icon(it),
-    body: `<h1>${esc(it.name)}</h1>${it.icon ? `<img src="${esc(icon(it))}" alt="${esc(it.name)}" width="256" />` : ""}<p>${esc([rarity, kind].filter(Boolean).join(" "))}${esc(forHero)}. Files: ${esc(what.join(", ") || "none")}.</p>${heroes.map((h) => `<p><a href="${esc(href(`/hero/${heroKey(h.id)}`))}">${esc(h.name)}</a></p>`).join("")}${set ? `<h2>Set: ${esc(set.name)}</h2>${list(set.items.filter((x) => catalog.items[x] && x !== id).map((x) => [`/item/${x}`, catalog.items[x].name]))}` : ""}`,
+    body: `<h1>${esc(it.name)}</h1>${it.icon ? `<img src="${esc(icon(it))}" alt="${esc(it.name)}" width="256" />` : ""}<p>${esc([rarity, kind].filter(Boolean).join(" "))}${esc(forHero)}. Files: ${esc(what.join(", ") || "none")}.</p>${it.text ? `<p>${esc(it.text)}</p>` : ""}${it.loot?.drops.length ? `<h2>Contents</h2>${list(it.loot.drops.filter((x) => catalog.items[x]).map((x) => [`/item/${x}`, catalog.items[x].name]))}` : ""}${heroes.map((h) => `<p><a href="${esc(href(`/hero/${heroKey(h.id)}`))}">${esc(h.name)}</a></p>`).join("")}${set ? `<h2>Set: ${esc(set.name)}</h2>${list(set.items.filter((x) => catalog.items[x] && x !== id).map((x) => [`/item/${x}`, catalog.items[x].name]))}` : ""}`,
     jsonld: { "@context": "https://schema.org", "@type": "CreativeWork", name: it.name, image: icon(it) || undefined, url: url(`/item/${id}`), isPartOf: game },
   });
 }

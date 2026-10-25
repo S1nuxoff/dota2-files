@@ -135,12 +135,13 @@ export default function ItemModal({ itemId, catalog, indexes, withCopies }) {
                 {rarity.name}
               </span>
             )}
-            {[item.slot, item.type || prefabTitle(item.prefab)].filter(Boolean).map((t) => (
+            {[item.slot, item.type || prefabTitle(item.prefab), item.date?.slice(0, 4)].filter(Boolean).map((t) => (
               <span key={t} className="rounded-full bg-ink-800 px-3 py-1 text-[0.8rem] text-ink-300">
                 {t}
               </span>
             ))}
           </div>
+          {item.text && <p className="mt-4 line-clamp-5 px-6 text-[0.86rem] leading-relaxed whitespace-pre-line text-ink-300" title={item.text}>{item.text}</p>}
 
           <div className="flex flex-col gap-2 p-6">
             <Button primary onClick={() => startJob("zip", asDownload, name)} disabled={!files.length}>
