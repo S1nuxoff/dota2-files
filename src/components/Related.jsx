@@ -24,6 +24,9 @@ export default function Related({ ds, path, heroKey = "" }) {
     .slice(0, 24);
   const heroes = new Map();
   if (heroKey && catalog.heroByKey.get(heroKey)) heroes.set(heroKey, catalog.heroByKey.get(heroKey));
+  // A hero's own folders (sounds/vo/axe, particles/units/heroes/hero_axe) name it
+  const segs = path.split("/");
+  for (const h of catalog.heroes) if (h.tokens.some((t) => segs.includes(t) || segs.includes(`hero_${t}`))) heroes.set(h.key, h);
   for (const it of items) for (const id of it.heroes) if (catalog.heroById.get(id)) heroes.set(catalog.heroById.get(id).key, catalog.heroById.get(id));
   if (!items.length && !heroes.size && !sound) return null;
 

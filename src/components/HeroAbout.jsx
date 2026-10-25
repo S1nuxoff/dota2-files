@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { ChevronRight } from "lucide-react";
-import { imageUrl, loadSounds } from "../lib/catalog.js";
+import { heroPortrait, imageUrl, loadSounds } from "../lib/catalog.js";
+import ItemCard from "./ItemCard.jsx";
 import { navigate } from "../lib/route.js";
 import { Row } from "./FileTable.jsx";
 import SoundList from "./SoundList.jsx";
@@ -59,7 +60,7 @@ function useAbilityFiles(about, hero, sounds, particles) {
 
 // What the game tells of a hero: its summary, its story, its numbers at level 1, its abilities with
 // their sounds and effects
-export default function HeroAbout({ about, hero, sounds = [], particles = [], route }) {
+export default function HeroAbout({ about, hero, catalog, sounds = [], particles = [], route }) {
   const byAbility = useAbilityFiles(about, hero, sounds, particles);
   if (!about) return <p className="py-10 text-center text-ink-400">Nothing written about this hero.</p>;
   return (
@@ -103,6 +104,35 @@ export default function HeroAbout({ about, hero, sounds = [], particles = [], ro
           )}
         </div>
       </div>
+
+      {hero.personas.length > 0 && catalog && (
+        <section>
+          <h2 className="text-[1.35rem] font-semibold tracking-[-0.02em]">Personas</h2>
+          <p className="mt-1 text-[0.9rem] text-ink-400">Other forms of the hero, each with its own model and items</p>
+          <div className="mt-5 space-y-8">
+            {hero.personas.map((p, n) => {
+              // A persona's items fill its own slots (head_persona_1)
+              const ids = hero.items.filter((id) => catalog.items[id]?.slotKey?.endsWith(`_persona_${n + 1}`));
+              return (
+                <div key={p.id} className="flex gap-6">
+                  <img src={heroPortrait(p)} alt="" loading="lazy" onError={(e) => (e.currentTarget.style.visibility = "hidden")} className="h-28 w-auto shrink-0 rounded-xl" />
+                  <div className="min-w-0 flex-1">
+                    <h3 className="text-[1.1rem] font-medium">{p.name}</h3>
+                    <p className="mt-1 text-[0.86rem] text-ink-400">{ids.length} items of its own</p>
+                    {ids.length > 0 && (
+                      <div className="mt-4 grid grid-cols-[repeat(auto-fill,minmax(10rem,1fr))] gap-3">
+                        {ids.map((id, i) => (
+                          <ItemCard key={id} item={catalog.items[id]} rarities={catalog.rarities} delay={Math.min(i, 12) * 20} list={ids} />
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </section>
+      )}
 
       {about.abilities.length > 0 && (
         <section>

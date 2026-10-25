@@ -4,12 +4,12 @@ import { DATASETS, DOTADEX, datasetById, fileUrl } from "../datasets.js";
 import { imageUrl, itemDotadexPath, itemFiles, prefabTitle } from "../lib/catalog.js";
 import { formatSize } from "../lib/format.js";
 import { startJob } from "../lib/jobs.js";
-import FileTable from "./FileTable.jsx";
+import FileTable, { Row } from "./FileTable.jsx";
 import ItemCard from "./ItemCard.jsx";
 import Loot from "./Loot.jsx";
 import { eventKind } from "./CosmeticsPage.jsx";
 import SoundList from "./SoundList.jsx";
-import { link } from "../lib/route.js";
+import { link, navigate } from "../lib/route.js";
 import { Spinner } from "./ui.jsx";
 import EmbedButton from "./EmbedButton.jsx";
 import GameStage, { LookSwitch, useLook } from "./GameStage.jsx";
@@ -44,6 +44,7 @@ export default function ItemPage({ itemId, catalog, indexes, withCopies, route }
   const model = models[Math.min(style, models.length - 1)];
   const textures = files.filter((e) => e.ds === "textures");
   const sounds = files.filter((e) => e.ds === "sounds");
+  const effects = files.filter((e) => e.ds === "particles");
   const order = Object.fromEntries(DATASETS.map((d, i) => [d.id, i]));
   const sorted = [...files].sort((a, b) => order[a.ds] - order[b.ds] || a.path.localeCompare(b.path));
   const back = heroes[0] ? [link(`/hero/${heroes[0].key}`), heroes[0].name] : [link(`/cosmetics/${item.prefab}`), prefabTitle(item.prefab)];
@@ -172,6 +173,20 @@ export default function ItemPage({ itemId, catalog, indexes, withCopies, route }
         {item.text && <p className="mt-10 max-w-[46rem] leading-relaxed whitespace-pre-line text-ink-300">{item.text}</p>}
 
         <Loot item={item} catalog={catalog} />
+
+        {effects.length > 0 && (
+          <section className="mt-14">
+            <h2 className="text-[1.35rem] font-semibold tracking-[-0.02em]">
+              Effects <span className="ml-1 text-[1rem] font-normal text-ink-400">{effects.length}</span>
+            </h2>
+            <p className="mt-1 text-[0.9rem] text-ink-400">The particle systems it plays, as the game describes them</p>
+            <div className="mt-5 overflow-hidden rounded-2xl border border-white/[0.06] bg-ink-900 p-2">
+              {effects.map((e) => (
+                <Row key={e.path} e={e} active={route.file === `${e.ds}:${e.path}`} onOpen={() => navigate({ ...route, file: `${e.ds}:${e.path}` })} />
+              ))}
+            </div>
+          </section>
+        )}
 
         {sounds.length > 0 && (
           <section className="mt-14">

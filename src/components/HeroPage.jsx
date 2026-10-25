@@ -241,7 +241,7 @@ export default function HeroPage({ heroKey, catalog, indexes, withCopies, route 
         ) : (
           tab === "about" ? (
             <div key={tab} className="anim-page mt-6">
-              <HeroAbout about={hero.about} hero={hero} sounds={byDataset.sounds || []} particles={byDataset.particles || []} route={route} />
+              <HeroAbout about={hero.about} hero={hero} catalog={catalog} sounds={byDataset.sounds || []} particles={byDataset.particles || []} route={route} />
             </div>
           ) : tab === "images" ? (
             <div key={tab} className="anim-page mt-6">
