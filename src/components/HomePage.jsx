@@ -133,12 +133,11 @@ export default function HomePage({ catalog, indexes }) {
     <div className="min-h-0 flex-1 overflow-y-auto">
       <div ref={page}>
         <section className="relative flex min-h-[calc(100dvh-3.5rem)] flex-col">
-          <div className="anim-fade pointer-events-none absolute inset-x-0 top-0 h-[44rem] bg-[radial-gradient(60%_50%_at_50%_0%,rgba(255,255,255,0.07),transparent_70%)]" />
-          {/* Light: Radiant's green at the left, Dire's red at the right, a white glow behind the title */}
+          {/* Light as in the game's menu: the deep red of the Dota mark from above, embers rising from below */}
           <div aria-hidden="true" className="anim-fade pointer-events-none absolute inset-0 overflow-hidden">
-            <div className="absolute top-[30%] left-[8%] h-[30rem] w-[30rem] rounded-full bg-emerald-500/[0.10] blur-[120px]" />
-            <div className="absolute top-[35%] right-[8%] h-[30rem] w-[30rem] rounded-full bg-red-500/[0.10] blur-[120px]" />
-            <div className="absolute top-1/2 left-1/2 h-[26rem] w-[44rem] -translate-x-1/2 -translate-y-1/2 rounded-full bg-white/[0.05] blur-[90px]" />
+            <div className="absolute inset-x-0 top-0 h-[46rem] bg-[radial-gradient(55%_55%_at_50%_0%,rgba(178,34,24,0.28),rgba(120,20,14,0.10)_45%,transparent_75%)]" />
+            <div className="absolute inset-x-0 bottom-0 h-[30rem] bg-[radial-gradient(45%_60%_at_50%_100%,rgba(214,96,28,0.14),transparent_70%)]" />
+            <div className="absolute top-1/2 left-1/2 h-[24rem] w-[46rem] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[rgba(200,60,30,0.07)] blur-[100px]" />
           </div>
           <div className="relative z-10 mx-auto flex w-full max-w-5xl flex-1 flex-col items-center justify-center px-8 py-16 text-center">
             <h1 className="anim-card text-[clamp(2.6rem,5.2vw,5.2rem)] leading-[1.02] font-semibold tracking-[-0.05em] text-balance whitespace-nowrap max-sm:whitespace-normal">
