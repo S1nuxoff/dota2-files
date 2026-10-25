@@ -93,7 +93,7 @@ function Row({ e, active, onOpen }) {
   );
 }
 
-function Cell({ e, active, onOpen }) {
+export function Cell({ e, active, onOpen }) {
   return (
     <div
       onClick={onOpen}

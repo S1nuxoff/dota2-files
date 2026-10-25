@@ -8,6 +8,9 @@ import { canSaveToFolder } from "../lib/download.js";
 import FileTable from "./FileTable.jsx";
 import ItemCard from "./ItemCard.jsx";
 import SetCard from "./SetCard.jsx";
+import ModelGrid from "./ModelGrid.jsx";
+import SoundList from "./SoundList.jsx";
+import ImageGroups from "./ImageGroups.jsx";
 import { link, navigate } from "../lib/route.js";
 import { Button, Chip, Spinner } from "./ui.jsx";
 import EmbedButton from "./EmbedButton.jsx";
@@ -234,9 +237,23 @@ export default function HeroPage({ heroKey, catalog, indexes, withCopies, route 
             )}
           </div>
         ) : (
-          <div key={tab} className="anim-page mt-6 overflow-hidden rounded-2xl border border-white/[0.06] bg-ink-900 p-2">
-            <FileTable entries={byDataset[tab] || []} route={route} grid={tab === "images" || tab === "textures"} height="70vh" />
-          </div>
+          tab === "images" ? (
+            <div key={tab} className="anim-page mt-6">
+              <ImageGroups files={byDataset.images || []} route={route} />
+            </div>
+          ) : tab === "sounds" ? (
+            <div key={tab} className="anim-page mt-6">
+              <SoundList files={byDataset.sounds || []} route={route} />
+            </div>
+          ) : tab === "models" ? (
+            <div key={tab} className="anim-page mt-6">
+              <ModelGrid files={byDataset.models || []} catalog={catalog} indexes={indexes} heroName={hero.name} route={route} />
+            </div>
+          ) : (
+            <div key={tab} className="anim-page mt-6 overflow-hidden rounded-2xl border border-white/[0.06] bg-ink-900 p-2">
+                          <FileTable entries={byDataset[tab] || []} route={route} grid={tab === "images" || tab === "textures"} height="70vh" />
+            </div>
+          )
         )}
       </div>
     </div>

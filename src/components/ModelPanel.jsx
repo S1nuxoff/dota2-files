@@ -1,4 +1,5 @@
 import { lazy, Suspense, useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { ChevronLeft, ChevronRight, Download, FileArchive, Image as ImageIcon, X } from "lucide-react";
 import { datasetById, fileUrl } from "../datasets.js";
 import { formatCount, formatSize } from "../lib/format.js";
@@ -79,7 +80,8 @@ export default function ModelPanel({ card, entries, onClose, onPrev, onNext }) {
   );
   const tags = [card.heroName, model.group, model.theme, model.type].filter(Boolean);
 
-  return (
+  return createPortal(
+
     <div className="anim-fade fixed inset-0 z-40 bg-black/70 backdrop-blur-sm" role="dialog" aria-modal="true" aria-label={card.name} onClick={onClose}>
       <div className="anim-open absolute inset-5 grid grid-cols-[minmax(0,1fr)_25rem] gap-4" onClick={(e) => e.stopPropagation()}>
         <div className="relative overflow-hidden rounded-2xl border border-white/[0.06] bg-[radial-gradient(circle_at_50%_42%,#3a3a3f_0%,#232326_45%,#161618_100%)]">
@@ -194,6 +196,8 @@ export default function ModelPanel({ card, entries, onClose, onPrev, onNext }) {
         </aside>
       </div>
     </div>
+    ,
+    document.body
   );
 }
 
