@@ -30,7 +30,31 @@ const TITLES = {
   radianttowers: "Radiant Towers",
   diretowers: "Dire Towers",
   default_item: "Default Items",
-  treasures: "All treasures and capsules",
+  wearable: "Wearables",
+  bundle: "Bundles",
+  taunt: "Taunts",
+  treasure_chest: "Treasure Chests",
+  retired_treasure_chest: "Retired Treasures",
+  sticker_capsule: "Sticker Capsules",
+  key: "Keys",
+  courier: "Couriers",
+  courier_wearable: "Courier Wearables",
+  courier_effect: "Courier Effects",
+  ward: "Wards",
+  loading_screen: "Loading Screens",
+  hud_skin: "HUD Skins",
+  cursor_pack: "Cursor Packs",
+  versus_screen: "Versus Screens",
+  emblem: "Emblems",
+  emoticon_tool: "Emoticons",
+  player_card: "Player Cards",
+  announcer: "Announcers",
+  terrain: "Terrains",
+  sticker: "Stickers",
+  pennant: "Pennants",
+  socket_gem: "Gems",
+  showcase_decoration: "Showcase Decorations",
+  treasures: "All treasures",
 };
 const titleOf = (prefab) => TITLES[prefab] || prefabTitle(prefab);
 // Kinds shown together as one: every treasure and capsule, what they give inside
@@ -58,18 +82,23 @@ export default function CosmeticsPage({ prefab, catalog }) {
   );
 }
 
+// Up to four pictures of a list of items: the latest first, one each
+const picturesOf = (items) => {
+  const out = [];
+  for (const it of [...items].sort((x, y) => (y.date || "").localeCompare(x.date || ""))) {
+    if (it.icon && !out.includes(it.icon)) out.push(it.icon);
+    if (out.length === 4) break;
+  }
+  return out;
+};
+
 function Kinds({ catalog }) {
   const { count, covers } = useMemo(() => {
-    const count = {};
-    const covers = {};
-    for (const item of Object.values(catalog.items)) {
-      count[item.prefab] = (count[item.prefab] || 0) + 1;
-      if (item.icon && !covers[item.prefab]) covers[item.prefab] = item.icon;
-    }
-    for (const [k, kinds] of Object.entries(MERGED)) {
-      count[k] = kinds.reduce((n, p) => n + (count[p] || 0), 0);
-      covers[k] = covers[kinds[0]];
-    }
+    const byKind = {};
+    for (const item of Object.values(catalog.items)) (byKind[item.prefab] ??= []).push(item);
+    for (const [k, kinds] of Object.entries(MERGED)) byKind[k] = kinds.flatMap((p) => byKind[p] || []);
+    const count = Object.fromEntries(Object.entries(byKind).map(([k, l]) => [k, l.length]));
+    const covers = Object.fromEntries(Object.entries(byKind).map(([k, l]) => [k, picturesOf(l)]));
     return { count, covers };
   }, [catalog]);
   const known = new Set(["music", ...SECTIONS.flatMap(([, kinds]) => kinds), ...Object.values(MERGED).flat()]);
@@ -77,36 +106,43 @@ function Kinds({ catalog }) {
     .filter((k) => !known.has(k))
     .sort((a, b) => count[b] - count[a]);
   const sections = [...SECTIONS, ["Other", other]].map(([title, kinds]) => [title, kinds.filter((k) => count[k])]).filter(([, kinds]) => kinds.length);
-  const firstSet = [...catalog.setByKey.values()].find((s) => s.icon);
-  // The events and battle passes, the latest first, each pictured by one of its treasures
+  // The sets pictured by the latest ones
+  const setCovers = useMemo(() => {
+    const dated = [...catalog.setByKey.values()].filter((s) => s.icon).map((s) => [s.items.reduce((d, id) => ((catalog.items[id]?.date || "") > d ? catalog.items[id].date : d), ""), s.icon]);
+    return dated.sort((a, b) => b[0].localeCompare(a[0])).slice(0, 4).map(([, icon]) => icon);
+  }, [catalog]);
+  // The events and battle passes, the latest first, each pictured by its treasures first
   const events = useMemo(() => {
     const by = new Map();
     for (const item of Object.values(catalog.items)) {
       if (!item.event) continue;
-      const e = by.get(item.event) || by.set(item.event, { id: item.event, n: 0, date: "", icon: "" }).get(item.event);
-      e.n++;
+      const e = by.get(item.event) || by.set(item.event, { id: item.event, items: [], date: "" }).get(item.event);
+      e.items.push(item);
       if (item.date > e.date) e.date = item.date;
-      if (item.icon && (!e.icon || (item.loot && !e.chest))) {
-        e.icon = item.icon;
-        e.chest = !!item.loot;
-      }
     }
-    return [...by.values()].sort((a, b) => b.date.localeCompare(a.date));
+    return [...by.values()]
+      .sort((a, b) => b.date.localeCompare(a.date))
+      .map((e) => ({ ...e, n: e.items.length, icons: picturesOf([...e.items.filter((i) => i.loot), ...e.items.filter((i) => !i.loot)].slice(0, 40)) }));
   }, [catalog]);
 
-  const tile = (href, title, n, icon, i) => (
+  const tile = (href, title, n, icons, i) => (
     <a
       key={href}
       href={link(href)}
       style={{ animationDelay: `${Math.min(i, 30) * 18}ms` }}
-      className="anim-card group flex items-center gap-4 rounded-2xl border border-white/[0.06] bg-ink-850 p-3 transition-colors hover:border-white/[0.14]"
+      className="anim-card group overflow-hidden rounded-2xl border border-white/[0.06] bg-ink-900 transition-colors hover:border-white/[0.16]"
     >
-      <div className="h-16 w-20 shrink-0 overflow-hidden rounded-xl bg-[radial-gradient(circle_at_50%_45%,#26262a_0%,#18181b_72%)]">
-        {icon && <img src={imageUrl(icon)} alt="" loading="lazy" className="h-full w-full object-contain transition-transform duration-500 group-hover:scale-[1.06]" />}
+      <div className={`grid aspect-[16/10] gap-px overflow-hidden bg-ink-950 ${icons.length >= 4 ? "grid-cols-2 grid-rows-2" : ""}`}>
+        {icons.length === 0 && <div className="bg-ink-850" />}
+        {(icons.length >= 4 ? icons : icons.slice(0, 1)).map((icon) => (
+          <div key={icon} className="overflow-hidden bg-[radial-gradient(circle_at_50%_45%,#26262a_0%,#18181b_72%)]">
+            <img src={imageUrl(icon)} alt="" loading="lazy" className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.05]" />
+          </div>
+        ))}
       </div>
-      <div className="min-w-0 leading-tight">
-        <div className="truncate text-[0.95rem] font-medium">{title}</div>
-        <div className="mt-1 text-[0.82rem] text-ink-400 tabular-nums">{formatCount(n)}</div>
+      <div className="flex items-baseline justify-between gap-3 px-4 py-3">
+        <span className="truncate text-[0.95rem] font-medium">{title}</span>
+        <span className="shrink-0 text-[0.82rem] text-ink-400 tabular-nums">{formatCount(n)}</span>
       </div>
     </a>
   );
@@ -119,18 +155,18 @@ function Kinds({ catalog }) {
         {sections.map(([title, kinds]) => (
           <section key={title}>
             <h2 className="text-[1.15rem] font-semibold tracking-[-0.02em]">{title}</h2>
-            <div className="mt-4 grid grid-cols-[repeat(auto-fill,minmax(15rem,1fr))] gap-4">
-              {title === "Hero items" && tile("/sets", "Sets", catalog.setByKey.size, firstSet?.icon, i++)}
-              {title === "Music and voices" && tile("/music", "Music Packs", count.music || 0, covers.music, i++)}
-              {kinds.map((k) => tile(`/cosmetics/${k}`, titleOf(k), count[k], covers[k], i++))}
+            <div className="mt-4 grid grid-cols-[repeat(auto-fill,minmax(16rem,1fr))] gap-4">
+              {title === "Hero items" && tile("/sets", "Sets", catalog.setByKey.size, setCovers, i++)}
+              {title === "Music and voices" && tile("/music", "Music Packs", count.music || 0, covers.music || [], i++)}
+              {kinds.map((k) => tile(`/cosmetics/${k}`, titleOf(k), count[k], covers[k] || [], i++))}
             </div>
           </section>
         ))}
         {events.length > 0 && (
           <section>
             <h2 className="text-[1.15rem] font-semibold tracking-[-0.02em]">Events and battle passes</h2>
-            <div className="mt-4 grid grid-cols-[repeat(auto-fill,minmax(15rem,1fr))] gap-4">
-              {events.map((e) => tile(`/cosmetics/${eventKind(e.id)}`, catalog.events?.[e.id] || e.id, e.n, e.icon, i++))}
+            <div className="mt-4 grid grid-cols-[repeat(auto-fill,minmax(16rem,1fr))] gap-4">
+              {events.map((e) => tile(`/cosmetics/${eventKind(e.id)}`, catalog.events?.[e.id] || e.id, e.n, e.icons, i++))}
             </div>
           </section>
         )}
