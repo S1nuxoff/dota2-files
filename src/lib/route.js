@@ -4,7 +4,13 @@ import { useEffect, useState } from "react";
 // <base> being where the site is served from (vite's base: /dota2-files/ on GitHub Pages)
 const BASE = import.meta.env.BASE_URL;
 
-export const link = (path) => `${BASE}${path.replace(/^\/+/, "")}`;
+// A page's address ends with "/" (GitHub Pages serves <page>/index.html there and redirects the
+// address without it), the query after it
+export function link(path) {
+  const [page, query] = path.replace(/^\/+/, "").split("?");
+  const slashed = page && !page.endsWith("/") ? `${page}/` : page;
+  return `${BASE}${slashed}${query ? `?${query}` : ""}`;
+}
 
 function parse() {
   const rel = decodeURIComponent(location.pathname.startsWith(BASE) ? location.pathname.slice(BASE.length) : location.pathname.replace(/^\/+/, ""));

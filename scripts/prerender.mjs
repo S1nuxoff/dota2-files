@@ -36,8 +36,10 @@ async function getJson(repo, file) {
 
 const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
 const fileUrl = (repo, file) => `${HF}/${repo}/resolve/main/${file.split("/").map(encodeURIComponent).join("/")}`;
-const url = (p) => `${SITE}/${p.replace(/^\/+/, "")}`;
-const href = (p) => `${BASE}${p.replace(/^\/+/, "")}`;
+// Pages end with "/" as GitHub Pages serves them (the address without it is redirected); files do not
+const slash = (p) => (p === "/" || /\.\w+$/.test(p) ? p.replace(/^\/+/, "") : `${p.replace(/^\/+/, "").replace(/\/$/, "")}/`);
+const url = (p) => `${SITE}/${slash(p)}`;
+const href = (p) => `${BASE}${slash(p)}`;
 const words = (s) => s.replace(/_/g, " ");
 
 const template = fs.readFileSync(path.join(DIST, "index.html"), "utf8");
