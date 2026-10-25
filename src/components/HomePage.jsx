@@ -359,10 +359,10 @@ function Feature({ icon: Icon, label, href, title, text, points = [], frame = tr
   );
 }
 
-// Heroes passing as the page scrolls: a tall section whose inner screen stays in place while it goes
-// by, and in it a long row of heroes standing apart that slides from right to left with the scroll,
-// quickly, the words over them. Driven by the section's own place in the page, set each frame
-const SCENE = 18;
+// Heroes passing as the page scrolls, one to a screen: a tall section whose inner screen stays in place
+// while it goes by, and in it a row of screen-wide frames, each one hero, that slides from right to
+// left with the scroll, the words over them. Driven by the section's own place in the page, set each frame
+const SCENE = 8;
 function HeroScene({ heroes }) {
   const section = useRef(null);
   const track = useRef(null);
@@ -381,10 +381,10 @@ function HeroScene({ heroes }) {
       const view = scroller.clientHeight;
       // 0 as the section comes up from the bottom of the screen, 1 as its inner screen lets go
       const t = Math.min(1, Math.max(0, (view - box.top) / box.height));
-      const width = track.current.scrollWidth;
-      const screen = el.clientWidth;
-      // the row enters from the right edge and leaves past the left one
-      track.current.style.transform = `translateX(${screen - t * (width + screen)}px)`;
+      // the frames go by one screen each, the first standing in view as the section arrives
+      const steps = SCENE - 1;
+      const at = Math.min(steps, Math.max(0, ((t - 0.25) / 0.6) * steps));
+      track.current.style.transform = `translateX(${-at * el.clientWidth}px)`;
     };
     const onScroll = () => (frame ||= requestAnimationFrame(draw));
     scroller.addEventListener("scroll", onScroll, { passive: true });
@@ -397,7 +397,7 @@ function HeroScene({ heroes }) {
     };
   }, [row]);
   return (
-    <section ref={section} className="relative mt-24 h-[200vh]">
+    <section ref={section} className="relative mt-24" style={{ height: `${100 + SCENE * 45}vh` }}>
       <div className="sticky top-0 h-[100dvh] overflow-hidden">
         <div className="pointer-events-none absolute inset-x-0 bottom-0 h-[60%] bg-[radial-gradient(55%_55%_at_50%_100%,rgba(178,34,24,0.2),transparent_70%)]" />
         <div className="relative z-20 mx-auto max-w-3xl px-8 pt-[14vh] text-center">
@@ -409,16 +409,26 @@ function HeroScene({ heroes }) {
             {heroes.length} heroes, each with its model in 3D, its personas and abilities, its items by set, and every sound, effect and picture of it.
           </p>
         </div>
-        <div ref={track} className="absolute bottom-0 left-0 flex items-end gap-[6vw] will-change-transform">
+        <div ref={track} className="absolute inset-y-0 left-0 flex will-change-transform">
           {row.map((h, i) => (
-            <a key={`${h.id}${i}`} href={link(`/hero/${h.key}`)} title={h.name} className="group relative h-[min(56vh,36rem)] shrink-0">
-              <img
-                src={heroCard(h)}
-                alt={h.name}
-                className="h-full w-auto max-w-none mix-blend-lighten transition-transform duration-300 [mask-image:linear-gradient(to_bottom,black_80%,transparent)] group-hover:-translate-y-2"
-              />
-              <span className="absolute inset-x-0 bottom-3 text-center text-[0.86rem] text-ink-300 opacity-0 transition-opacity group-hover:opacity-100">{h.name}</span>
-            </a>
+            <div key={`${h.id}${i}`} className="relative flex h-full w-[100vw] shrink-0 items-end justify-center">
+              <a href={link(`/hero/${h.key}`)} title={h.name} className="group relative h-[min(64vh,44rem)]">
+                <img
+                  src={heroCard(h)}
+                  alt={h.name}
+                  className="h-full w-auto max-w-none mix-blend-lighten transition-transform duration-300 [mask-image:linear-gradient(to_bottom,black_80%,transparent)] group-hover:-translate-y-2"
+                />
+              </a>
+              <a
+                href={link(`/hero/${h.key}`)}
+                className="absolute right-[12vw] bottom-[18vh] text-right text-[clamp(1.6rem,2.6vw,2.6rem)] font-semibold tracking-[-0.03em] text-ink-100/90 transition-colors hover:text-white"
+              >
+                {h.name}
+                <span className="mt-1 block text-[0.9rem] font-normal tracking-normal text-ink-400">
+                  {h.items.length} items{h.personas.length ? `, ${h.personas.length} persona${h.personas.length > 1 ? "s" : ""}` : ""}
+                </span>
+              </a>
+            </div>
           ))}
         </div>
       </div>
