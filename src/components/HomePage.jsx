@@ -140,9 +140,9 @@ export default function HomePage({ catalog, indexes }) {
         {/* The opening reaches up under the top bar, so its light shows through the bar's blur */}
         <section className="relative flex min-h-[100dvh] flex-col pt-14">
           {/* Light as in the game's menu: the deep red of the Dota mark from above, embers rising from below */}
-          <div aria-hidden="true" className="anim-fade pointer-events-none absolute inset-0 overflow-hidden">
+          <div aria-hidden="true" className="anim-fade pointer-events-none absolute inset-0 overflow-hidden [mask-image:linear-gradient(to_bottom,black_65%,transparent)]">
             <div className="absolute inset-x-0 top-0 h-[46rem] bg-[radial-gradient(55%_55%_at_50%_0%,rgba(178,34,24,0.28),rgba(120,20,14,0.10)_45%,transparent_75%)]" />
-            <div className="absolute inset-x-0 bottom-0 h-[30rem] bg-[radial-gradient(45%_60%_at_50%_100%,rgba(214,96,28,0.14),transparent_70%)]" />
+            <div className="absolute inset-x-0 bottom-[12%] h-[30rem] bg-[radial-gradient(45%_50%_at_50%_70%,rgba(214,96,28,0.12),transparent_70%)]" />
             <div className="absolute top-1/2 left-1/2 h-[24rem] w-[46rem] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[rgba(200,60,30,0.07)] blur-[100px]" />
             {/* a grain over the light, like worn stone */}
             <div className="absolute inset-0 opacity-[0.04] mix-blend-overlay" style={{ backgroundImage: GRAIN, backgroundSize: "220px 220px" }} />
