@@ -93,6 +93,22 @@ export function Row({ e, active, onOpen }) {
   );
 }
 
+// The sizes the game keeps of one picture (abaddon_anointed_ruination_png.png and
+// ..._small_png.png) as one: the largest, with the others as its sizes
+const SIZE_WORD = /_(small|large|big|tiny|thumb|full|sm|md|lg)(?=(_(png|jpg|jpeg|psd|tga))?\.\w+$)/;
+export function withSizes(list) {
+  const by = new Map();
+  for (const e of list) {
+    const key = `${e.ds}:${e.path.replace(SIZE_WORD, "")}`;
+    (by.get(key) || by.set(key, []).get(key)).push(e);
+  }
+  return [...by.values()].map((group) => {
+    if (group.length === 1) return group[0];
+    const main = group.reduce((a, b) => (b.size > a.size ? b : a));
+    return { ...main, sizes: group.filter((e) => e !== main).map((e) => ({ ...e, label: SIZE_WORD.exec(e.path)?.[1] || "other" })) };
+  });
+}
+
 export function Cell({ e, active, onOpen }) {
   return (
     <div
@@ -109,7 +125,14 @@ export function Cell({ e, active, onOpen }) {
       </div>
       <div className="shrink-0 border-t border-white/[0.06] bg-ink-850 px-2.5 py-1.5 leading-tight">
         <div className="truncate text-xs">{e.title || e.name}</div>
-        <div className="truncate text-[11px] text-ink-400">{formatSize(e.size)}</div>
+        <div className="flex gap-1.5 truncate text-[11px] text-ink-400">
+          {formatSize(e.size)}
+          {e.sizes?.map((v) => (
+            <a key={v.path} href={fileUrl(datasetById(v.ds), v.path, true)} onClick={(ev) => ev.stopPropagation()} title={`Download ${v.name}`} className="text-ink-300 hover:text-ink-100 hover:underline">
+              + {v.label}
+            </a>
+          ))}
+        </div>
       </div>
     </div>
   );

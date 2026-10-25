@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 import { formatCount } from "../lib/format.js";
 import { navigate } from "../lib/route.js";
-import { Cell } from "./FileTable.jsx";
+import { Cell, withSizes } from "./FileTable.jsx";
 
 // The game's picture folders, named for people (panorama/images/...): the first that fits
 const KINDS = [
@@ -23,7 +23,7 @@ export default function ImageGroups({ files, route }) {
   const groups = useMemo(() => {
     const by = new Map(KINDS.map(([, k]) => [k, []]));
     by.set("Other", []);
-    for (const e of files) by.get(kindOf(e.path)).push(e);
+    for (const e of withSizes(files)) by.get(kindOf(e.path)).push(e);
     return [...by.entries()].filter(([, l]) => l.length);
   }, [files]);
   const keyOf = (e) => `${e.ds}:${e.path}`;

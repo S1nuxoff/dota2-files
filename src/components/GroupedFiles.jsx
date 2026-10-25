@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { formatCount } from "../lib/format.js";
 import { navigate } from "../lib/route.js";
-import { Cell, Row } from "./FileTable.jsx";
+import { Cell, Row, withSizes } from "./FileTable.jsx";
 
 const SHOWN = 48;
 const pretty = (s) => s.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
@@ -52,7 +52,7 @@ export function groupHeroFiles(files, hero, catalog) {
 // The sections, pictures as a grid of cells, other files as rows; a long section shows its first
 // files and the rest on a click
 export default function GroupedFiles({ files, hero, catalog, grid, route }) {
-  const sections = useMemo(() => groupHeroFiles(files, hero, catalog), [files, hero, catalog]);
+  const sections = useMemo(() => groupHeroFiles(grid ? withSizes(files) : files, hero, catalog), [files, hero, catalog, grid]);
   return (
     <div className="space-y-10">
       {sections.map(([title, list]) => (
