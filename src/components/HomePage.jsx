@@ -384,7 +384,7 @@ function HeroScene({ heroes }) {
       // the frames go by one screen each, the first standing in view as the section arrives
       const steps = SCENE - 1;
       const at = Math.min(steps, Math.max(0, ((t - 0.25) / 0.6) * steps));
-      track.current.style.transform = `translateX(${-at * el.clientWidth}px)`;
+      track.current.style.transform = `translateX(${-at * (track.current.firstElementChild?.offsetWidth || el.clientWidth)}px)`;
     };
     const onScroll = () => (frame ||= requestAnimationFrame(draw));
     scroller.addEventListener("scroll", onScroll, { passive: true });
@@ -397,22 +397,22 @@ function HeroScene({ heroes }) {
     };
   }, [row]);
   return (
-    <section ref={section} className="relative mt-24" style={{ height: `${100 + SCENE * 45}vh` }}>
+    <section ref={section} className="relative mt-16" style={{ height: `${100 + SCENE * 45}vh` }}>
       <div className="sticky top-0 h-[100dvh] overflow-hidden">
         <div className="pointer-events-none absolute inset-x-0 bottom-0 h-[60%] bg-[radial-gradient(55%_55%_at_50%_100%,rgba(178,34,24,0.2),transparent_70%)]" />
-        <div className="relative z-20 mx-auto max-w-3xl px-8 pt-[14vh] text-center">
+        <div className="relative z-20 max-w-xl px-[6vw] pt-[16vh]">
           <a href={link("/heroes")} className="group inline-flex items-center gap-2 text-[0.92rem] text-ink-300 transition-colors hover:text-ink-100">
             <Users size={16} /> Heroes <ArrowRight size={14} className="transition-transform group-hover:translate-x-0.5" />
           </a>
           <h2 className="mt-4 text-[clamp(2rem,3.6vw,3.2rem)] leading-[1.06] font-semibold tracking-[-0.04em] text-balance">Every hero, down to the last voice line</h2>
-          <p className="mx-auto mt-4 max-w-2xl text-[1.02rem] leading-relaxed text-balance text-ink-400">
+          <p className="mt-4 max-w-md text-[1.02rem] leading-relaxed text-balance text-ink-400">
             {heroes.length} heroes, each with its model in 3D, its personas and abilities, its items by set, and every sound, effect and picture of it.
           </p>
         </div>
-        <div ref={track} className="absolute inset-y-0 left-0 flex will-change-transform">
+        <div ref={track} style={{ "--frame": "100%" }} className="absolute inset-0 flex will-change-transform [&>*]:w-full [&>*]:min-w-full">
           {row.map((h, i) => (
-            <div key={`${h.id}${i}`} className="relative flex h-full w-[100vw] shrink-0 items-end justify-center">
-              <a href={link(`/hero/${h.key}`)} title={h.name} className="group relative h-[min(64vh,44rem)]">
+            <div key={`${h.id}${i}`} style={{ width: "var(--frame, 100vw)" }} className="relative flex h-full shrink-0 items-end justify-center">
+              <a href={link(`/hero/${h.key}`)} title={h.name} className="group relative h-[94dvh]">
                 <img
                   src={heroCard(h)}
                   alt={h.name}
@@ -421,7 +421,7 @@ function HeroScene({ heroes }) {
               </a>
               <a
                 href={link(`/hero/${h.key}`)}
-                className="absolute right-[12vw] bottom-[18vh] text-right text-[clamp(1.6rem,2.6vw,2.6rem)] font-semibold tracking-[-0.03em] text-ink-100/90 transition-colors hover:text-white"
+                className="absolute right-[6vw] bottom-[16vh] text-right text-[clamp(1.6rem,2.6vw,2.6rem)] font-semibold tracking-[-0.03em] text-ink-100/90 transition-colors hover:text-white"
               >
                 {h.name}
                 <span className="mt-1 block text-[0.9rem] font-normal tracking-normal text-ink-400">
