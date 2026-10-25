@@ -5,7 +5,8 @@ import { imageUrl, itemDotadexPath, itemFiles, prefabTitle } from "../lib/catalo
 import { formatSize } from "../lib/format.js";
 import { startJob } from "../lib/jobs.js";
 import { closeItem, link, openItem, openItems } from "../lib/route.js";
-import { Button } from "./ui.jsx";
+import { Button, buttonClass } from "./ui.jsx";
+import { StyleSwitch } from "./Detail.jsx";
 import EmbedButton from "./EmbedButton.jsx";
 import Loot from "./Loot.jsx";
 import { eventKind } from "./CosmeticsPage.jsx";
@@ -100,22 +101,7 @@ export default function ItemModal({ itemId, catalog, indexes, withCopies }) {
             </div>
           )}
           {models.length > 0 && <LookSwitch look={shown} setLook={setShown} className="absolute top-3 right-3 md:top-4 md:right-4" />}
-          {shown === "simple" && models.length > 1 && !item.bundle && (
-            <div className="absolute inset-x-0 bottom-5 flex justify-center">
-              <div className="flex gap-1 rounded-full bg-black/40 p-1 backdrop-blur-md">
-                {models.map((m, i) => (
-                  <button
-                    key={m.path}
-                    onClick={() => setStyle(i)}
-                    title={m.name}
-                    className={`h-8 rounded-full px-3.5 text-[0.82rem] transition-colors ${i === style ? "bg-ink-100 text-ink-950" : "text-ink-300 hover:text-ink-100"}`}
-                  >
-                    {m.name.replace(/\.glb$/, "").replace(/_/g, " ")}
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
+          {shown === "simple" && models.length > 1 && !item.bundle && <StyleSwitch models={models} value={Math.min(style, models.length - 1)} onChange={setStyle} />}
         </div>
 
         <aside className="flex flex-col bg-ink-900 md:min-h-0 md:overflow-hidden md:rounded-2xl md:border md:border-white/[0.06]">
@@ -163,18 +149,18 @@ export default function ItemModal({ itemId, catalog, indexes, withCopies }) {
             <Button primary onClick={() => startJob("zip", asDownload, name)} disabled={!files.length}>
               <FileArchive size={16} /> Download all <span className="font-normal opacity-55">{files.length} files, {formatSize(bytes)}</span>
             </Button>
-            <div className="flex gap-2">
+            <div className="grid grid-cols-2 gap-2 [&>*]:w-full">
               {model && (
-                <Button as="a" href={fileUrl(datasetById("models"), model.path, true)} className="flex-1">
+                <Button as="a" href={fileUrl(datasetById("models"), model.path, true)}>
                   <Download size={16} /> Model <span className="font-normal text-ink-400">{formatSize(model.size)}</span>
                 </Button>
               )}
-              <Button as="a" href={`${DOTADEX}/item/${item.id}`} target="_blank" rel="noreferrer" title="See it in Dotadex, as the game shows it" className="flex-1">
+              <Button as="a" href={`${DOTADEX}/item/${item.id}`} target="_blank" rel="noreferrer" title="See it in Dotadex, as the game shows it">
                 <ExternalLink size={16} /> Dotadex
               </Button>
-              <EmbedButton path={`item/${item.id}`} title={item.name} className="inline-flex h-10 items-center justify-center gap-2 rounded-lg border border-white/[0.08] bg-ink-850 px-3 text-[0.9rem] font-medium text-ink-100 transition-colors hover:bg-ink-800" />
-              <Button as="a" href={link(`/item/${item.id}`)} onClick={(e) => (e.preventDefault(), (location.href = link(`/item/${item.id}`)))} title="Open its own page" className="px-3">
-                <Maximize2 size={15} />
+              <EmbedButton path={`item/${item.id}`} title={item.name} className={`${buttonClass()} w-full`} />
+              <Button as="a" href={link(`/item/${item.id}`)} onClick={(e) => (e.preventDefault(), (location.href = link(`/item/${item.id}`)))} title="Open its own page">
+                <Maximize2 size={15} /> Full page
               </Button>
             </div>
           </div>
@@ -207,10 +193,10 @@ export default function ItemModal({ itemId, catalog, indexes, withCopies }) {
                 <h3 className="font-medium">
                   Pictures <span className="ml-1 text-[0.8rem] font-normal text-ink-400">{pictures.length}</span>
                 </h3>
-                <div className="mt-3 grid grid-cols-3 gap-2">
+                <div className="mt-3 grid grid-cols-2 gap-2">
                   {pictures.map((e) => (
-                    <a key={e.path} href={fileUrl(datasetById(e.ds), e.path, true)} title={`Download ${e.name}`} className="checker flex aspect-square items-center justify-center overflow-hidden rounded-xl border border-white/[0.06] transition-colors hover:border-white/20">
-                      <img src={fileUrl(datasetById(e.ds), e.path)} alt="" loading="lazy" className="max-h-full max-w-full object-contain p-1.5" />
+                    <a key={e.path} href={fileUrl(datasetById(e.ds), e.path, true)} title={`Download ${e.name}`} className="checker flex aspect-video items-center justify-center overflow-hidden rounded-xl border border-white/[0.06] transition-colors hover:border-white/20">
+                      <img src={fileUrl(datasetById(e.ds), e.path)} alt="" loading="lazy" className="h-full w-full object-contain" />
                     </a>
                   ))}
                 </div>

@@ -1,4 +1,4 @@
-import { Crumbs } from "./ui.jsx";
+import { Crumbs, Dropdown } from "./ui.jsx";
 import { imageUrl } from "../lib/catalog.js";
 // The parts a hero's, a set's and an item's pages share, so the three read alike: where it sits, then
 // three columns under the front page's light, over the model standing on the page itself in the
@@ -123,6 +123,32 @@ export function IconRow({ items, rarities, onOpen, limit = 10 }) {
           {rarities?.[item.rarity || "common"]?.color && <span className="absolute inset-x-0 bottom-0 h-[2px]" style={{ background: rarities[item.rarity || "common"].color }} />}
         </button>
       ))}
+    </div>
+  );
+}
+
+// The styles of an item (its models), to pick one on the stage: a few as a pill of choices at the
+// bottom's middle, many (a courier's levels) as a list in the bottom right corner, clear of the
+// animations list in the left one. Names without the file's ending and underscores
+export function StyleSwitch({ models, value, onChange }) {
+  const name = (m) => m.name.replace(/\.glb$/, "").replace(/_/g, " ");
+  if (models.length <= 3) {
+    return (
+      <StageBar className="pointer-events-none [&>*]:pointer-events-auto">
+        <StageSwitch items={models.map((m, i) => [i, name(m), m.name])} value={value} onChange={onChange} />
+      </StageBar>
+    );
+  }
+  return (
+    <div className="absolute right-3 bottom-3 z-10 sm:right-4 sm:bottom-4">
+      <Dropdown
+        up
+        value={value}
+        onChange={onChange}
+        label="Style"
+        options={models.map((m, i) => [i, name(m)])}
+        buttonClass="flex h-9 max-w-[15rem] min-w-[10rem] items-center gap-2 rounded-full bg-black/45 pr-3 pl-4 text-[0.82rem] text-ink-100 capitalize backdrop-blur-md transition-colors hover:bg-black/65"
+      />
     </div>
   );
 }

@@ -13,7 +13,7 @@ import { link, navigate, openItem } from "../lib/route.js";
 import { Button, Empty, GRID, Page, Section, Spinner, buttonClass, LoadingDetail } from "./ui.jsx";
 import EmbedButton from "./EmbedButton.jsx";
 import GameStage, { LookSwitch, useLook } from "./GameStage.jsx";
-import { DetailTop, IconRow, SideActions, SideBlock, SideTitle, StageBar, StageSwitch, Tag } from "./Detail.jsx";
+import { DetailTop, IconRow, SideActions, SideBlock, SideTitle, StyleSwitch, Tag } from "./Detail.jsx";
 
 const HeroViewer = lazy(() => import("./HeroViewer.jsx"));
 
@@ -87,11 +87,7 @@ export default function ItemPage({ itemId, catalog, indexes, withCopies, route }
               </div>
             )}
             {models.length > 0 && <LookSwitch look={shown} setLook={setShown} className="absolute top-2 right-0 sm:top-3" />}
-            {shown === "simple" && models.length > 1 && !item.bundle && (
-              <StageBar>
-                <StageSwitch items={models.map((m, i) => [i, m.name.replace(/\.glb$/, "").replace(/_/g, " ")])} value={style} onChange={setStyle} />
-              </StageBar>
-            )}
+            {shown === "simple" && models.length > 1 && !item.bundle && <StyleSwitch models={models} value={Math.min(style, models.length - 1)} onChange={setStyle} />}
           </>
         }
         left={
@@ -191,10 +187,10 @@ export default function ItemPage({ itemId, catalog, indexes, withCopies, route }
 
         {pictures.length > 1 && (
           <Section title="Pictures" count={pictures.length} sub="Click one to download it">
-            <div className={GRID.small}>
+            <div className="grid grid-cols-2 gap-2 sm:grid-cols-[repeat(auto-fill,minmax(14rem,1fr))] sm:gap-3">
               {pictures.map((e) => (
-                <a key={e.path} href={fileUrl(datasetById(e.ds), e.path, true)} title={`Download ${e.name}`} className="checker flex aspect-square items-center justify-center overflow-hidden rounded-xl border border-white/[0.06] transition-colors hover:border-white/20">
-                  <img src={fileUrl(datasetById(e.ds), e.path)} alt="" loading="lazy" className="max-h-full max-w-full object-contain p-2" />
+                <a key={e.path} href={fileUrl(datasetById(e.ds), e.path, true)} title={`Download ${e.name}`} className="checker flex aspect-video items-center justify-center overflow-hidden rounded-xl border border-white/[0.06] transition-colors hover:border-white/20">
+                  <img src={fileUrl(datasetById(e.ds), e.path)} alt="" loading="lazy" className="h-full w-full object-contain" />
                 </a>
               ))}
             </div>
