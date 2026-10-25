@@ -148,11 +148,11 @@ export default function Browser({ ds, route, index, error, indexes, catalog, wit
 
   return (
     <Page className="flex flex-1 flex-col">
-      <header className="page-x pt-6 pb-5 sm:pt-8">
-        <Crumbs items={crumbs} />
-        <div className="mt-4 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
-          <div className="min-w-0">
-            <h1 className="truncate text-[clamp(1.6rem,3vw,2.3rem)] leading-tight font-semibold tracking-[-0.035em]">{searching ? `“${route.q}”` : dir.path ? dir.name : ds.title}</h1>
+      <header className="page-x flex flex-col items-center pt-8 pb-5 text-center sm:pt-12">
+        <Crumbs items={crumbs} className="[&>ol]:justify-center" />
+        <div className="mt-5 flex max-w-full flex-col items-center gap-5">
+          <div className="max-w-full min-w-0">
+            <h1 className="truncate text-[clamp(1.8rem,3.6vw,2.9rem)] leading-tight font-semibold tracking-[-0.035em]">{searching ? `“${route.q}”` : dir.path ? dir.name : ds.title}</h1>
             <p className="mt-1.5 text-[0.88rem] text-ink-400 tabular-nums">
               {searching ? (
                 <>
@@ -168,7 +168,7 @@ export default function Browser({ ds, route, index, error, indexes, catalog, wit
             </p>
           </div>
           {!searching && (
-            <div className="flex flex-wrap items-center gap-2">
+            <div className="flex flex-wrap items-center justify-center gap-2">
               <Button primary size="sm" onClick={() => downloadDir("zip")} title="Download this folder as one ZIP">
                 <FileArchive size={15} /> Download ZIP
               </Button>
@@ -221,7 +221,7 @@ export default function Browser({ ds, route, index, error, indexes, catalog, wit
           items={[["", "All"], ...KINDS.map((k) => [k.id, k.title])]}
           className="max-sm:w-full"
         />
-        <div className="flex flex-1 items-center justify-end gap-3">
+        <div className="flex items-center gap-3">
           <label className="flex cursor-pointer items-center gap-2 text-[0.8rem] text-ink-400 select-none hover:text-ink-300" title="Show the site's lighter .gz copies of models and data files">
             <input type="checkbox" checked={withCopies} onChange={(e) => setWithCopies(e.target.checked)} className="accent-ink-100" />
             .gz copies

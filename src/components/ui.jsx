@@ -36,20 +36,21 @@ export function Crumbs({ items, className = "" }) {
   );
 }
 
-// A page's head, on the left as a document's: where it sits, its title, a line under it, and what
-// to do with the whole of it on the right (on a phone, under it)
+// A page's head, in the middle: where it sits, a small label, the title, a line under it, then what
+// to do with the whole of it (a search, tabs) under them
 export function PageHead({ crumbs, eyebrow, title, sub, actions, children, className = "" }) {
   return (
-    <header className={`page-x pt-6 pb-6 sm:pt-10 sm:pb-8 ${className}`}>
-      {crumbs && <Crumbs items={crumbs} className="mb-5" />}
-      <div className="flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
-        <div className="max-w-3xl min-w-0">
-          {eyebrow && <div className="mb-3 text-[0.82rem] font-medium tracking-[0.01em] text-ink-400">{eyebrow}</div>}
-          <h1 className="text-[clamp(2rem,4vw,3.1rem)] leading-[1.04] font-semibold tracking-[-0.04em] text-balance">{title}</h1>
-          {sub && <p className="mt-3 max-w-2xl text-[0.98rem] leading-relaxed text-pretty text-ink-400">{sub}</p>}
+    <header className={`page-x flex flex-col items-center pt-8 pb-6 text-center sm:pt-14 sm:pb-8 ${className}`}>
+      {crumbs && <Crumbs items={crumbs} className="mb-6 [&>ol]:justify-center" />}
+      {eyebrow && (
+        <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-white/[0.08] bg-ink-900/80 py-1 pr-3 pl-2.5 text-[0.72rem] font-medium tracking-[0.08em] text-ink-400 uppercase">
+          <span aria-hidden="true" className="h-1.5 w-1.5 rotate-45 bg-ember" />
+          {eyebrow}
         </div>
-        {actions && <div className="flex flex-wrap gap-2 md:shrink-0 md:justify-end">{actions}</div>}
-      </div>
+      )}
+      <h1 className="max-w-4xl text-[clamp(2.1rem,4.6vw,3.6rem)] leading-[1.02] font-semibold tracking-[-0.045em] text-balance">{title}</h1>
+      {sub && <p className="mt-4 max-w-2xl text-[1rem] leading-relaxed text-balance text-ink-400">{sub}</p>}
+      {actions && <div className="mt-6 flex flex-wrap justify-center gap-2">{actions}</div>}
       {children}
     </header>
   );
@@ -81,7 +82,7 @@ export function Toolbar({ children, className = "", below }) {
           stuck ? "border-white/[0.06] bg-ink-950/85 backdrop-blur-xl" : "border-transparent"
         }`}
       >
-        <div className={`page-x flex flex-wrap items-center gap-2 py-3 ${className}`}>{children}</div>
+        <div className={`page-x flex flex-wrap items-center justify-center gap-2 py-3 ${className}`}>{children}</div>
         {below}
       </div>
     </>
@@ -298,7 +299,7 @@ export function Dropdown({ value, onChange, options, className = "", up = false,
   }, [open]);
   const current = options.find(([v]) => v === value)?.[1] ?? options[0]?.[1];
   return (
-    <div ref={box} className={`relative ${className}`}>
+    <div ref={box} className={`${/(absolute|fixed)/.test(className) ? "" : "relative"} ${className}`}>
       <button
         onClick={() => setOpen(!open)}
         aria-expanded={open}
@@ -407,7 +408,7 @@ export function LoadingList({ title, eyebrow, sub, ratio = "aspect-[4/3.4]", gri
       <PageHead eyebrow={eyebrow || <span className="skeleton inline-block h-3 w-20 rounded" />} title={title} sub={sub}>
         {tabs}
       </PageHead>
-      <div className="page-x flex gap-2 py-3" aria-hidden="true">
+      <div className="page-x flex justify-center gap-2 py-3" aria-hidden="true">
         <div className="skeleton h-10 w-full rounded-xl sm:w-72" />
         <div className="skeleton hidden h-10 w-40 rounded-xl sm:block" />
       </div>
@@ -426,24 +427,29 @@ export function LoadingList({ title, eyebrow, sub, ratio = "aspect-[4/3.4]", gri
   );
 }
 
-// A hero's, set's or item's page while its data comes: the trail, the stage, the name and buttons
+// A hero's, set's or item's page while its data comes: the trail, the stage and the side beside it
 export function LoadingDetail() {
   return (
     <Page className="min-h-[100svh]" aria-busy="true">
       <div className="page-x pt-5 sm:pt-6">
         <div className="skeleton h-3.5 w-40 rounded" />
       </div>
-      <div className="page-x mt-4">
-        <div className="skeleton h-[min(62svh,34rem)] rounded-2xl sm:h-[min(70vh,48rem)] sm:rounded-3xl" />
-      </div>
-      <div className="page-x mt-6 flex flex-col gap-4 lg:flex-row lg:justify-between">
-        <div className="space-y-3">
-          <div className="skeleton h-10 w-72 max-w-full rounded-lg" />
-          <div className="skeleton h-3.5 w-48 rounded" />
-        </div>
-        <div className="flex gap-2">
-          <div className="skeleton h-10 w-48 rounded-xl" />
-          <div className="skeleton h-10 w-28 rounded-xl" />
+      <div className="page-x mt-4 grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(24rem,30rem)] lg:gap-8 xl:gap-12">
+        <div className="skeleton h-[min(60svh,32rem)] rounded-2xl sm:rounded-3xl lg:h-[min(74vh,44rem)]" />
+        <div className="space-y-5 lg:py-2">
+          <div className="skeleton h-11 w-3/4 rounded-lg" />
+          <div className="skeleton h-3.5 w-1/2 rounded" />
+          <div className="space-y-2 pt-2">
+            <div className="skeleton h-3 w-full rounded" />
+            <div className="skeleton h-3 w-11/12 rounded" />
+            <div className="skeleton h-3 w-2/3 rounded" />
+          </div>
+          <div className="skeleton h-16 w-full rounded-xl" />
+          <div className="skeleton h-12 w-full rounded-xl" />
+          <div className="grid grid-cols-2 gap-2">
+            <div className="skeleton h-10 rounded-xl" />
+            <div className="skeleton h-10 rounded-xl" />
+          </div>
         </div>
       </div>
     </Page>

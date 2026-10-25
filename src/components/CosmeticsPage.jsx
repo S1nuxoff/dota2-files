@@ -216,7 +216,7 @@ function Kinds({ catalog }) {
           className="w-full md:w-[30rem]"
         />
         {!found && (
-          <div className="no-bar -mx-1 flex flex-1 gap-1 overflow-x-auto px-1 max-md:w-full md:justify-end">
+          <div className="no-bar -mx-1 flex max-w-full gap-1 overflow-x-auto px-1">
             {all.map(([title]) => (
               <a key={title} href={`#${anchor(title)}`} className="shrink-0 rounded-lg px-2.5 py-1.5 text-[0.84rem] whitespace-nowrap text-ink-400 transition-colors hover:bg-white/[0.05] hover:text-ink-100">
                 {title.replace(" and battle passes", "")}
@@ -359,7 +359,7 @@ export function Kind({ prefab, catalog, title, sub, tab }) {
           placeholder={heroes.length ? "Search by name or hero" : "Search by name"}
           className="w-full sm:w-72"
         />
-        <div className="grid flex-1 grid-cols-2 gap-2 sm:flex sm:flex-wrap sm:items-center sm:justify-end">
+        <div className="grid grid-cols-2 gap-2 max-sm:w-full sm:flex sm:flex-wrap sm:items-center">
           {rarities.length > 1 && (
             <Dropdown
               value={rarity}

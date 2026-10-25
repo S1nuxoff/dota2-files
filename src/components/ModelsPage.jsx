@@ -270,7 +270,7 @@ export default function ModelsPage({ catalog, indexes }) {
             </div>
           }
         />
-        <div className="flex flex-1 items-center gap-2 max-md:w-full md:justify-end">
+        <div className="flex items-center gap-2 max-md:w-full">
           <Button onClick={() => setFiltersOpen(true)} className="max-md:flex-1">
             <SlidersHorizontal size={16} /> Filters
             {active.length > 0 && <span className="rounded-md bg-ink-100 px-1.5 text-[0.7rem] font-semibold text-ink-950">{active.length}</span>}

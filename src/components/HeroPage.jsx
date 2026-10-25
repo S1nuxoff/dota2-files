@@ -1,7 +1,7 @@
 import { lazy, Suspense, useMemo, useState } from "react";
 import { Download, ExternalLink, FileArchive, FolderDown, LoaderCircle } from "lucide-react";
 import { DATASETS, DOTADEX, datasetById, fileUrl } from "../datasets.js";
-import { attributeIcon, heroFiles, heroPortrait, prefabTitle } from "../lib/catalog.js";
+import { attributeIcon, heroFiles, heroPortrait, imageUrl, prefabTitle } from "../lib/catalog.js";
 import { formatCount, formatSize } from "../lib/format.js";
 import { startJob } from "../lib/jobs.js";
 import { canSaveToFolder } from "../lib/download.js";
@@ -16,7 +16,7 @@ import { link, navigate } from "../lib/route.js";
 import { Button, Chip, Empty, GRID, Page, Section, Segmented, Spinner, Toolbar, buttonClass, LoadingDetail } from "./ui.jsx";
 import EmbedButton from "./EmbedButton.jsx";
 import GameStage, { LookSwitch, useLook } from "./GameStage.jsx";
-import { DetailHead, Stage, StageBar, StageSwitch, Tag } from "./Detail.jsx";
+import { DetailTop, SideActions, SideBlock, SideTitle, StageSwitch, Tag } from "./Detail.jsx";
 
 const HeroViewer = lazy(() => import("./HeroViewer.jsx"));
 
@@ -87,68 +87,116 @@ export default function HeroPage({ heroKey, catalog, indexes, withCopies, route 
 
   return (
     <Page>
-      <DetailHead
+      <DetailTop
         crumbs={[["/heroes", "Heroes"], ["", hero.name]]}
-        title={hero.name}
-        icon={about?.attribute && <img src={attributeIcon(about.attribute)} alt={about.attribute} title={about.attribute} className="mt-1.5 h-8 w-8 shrink-0 sm:mt-2.5 sm:h-9 sm:w-9" />}
-        line={
+        stage={
           <>
-            {formatCount(items.length)} items, {hero.sets.length} sets{ready ? `, ${formatCount(files.length)} files` : ""}
-          </>
-        }
-        tags={about && [about.attribute, about.attack, ...about.roles.map(([r]) => r)].filter(Boolean).map((t) => <Tag key={t}>{t}</Tag>)}
-        actions={
-          <>
-            {ready ? (
-              <Button primary onClick={() => startJob("zip", asDownload(files), hero.key)} title="Models, items, sounds, effects, pictures">
-                <FileArchive size={16} /> Download everything <span className="font-normal opacity-55">{bytes(files)}</span>
-              </Button>
+            {lookMode === "game" ? (
+              <GameStage path={`hero/${hero.key}${persona}`} title={look.name} />
+            ) : modelEntry ? (
+              <Suspense fallback={null}>
+                <HeroViewer models={lookEntries} bare />
+              </Suspense>
             ) : (
-              <span className="flex h-10 items-center justify-center gap-2 px-4 text-[0.86rem] text-ink-400">
-                <LoaderCircle size={14} className="animate-spin" /> Gathering its files
-              </span>
+              <img src={heroPortrait(hero)} alt="" className="h-full w-full object-cover opacity-70" />
             )}
-            {lookEntries.length > 1 && (
-              <Button
-                onClick={() => startJob("zip", lookEntries.map((e) => ({ ds: e.ds, path: e.path, size: e.size, name: e.name })), `${look.id.replace("npc_dota_hero_", "")}-look`)}
-                title={`${lookEntries.length} models as you see them`}
-              >
-                <Download size={16} /> Default look <span className="font-normal text-ink-400 max-sm:hidden">{bytes(lookEntries)}</span>
-              </Button>
-            )}
-            {modelEntry && (
-              <Button as="a" href={fileUrl(datasetById("models"), modelEntry.path, true)} title={`${modelEntry.name}, ${formatSize(modelEntry.size)}`}>
-                <Download size={16} /> Body <span className="font-normal text-ink-400 max-sm:hidden">{formatSize(modelEntry.size)}</span>
-              </Button>
-            )}
-            <Button as="a" ghost href={`${DOTADEX}/hero/${hero.key}${persona}`} target="_blank" rel="noreferrer" title="See the hero in Dotadex, as the game shows it">
-              <ExternalLink size={16} /> Dotadex
-            </Button>
-            <EmbedButton path={`hero/${hero.key}${persona}`} title={look.name} className={`${buttonClass({ ghost: true })} w-full`} />
+            <LookSwitch look={lookMode} setLook={setLookMode} className="absolute top-3 right-3 sm:top-4 sm:right-4" />
           </>
         }
       >
-        <Stage>
-          {lookMode === "game" ? (
-            <GameStage path={`hero/${hero.key}${persona}`} title={look.name} />
-          ) : modelEntry ? (
-            <Suspense fallback={null}>
-              <HeroViewer models={lookEntries} bare />
-            </Suspense>
-          ) : (
-            <img src={heroPortrait(hero)} alt="" className="h-full w-full object-cover opacity-70" />
+        <SideTitle
+          title={hero.name}
+          icon={about?.attribute && <img src={attributeIcon(about.attribute)} alt={about.attribute} title={about.attribute} className="mt-1 h-8 w-8 shrink-0 sm:mt-2 sm:h-9 sm:w-9" />}
+          line={`${formatCount(items.length)} items, ${hero.sets.length} sets${ready ? `, ${formatCount(files.length)} files` : ""}`}
+          tags={about && [about.attack, ...about.roles.map(([r]) => r)].filter(Boolean).map((t) => <Tag key={t}>{t}</Tag>)}
+        />
+
+        {about?.hype && (
+          <p className="text-[0.95rem] leading-relaxed text-ink-300">
+            <span className="line-clamp-4">{about.hype}</span>
+            <button onClick={() => setTab("about")} className="mt-1.5 text-[0.86rem] text-ink-100 underline decoration-white/25 underline-offset-4 hover:decoration-white">
+              Story, numbers and abilities
+            </button>
+          </p>
+        )}
+
+        {about?.stats && (
+          <dl className="grid grid-cols-3 gap-px overflow-hidden rounded-xl border border-white/[0.07] bg-white/[0.06]">
+            {[
+              ["strength", "Strength"],
+              ["agility", "Agility"],
+              ["intelligence", "Intelligence"],
+            ].map(([k, label]) => {
+              const v = about.stats[k];
+              return (
+                <div key={k} className="bg-ink-900 px-3 py-2.5">
+                  <dt className="flex items-center gap-1.5 text-[0.74rem] text-ink-500">
+                    <img src={attributeIcon(label)} alt="" className="h-3.5 w-3.5" /> {label}
+                  </dt>
+                  <dd className="mt-1 text-[1rem] font-medium tabular-nums">
+                    {Array.isArray(v) ? v[0] : v} {Array.isArray(v) && <span className="text-[0.78rem] font-normal text-ink-400">+{v[1]}</span>}
+                  </dd>
+                </div>
+              );
+            })}
+          </dl>
+        )}
+
+        {about?.abilities?.length > 0 && (
+          <SideBlock title="Abilities">
+            <div className="flex flex-wrap gap-1.5">
+              {about.abilities
+                .filter((a) => a.icon)
+                .map((a) => (
+                  <button key={a.id} onClick={() => setTab("about")} title={a.name} className="overflow-hidden rounded-lg border border-white/[0.07] transition-transform hover:-translate-y-0.5 hover:border-white/25">
+                    <img src={imageUrl(a.icon)} alt={a.name} loading="lazy" className="h-11 w-11" />
+                  </button>
+                ))}
+            </div>
+          </SideBlock>
+        )}
+
+        {looks.length > 1 && (
+          <SideBlock title="Personas">
+            <StageSwitch light items={looks.map((l) => [l.id, l.name])} value={look.id} onChange={setLook} />
+          </SideBlock>
+        )}
+
+        <SideActions
+          main={
+            ready ? (
+              <Button primary size="lg" onClick={() => startJob("zip", asDownload(files), hero.key)} title="Models, items, sounds, effects, pictures">
+                <FileArchive size={17} /> Download everything <span className="font-normal opacity-55">{bytes(files)}</span>
+              </Button>
+            ) : (
+              <span className="flex h-12 items-center justify-center gap-2 rounded-xl border border-white/[0.06] text-[0.88rem] text-ink-400">
+                <LoaderCircle size={14} className="animate-spin" /> Gathering its files
+              </span>
+            )
+          }
+        >
+          {lookEntries.length > 1 && (
+            <Button
+              onClick={() => startJob("zip", lookEntries.map((e) => ({ ds: e.ds, path: e.path, size: e.size, name: e.name })), `${look.id.replace("npc_dota_hero_", "")}-look`)}
+              title={`${lookEntries.length} models as you see them`}
+            >
+              <Download size={16} /> Default look <span className="font-normal text-ink-400">{bytes(lookEntries)}</span>
+            </Button>
           )}
-          <LookSwitch look={lookMode} setLook={setLookMode} className="absolute top-3 right-3 sm:top-5 sm:right-5" />
-          {looks.length > 1 && (
-            <StageBar>
-              <StageSwitch items={looks.map((l) => [l.id, l.name])} value={look.id} onChange={setLook} />
-            </StageBar>
+          {modelEntry && (
+            <Button as="a" href={fileUrl(datasetById("models"), modelEntry.path, true)} title={`${modelEntry.name}, ${formatSize(modelEntry.size)}`}>
+              <Download size={16} /> Body <span className="font-normal text-ink-400">{formatSize(modelEntry.size)}</span>
+            </Button>
           )}
-        </Stage>
-      </DetailHead>
+          <Button as="a" ghost href={`${DOTADEX}/hero/${hero.key}${persona}`} target="_blank" rel="noreferrer" title="See the hero in Dotadex, as the game shows it">
+            <ExternalLink size={16} /> Dotadex
+          </Button>
+          <EmbedButton path={`hero/${hero.key}${persona}`} title={look.name} className={`${buttonClass({ ghost: true })} w-full`} />
+        </SideActions>
+      </DetailTop>
 
       <Toolbar className="py-0">
-        <Segmented variant="line" label="Parts of the hero" value={tab} onChange={setTab} items={tabs} className="min-w-0 flex-1 border-b-0" />
+        <Segmented variant="line" label="Parts of the hero" value={tab} onChange={setTab} items={tabs} className="border-b-0" />
         {tab !== "items" && tab !== "about" && byDataset[tab] && (
           <div className="py-2 max-sm:w-full">
             <DownloadButtons entries={byDataset[tab]} title={`${hero.key}-${tab}`} />

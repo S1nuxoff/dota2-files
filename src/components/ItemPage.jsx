@@ -9,11 +9,11 @@ import ItemCard from "./ItemCard.jsx";
 import Loot from "./Loot.jsx";
 import { eventKind } from "./CosmeticsPage.jsx";
 import SoundList from "./SoundList.jsx";
-import { link, navigate } from "../lib/route.js";
+import { link, navigate, openItem } from "../lib/route.js";
 import { Button, Empty, GRID, Page, Section, Spinner, buttonClass, LoadingDetail } from "./ui.jsx";
 import EmbedButton from "./EmbedButton.jsx";
 import GameStage, { LookSwitch, useLook } from "./GameStage.jsx";
-import { DetailHead, Stage, StageBar, StageSwitch, Tag } from "./Detail.jsx";
+import { DetailTop, IconRow, SideActions, SideBlock, SideTitle, StageBar, StageSwitch, Tag } from "./Detail.jsx";
 
 const HeroViewer = lazy(() => import("./HeroViewer.jsx"));
 
@@ -65,77 +65,108 @@ export default function ItemPage({ itemId, catalog, indexes, withCopies, route }
 
   return (
     <Page>
-      <DetailHead
+      <DetailTop
         crumbs={crumbs}
-        title={item.name}
-        icon={item.icon && <img src={imageUrl(item.icon)} alt="" className="h-14 w-auto shrink-0 rounded-xl border border-white/[0.06] sm:h-[4.5rem]" />}
-        line={[kind, item.slot, heroes.length ? `for ${heroes.map((h) => h.name).join(", ")}` : ""].filter(Boolean).join(" · ")}
-        tags={
+        stage={
           <>
-            {rarity && <Tag color={rarity.color}>{rarity.name}</Tag>}
-            {item.date && <Tag>{item.date.slice(0, 4)}</Tag>}
-            {item.event && catalog.events?.[item.event] && <Tag href={link(`/cosmetics/${eventKind(item.event)}`)}>{catalog.events[item.event]}</Tag>}
-            {set && <Tag href={link(`/set/${item.set}`)}>{set.name}</Tag>}
-            {heroes.map((h) => (
-              <Tag key={h.id} href={link(`/hero/${h.key}`)}>
-                {h.name}
-              </Tag>
-            ))}
-          </>
-        }
-        actions={
-          <>
-            {ready ? (
-              <Button primary onClick={() => startJob("zip", asDownload, name)}>
-                <FileArchive size={16} /> Download all <span className="font-normal opacity-55">{files.length} files, {formatSize(bytes)}</span>
-              </Button>
+            {(shown === "game" && models.length > 0) || effectOnly ? (
+              <GameStage path={itemDotadexPath(item, catalog)} title={item.name} />
+            ) : model ? (
+              <Suspense fallback={null}>
+                <HeroViewer key={item.bundle ? item.id : model.path} models={item.bundle ? models : [model]} bare />
+              </Suspense>
             ) : (
-              <span className="flex h-10 items-center justify-center gap-2 px-4 text-[0.86rem] text-ink-400">
-                <LoaderCircle size={14} className="animate-spin" /> Gathering its files
-              </span>
+              <div className="flex h-full items-center justify-center p-6">
+                {poster ? (
+                  <img src={fileUrl(datasetById(poster.ds), poster.path)} alt={item.name} className="max-h-[86%] max-w-[92%] rounded-xl object-contain shadow-2xl" />
+                ) : item.icon ? (
+                  <img src={imageUrl(item.icon)} alt={item.name} className="max-h-[55%] max-w-[70%] rounded-2xl object-contain shadow-2xl" />
+                ) : (
+                  <Package size={52} strokeWidth={1} className="text-ink-600" />
+                )}
+              </div>
             )}
-            {model && (
-              <Button as="a" href={fileUrl(datasetById("models"), model.path, true)}>
-                <Download size={16} /> Model <span className="font-normal text-ink-400 max-sm:hidden">{formatSize(model.size)}</span>
-              </Button>
+            {models.length > 0 && <LookSwitch look={shown} setLook={setShown} className="absolute top-3 right-3 sm:top-4 sm:right-4" />}
+            {shown === "simple" && models.length > 1 && !item.bundle && (
+              <StageBar>
+                <StageSwitch items={models.map((m, i) => [i, m.name.replace(/\.glb$/, "").replace(/_/g, " ")])} value={style} onChange={setStyle} />
+              </StageBar>
             )}
-            <Button as="a" ghost href={`${DOTADEX}/item/${item.id}`} target="_blank" rel="noreferrer" title="See the item in Dotadex, as the game shows it">
-              <ExternalLink size={16} /> Dotadex
-            </Button>
-            <EmbedButton path={`item/${item.id}`} title={item.name} className={`${buttonClass({ ghost: true })} w-full`} />
           </>
         }
       >
-        <Stage>
-          {(shown === "game" && models.length > 0) || effectOnly ? (
-            <GameStage path={itemDotadexPath(item, catalog)} title={item.name} />
-          ) : model ? (
-            <Suspense fallback={null}>
-              <HeroViewer key={item.bundle ? item.id : model.path} models={item.bundle ? models : [model]} bare />
-            </Suspense>
-          ) : (
-            <div className="flex h-full items-center justify-center p-6">
-              {poster ? (
-                <img src={fileUrl(datasetById(poster.ds), poster.path)} alt={item.name} className="max-h-[86%] max-w-[92%] rounded-xl object-contain shadow-2xl" />
-              ) : item.icon ? (
-                <img src={imageUrl(item.icon)} alt={item.name} className="max-h-[55%] max-w-[70%] rounded-2xl object-contain shadow-2xl" />
-              ) : (
-                <Package size={52} strokeWidth={1} className="text-ink-600" />
-              )}
+        <SideTitle
+          title={item.name}
+          icon={item.icon && <img src={imageUrl(item.icon)} alt="" className="h-14 w-auto shrink-0 rounded-xl border border-white/[0.06]" />}
+          line={[kind, item.slot, heroes.length ? `for ${heroes.map((h) => h.name).join(", ")}` : ""].filter(Boolean).join(" · ")}
+          tags={
+            <>
+              {rarity && <Tag color={rarity.color}>{rarity.name}</Tag>}
+              {item.date && <Tag>{item.date.slice(0, 4)}</Tag>}
+              {item.event && catalog.events?.[item.event] && <Tag href={link(`/cosmetics/${eventKind(item.event)}`)}>{catalog.events[item.event]}</Tag>}
+              {heroes.map((h) => (
+                <Tag key={h.id} href={link(`/hero/${h.key}`)}>
+                  {h.name}
+                </Tag>
+              ))}
+            </>
+          }
+        />
+
+        {item.text && <p className="line-clamp-6 text-[0.95rem] leading-relaxed whitespace-pre-line text-ink-300">{item.text}</p>}
+
+        {others.length > 0 && (
+          <SideBlock
+            title={set.name}
+            action={
+              <a href={link(`/set/${item.set}`)} className="text-[0.8rem] text-ink-300 hover:text-ink-100">
+                The whole set
+              </a>
+            }
+          >
+            <IconRow items={others.map((id) => catalog.items[id])} rarities={catalog.rarities} onOpen={(id) => openItem(id, others)} />
+          </SideBlock>
+        )}
+
+        <dl className="grid grid-cols-3 gap-px overflow-hidden rounded-xl border border-white/[0.07] bg-white/[0.06] text-[0.8rem]">
+          {[
+            ["Files", files.length],
+            ["Models", models.length],
+            ["Textures", textures.length],
+          ].map(([label, v]) => (
+            <div key={label} className="bg-ink-900 px-3 py-2.5">
+              <dt className="text-ink-500">{label}</dt>
+              <dd className="mt-0.5 text-[1rem] font-medium tabular-nums">{ready ? v : "…"}</dd>
             </div>
+          ))}
+        </dl>
+
+        <SideActions
+          main={
+            ready ? (
+              <Button primary size="lg" onClick={() => startJob("zip", asDownload, name)}>
+                <FileArchive size={17} /> Download all <span className="font-normal opacity-55">{formatSize(bytes)}</span>
+              </Button>
+            ) : (
+              <span className="flex h-12 items-center justify-center gap-2 rounded-xl border border-white/[0.06] text-[0.88rem] text-ink-400">
+                <LoaderCircle size={14} className="animate-spin" /> Gathering its files
+              </span>
+            )
+          }
+        >
+          {model && (
+            <Button as="a" href={fileUrl(datasetById("models"), model.path, true)} className="col-span-2">
+              <Download size={16} /> Model glb <span className="font-normal text-ink-400">{formatSize(model.size)}</span>
+            </Button>
           )}
-          {models.length > 0 && <LookSwitch look={shown} setLook={setShown} className="absolute top-3 right-3 sm:top-5 sm:right-5" />}
-          {shown === "simple" && models.length > 1 && !item.bundle && (
-            <StageBar>
-              <StageSwitch items={models.map((m, i) => [i, m.name.replace(/\.glb$/, "").replace(/_/g, " ")])} value={style} onChange={setStyle} />
-            </StageBar>
-          )}
-        </Stage>
-      </DetailHead>
+          <Button as="a" ghost href={`${DOTADEX}/item/${item.id}`} target="_blank" rel="noreferrer" title="See the item in Dotadex, as the game shows it">
+            <ExternalLink size={16} /> Dotadex
+          </Button>
+          <EmbedButton path={`item/${item.id}`} title={item.name} className={`${buttonClass({ ghost: true })} w-full`} />
+        </SideActions>
+      </DetailTop>
 
       <div className="page-x mt-12 space-y-14">
-        {item.text && <p className="max-w-[46rem] text-[1.02rem] leading-relaxed whitespace-pre-line text-ink-300">{item.text}</p>}
-
         {others.length > 0 && (
           <Section
             title={set.name}

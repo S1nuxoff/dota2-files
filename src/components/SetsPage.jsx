@@ -66,7 +66,7 @@ export default function SetsPage({ catalog }) {
             ["hero", "By hero"],
           ]}
         />
-        <div className="grid flex-1 grid-cols-2 gap-2 sm:flex sm:items-center sm:justify-end">
+        <div className="grid grid-cols-2 gap-2 max-sm:w-full sm:flex sm:items-center">
           <HeroPicker
             heroes={heroesWithSets.map((hero) => ({ hero, count: hero.sets.length }))}
             value={heroKey}

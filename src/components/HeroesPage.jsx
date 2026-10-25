@@ -47,7 +47,7 @@ export default function HeroesPage({ catalog, error }) {
           onChange={setAttribute}
           items={[["", "All"], ...ATTRIBUTES.filter(count).map((a) => [a, <AttributeLabel key={a} attribute={a} />, count(a)])]}
         />
-        <div className="flex flex-1 flex-wrap items-center justify-end gap-2 max-sm:w-full">
+        <div className="flex flex-wrap items-center gap-2 max-sm:w-full">
           <Dropdown value={attack} onChange={setAttack} label="Attack" options={[["", "Any attack"], ["Melee", "Melee"], ["Ranged", "Ranged"]]} className="max-sm:flex-1" />
           <Dropdown value={role} onChange={setRole} label="Role" options={[["", "Any role"], ...ROLES.map((r) => [r, r])]} className="max-sm:flex-1" />
           <Dropdown value={sort} onChange={setSort} label="Sort" options={[["name", "By name"], ["items", "Most items"], ["sets", "Most sets"]]} className="max-sm:flex-1" />

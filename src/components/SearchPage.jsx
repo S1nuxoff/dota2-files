@@ -88,9 +88,9 @@ export default function SearchPage({ route, catalog, indexes, withCopies }) {
 
   return (
     <Page>
-      <header className="page-x pt-6 sm:pt-10">
+      <header className="page-x flex flex-col items-center pt-8 pb-2 text-center sm:pt-14">
         <h1 className="sr-only">Search results for {q}</h1>
-        <SearchField big value={text} onChange={setText} placeholder="Search heroes, items, files" className="w-full max-w-3xl" />
+        <SearchField big value={text} onChange={setText} placeholder="Search heroes, items, files" className="w-full max-w-2xl" />
         <p className="mt-4 text-[0.92rem] text-ink-400">
           {[
             named.heroes.length && `${named.heroes.length} heroes`,
