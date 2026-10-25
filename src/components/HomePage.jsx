@@ -317,8 +317,9 @@ function Orbits({ heroes }) {
   return (
     <div
       aria-hidden="true"
-      className="anim-fade pointer-events-none absolute inset-0 overflow-hidden [mask-image:radial-gradient(ellipse_36rem_17rem_at_50%_50%,transparent_45%,black_100%)]"
+      className="pointer-events-none absolute inset-0 overflow-hidden"
     >
+      <div className="absolute top-1/2 left-1/2 z-10 h-[26rem] w-[64rem] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[radial-gradient(closest-side,#0e0e10_45%,transparent)]" />
       {RINGS.map(([radius, count, seconds], r) => {
         const ring = Array.from({ length: count }, (_, i) => heroes[(from + i) % heroes.length]);
         from += count;
@@ -337,9 +338,8 @@ function Orbits({ heroes }) {
                 <img
                   src={heroIcon(h)}
                   alt=""
-                  loading="lazy"
                   style={{ "--spin": `${seconds}s`, animationDirection: r % 2 ? "normal" : "reverse" }}
-                  className="anim-spin-slow -mt-5 -ml-5 h-10 w-10 rounded-lg opacity-70 shadow-[0_0_18px_rgba(255,255,255,0.18)]"
+                  className={`anim-spin-slow -mt-5 -ml-5 block h-10 w-10 max-w-none rounded-lg shadow-[0_0_18px_rgba(255,255,255,0.18)] ${["opacity-35", "opacity-55", "opacity-75"][r]}`}
                 />
               </div>
             ))}

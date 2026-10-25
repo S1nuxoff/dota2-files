@@ -53,7 +53,7 @@ export default function TopBar({ route }) {
   }, []);
 
   return (
-    <header className="fixed inset-x-0 top-0 z-30 border-b border-white/[0.06] bg-ink-950/85 backdrop-blur-xl">
+    <header className="fixed inset-x-0 top-0 z-30 backdrop-blur-xl">
       <nav className="mx-auto flex h-14 max-w-[100rem] items-center gap-8 px-8">
         <a href={link("/")} className="flex shrink-0 items-center" aria-label="Dotadex Files, home">
           <img src={`${import.meta.env.BASE_URL}logo.png`} alt="Dotadex" className="h-3.5" />

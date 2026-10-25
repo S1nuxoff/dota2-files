@@ -190,9 +190,17 @@ model-viewer {
 @utility anim-spin-back {
   animation: spin var(--spin, 120s) linear infinite reverse;
 }
+/* the turning is slow enough to keep even when the system asks for less motion */
 @media (prefers-reduced-motion: reduce) {
   .anim-spin-slow,
   .anim-spin-back {
-    animation: none;
+    animation-duration: var(--spin, 120s) !important;
+  }
+}
+
+/* Pages start under the top bar and scroll beneath its blur */
+@layer base {
+  main > * {
+    padding-top: 3.5rem;
   }
 }
