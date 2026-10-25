@@ -4,6 +4,7 @@ import { DATASETS } from "../datasets.js";
 import { heroCard, heroPortrait } from "../lib/catalog.js";
 import { formatCount, formatSize } from "../lib/format.js";
 import { search } from "../lib/lists.js";
+import { correctQuery, searchNames } from "../lib/smart.js";
 import { startJob } from "../lib/jobs.js";
 import { link, navigate } from "../lib/route.js";
 import { Cell, Row, withSizes } from "./FileTable.jsx";
@@ -25,29 +26,28 @@ export default function SearchPage({ route, catalog, indexes, withCopies }) {
   const [tab, setTab] = useState("all");
   const [more, setMore] = useState({});
   const words = q.toLowerCase().split(/\s+/).filter(Boolean);
-  const hit = (s) => words.every((w) => s.toLowerCase().includes(w));
 
-  const named = useMemo(() => {
-    if (!catalog || !words.length) return { heroes: [], sets: [], items: [] };
-    const heroName = (i) => i.heroes.map((h) => catalog.heroById.get(h)?.name || "").join(" ");
-    return {
-      heroes: catalog.heroes.filter((h) => hit(h.name)),
-      sets: [...catalog.setByKey.values()].filter((s) => hit(`${s.name} ${s.hero?.name || ""}`)),
-      items: Object.values(catalog.items)
-        .filter((i) => i.prefab !== "bundle" && hit(`${i.name} ${heroName(i)}`))
-        .sort((a, b) => (b.date || "").localeCompare(a.date || "")),
+  // Names forgive typos and take beginnings (lib/smart.js), best first
+  const named = useMemo(() => (catalog && words.length ? searchNames(catalog, q) : { heroes: [], sets: [], items: [] }), [catalog, q]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Files by every word in their path or title; when the words as typed find nothing, the words put
+  // right against the files' own ("puge" -> "pudge") are searched instead, and the page says so
+  const { files, corrected } = useMemo(() => {
+    const find = (query) => {
+      const out = [];
+      for (const d of DATASETS) {
+        const index = indexes[d.id];
+        if (!index) continue;
+        const { results, total } = search(index.entries.filter((e) => !e.path.startsWith("previews/")), query, { withCopies, limit: 3000 });
+        if (total) out.push({ ds: d, results, total });
+      }
+      return out;
     };
-  }, [catalog, q]); // eslint-disable-line react-hooks/exhaustive-deps
-
-  const files = useMemo(() => {
-    const out = [];
-    for (const d of DATASETS) {
-      const index = indexes[d.id];
-      if (!index || !words.length) continue;
-      const { results, total } = search(index.entries.filter((e) => !e.path.startsWith("previews/")), q, { withCopies, limit: 3000 });
-      if (total) out.push({ ds: d, results, total });
-    }
-    return out;
+    if (!words.length) return { files: [], corrected: "" };
+    const typed = find(q);
+    if (typed.length) return { files: typed, corrected: "" };
+    const fix = correctQuery(indexes, q);
+    return fix.changed ? { files: find(fix.query), corrected: fix.query } : { files: typed, corrected: "" };
   }, [indexes, q, withCopies]); // eslint-disable-line react-hooks/exhaustive-deps
 
   if (!words.length) return <div className="p-16 text-center text-ink-400">Type in the search above.</div>;
@@ -93,6 +93,11 @@ export default function SearchPage({ route, catalog, indexes, withCopies }) {
             .join(", ")}
           {loading && ", still looking through the file lists"}
         </p>
+        {corrected && (
+          <p className="mt-2 text-[0.92rem] text-ink-300">
+            Files for <button onClick={() => navigate({ ...route, q: corrected })} className="font-medium text-ink-100 underline decoration-white/30 underline-offset-4 hover:decoration-white">{corrected}</button>, as nothing is named “{q}”
+          </p>
+        )}
 
         <div className="mt-6 flex flex-wrap gap-2">
           {tabs.map(([key, title, count]) => (

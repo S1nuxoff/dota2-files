@@ -3,6 +3,7 @@ import { ChevronLeft, Music, CreditCard, Flag, Gem, Image as ImageIcon, KeyRound
 import { datasetById, fileUrl } from "../datasets.js";
 import { imageUrl, prefabTitle } from "../lib/catalog.js";
 import { formatCount } from "../lib/format.js";
+import { searchNames } from "../lib/smart.js";
 import ItemCard from "./ItemCard.jsx";
 import HeroPicker from "./HeroPicker.jsx";
 import { link } from "../lib/route.js";
@@ -121,14 +122,8 @@ function Kinds({ catalog }) {
   // A search over every item: by name, hero, kind or event; the latest first
   const [query, setQuery] = useState("");
   const [more, setMore] = useState(1);
-  const found = useMemo(() => {
-    const words = query.toLowerCase().split(/\s+/).filter(Boolean);
-    if (!words.length) return null;
-    const hay = (i) => `${i.name} ${i.heroes.map((h) => catalog.heroById.get(h)?.name || "").join(" ")} ${titleOf(i.prefab)} ${catalog.events?.[i.event] || ""}`.toLowerCase();
-    return Object.values(catalog.items)
-      .filter((i) => words.every((w) => hay(i).includes(w)))
-      .sort((a, b) => (b.date || "").localeCompare(a.date || "") || a.name.localeCompare(b.name));
-  }, [query, catalog]);
+  // forgiving typos and taking beginnings, best first (lib/smart.js)
+  const found = useMemo(() => (query.trim() ? searchNames(catalog, query).items : null), [query, catalog]);
   const { count, covers } = useMemo(() => {
     const byKind = {};
     for (const item of Object.values(catalog.items)) (byKind[item.prefab] ??= []).push(item);

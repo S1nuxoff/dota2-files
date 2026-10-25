@@ -13,6 +13,7 @@
     "@tanstack/react-virtual": "3.14.13",
     "client-zip": "2.5.0",
     "lucide-react": "1.49.0",
+    "minisearch": "^7.1.2",
     "react": "19.3.0",
     "react-dom": "19.3.0",
     "three": "0.169.0"
