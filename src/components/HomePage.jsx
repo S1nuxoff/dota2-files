@@ -145,7 +145,7 @@ export default function HomePage({ catalog, indexes }) {
             <div className="absolute inset-x-0 bottom-0 h-[30rem] bg-[radial-gradient(45%_60%_at_50%_100%,rgba(214,96,28,0.14),transparent_70%)]" />
             <div className="absolute top-1/2 left-1/2 h-[24rem] w-[46rem] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[rgba(200,60,30,0.07)] blur-[100px]" />
             {/* a grain over the light, like worn stone */}
-            <div className="absolute inset-0 opacity-[0.22] mix-blend-overlay" style={{ backgroundImage: GRAIN, backgroundSize: "220px 220px" }} />
+            <div className="absolute inset-0 opacity-[0.09] mix-blend-overlay" style={{ backgroundImage: GRAIN, backgroundSize: "220px 220px" }} />
           </div>
           <div className="relative z-10 mx-auto flex w-full max-w-5xl flex-1 flex-col items-center justify-center px-8 py-16 text-center">
             <h1 className="anim-card text-[clamp(2.6rem,5.2vw,5.2rem)] leading-[1.02] font-semibold tracking-[-0.05em] text-balance whitespace-nowrap max-sm:whitespace-normal">
