@@ -153,21 +153,7 @@ export default function HomePage({ catalog, indexes }) {
 
         {catalog && (
           <>
-            <Feature
-              icon={Users}
-              label="Heroes"
-              href="/heroes"
-              title="Every hero, down to the last voice line"
-              frame={false}
-              text={`${catalog.heroes.length} heroes, each on a page of its own: the model in 3D with its animations, its personas and abilities, its items by set, and every sound, effect and picture of it.`}
-              points={[
-                ["In 3D, as in the game", "The body in its default look, every persona, every animation, to turn and to download as glb."],
-                ["Every line it says", "Voice lines grouped by when the game plays them: a kill, a deny, buying a Blink Dagger."],
-                ["Items by set", "Each set worn on the hero, its models, textures and effects in one download."],
-              ]}
-            >
-              <HeroStrip heroes={catalog.heroes} />
-            </Feature>
+            <HeroScene heroes={catalog.heroes} />
 
             <Feature
               icon={Gift}
@@ -344,14 +330,14 @@ function HeroField({ heroes }) {
 // words, a large picture of the real thing, and under it the points that matter, side by side
 function Feature({ icon: Icon, label, href, title, text, points = [], frame = true, children }) {
   return (
-    <section data-reveal className="mx-auto mt-32 max-w-[128rem] px-8">
+    <section data-reveal className="mx-auto mt-32 flex max-w-[128rem] flex-col items-center px-8 text-center">
       <a href={link(href)} className="group inline-flex items-center gap-2 text-[0.92rem] text-ink-300 transition-colors hover:text-ink-100">
         <Icon size={16} /> {label} <ArrowRight size={14} className="transition-transform group-hover:translate-x-0.5" />
       </a>
       <h2 className="mt-4 max-w-3xl text-[clamp(2rem,3.4vw,3rem)] leading-[1.06] font-semibold tracking-[-0.04em] text-balance">{title}</h2>
-      <p className="mt-4 max-w-2xl text-[1.02rem] leading-relaxed text-ink-400">{text}</p>
+      <p className="mt-4 max-w-2xl text-[1.02rem] leading-relaxed text-balance text-ink-400">{text}</p>
       {frame ? (
-        <div className="relative mt-10 overflow-hidden rounded-3xl border border-white/[0.07] bg-[linear-gradient(180deg,#17171a_0%,#0f0f11_100%)]">
+        <div className="relative mt-10 w-full overflow-hidden rounded-3xl border text-left border-white/[0.07] bg-[linear-gradient(180deg,#17171a_0%,#0f0f11_100%)]">
           <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent" />
           <div className="pointer-events-none absolute inset-x-0 top-0 h-48 bg-[radial-gradient(50%_100%_at_50%_0%,rgba(255,255,255,0.05),transparent)]" />
           <div className="relative">{children}</div>
@@ -360,7 +346,7 @@ function Feature({ icon: Icon, label, href, title, text, points = [], frame = tr
         <div className="mt-6">{children}</div>
       )}
       {points.length > 0 && (
-        <div className="mt-10 grid gap-8 md:grid-cols-3">
+        <div className="mt-10 grid w-full gap-8 text-left md:grid-cols-3">
           {points.map(([head, body]) => (
             <div key={head} className="border-t border-white/[0.08] pt-5">
               <h3 className="text-[0.98rem] font-medium">{head}</h3>
@@ -373,35 +359,89 @@ function Feature({ icon: Icon, label, href, title, text, points = [], frame = tr
   );
 }
 
-// A row of heroes standing in their default sets, the middle one in front; a different few each day
-function HeroStrip({ heroes }) {
+// Heroes gathering as the page scrolls: a tall section whose inner screen stays in place while it
+// passes. At its start the heroes stand far apart, small and faint, low on the floor; as the scroll goes
+// on they close in, rise and grow into one group round the middle one, and the words over them come
+// up; at the end the group draws back. Driven by the section's own place in the page, set each frame
+const SCENE = 7;
+function HeroScene({ heroes }) {
+  const section = useRef(null);
   const row = useMemo(() => {
     const day = Math.floor(Date.now() / 86400000);
-    return Array.from({ length: 7 }, (_, i) => heroes[(day * 7 + i * 19) % heroes.length]);
+    return Array.from({ length: SCENE }, (_, i) => heroes[(day * 7 + i * 19) % heroes.length]);
   }, [heroes]);
+  useEffect(() => {
+    const el = section.current;
+    const scroller = el?.closest(".overflow-y-auto");
+    if (!el || !scroller) return;
+    const figures = [...el.querySelectorAll("[data-figure]")];
+    const words = el.querySelector("[data-words]");
+    let frame = 0;
+    const draw = () => {
+      frame = 0;
+      const box = el.getBoundingClientRect();
+      const run = box.height - scroller.clientHeight;
+      const t = Math.min(1, Math.max(0, -box.top / run)); // 0 at the start, 1 at the end
+      const gather = Math.min(1, t / 0.6); // the first 60%: they come together
+      const ease = 1 - (1 - gather) ** 3;
+      const leave = Math.max(0, (t - 0.8) / 0.2); // the last 20%: the group draws back
+      figures.forEach((f, i) => {
+        const side = i - (SCENE - 1) / 2;
+        const far = Math.abs(side);
+        const x = side * (34 - 22 * ease); // vw: spread out, then close
+        const y = (1 - ease) * 18 + leave * 6; // vh: low, then on the floor
+        const scale = (0.55 + 0.45 * ease) * (1 - far * 0.09) * (1 - leave * 0.15);
+        f.style.transform = `translate(-50%, 0) translate(${x}vw, ${y}vh) scale(${scale})`;
+        f.style.opacity = String((0.15 + 0.85 * ease) * (1 - far * 0.12) * (1 - leave));
+        f.style.zIndex = String(10 - far);
+      });
+      if (words) {
+        const show = Math.min(1, Math.max(0, (t - 0.25) / 0.3));
+        words.style.opacity = String(show * (1 - leave));
+        words.style.transform = `translateY(${(1 - show) * 30}px)`;
+      }
+    };
+    const onScroll = () => (frame ||= requestAnimationFrame(draw));
+    scroller.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", onScroll);
+    draw();
+    return () => {
+      scroller.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onScroll);
+      cancelAnimationFrame(frame);
+    };
+  }, [row]);
   return (
-    <div className="relative flex items-end justify-center [mask-image:linear-gradient(to_right,transparent,black_10%,black_90%,transparent)]">
-      {row.map((h, i) => {
-        const far = Math.abs(i - 3);
-        return (
+    <section ref={section} className="relative mt-24 h-[260vh]">
+      <div className="sticky top-0 h-[100dvh] overflow-hidden">
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-[60%] bg-[radial-gradient(45%_55%_at_50%_100%,rgba(178,34,24,0.2),transparent_70%)]" />
+        <div data-words className="relative z-20 mx-auto max-w-3xl px-8 pt-[14vh] text-center opacity-0">
+          <a href={link("/heroes")} className="group inline-flex items-center gap-2 text-[0.92rem] text-ink-300 transition-colors hover:text-ink-100">
+            <Users size={16} /> Heroes <ArrowRight size={14} className="transition-transform group-hover:translate-x-0.5" />
+          </a>
+          <h2 className="mt-4 text-[clamp(2rem,3.6vw,3.2rem)] leading-[1.06] font-semibold tracking-[-0.04em] text-balance">Every hero, down to the last voice line</h2>
+          <p className="mx-auto mt-4 max-w-2xl text-[1.02rem] leading-relaxed text-balance text-ink-400">
+            {heroes.length} heroes, each with its model in 3D, its personas and abilities, its items by set, and every sound, effect and picture of it.
+          </p>
+        </div>
+        {row.map((h) => (
           <a
             key={h.id}
+            data-figure
             href={link(`/hero/${h.key}`)}
             title={h.name}
-            style={{ height: `${32 - far * 3}rem`, zIndex: 10 - far }}
-            className="group relative -mx-6 flex min-w-0 flex-1 flex-col items-center justify-end"
+            className="group absolute bottom-0 left-1/2 h-[min(62vh,40rem)] origin-bottom will-change-transform"
           >
             <img
               src={heroCard(h)}
               alt={h.name}
               loading="lazy"
-              className={`h-full w-auto max-w-none object-contain object-bottom mix-blend-lighten transition-transform duration-500 [mask-image:linear-gradient(to_bottom,black_82%,transparent)] group-hover:-translate-y-2 ${far ? "opacity-75 group-hover:opacity-100" : ""}`}
+              className="h-full w-auto max-w-none mix-blend-lighten transition-[filter] duration-300 [mask-image:linear-gradient(to_bottom,black_80%,transparent)] group-hover:brightness-125"
             />
-            <span className="absolute -bottom-7 text-[0.82rem] text-ink-300 opacity-0 transition-opacity group-hover:opacity-100">{h.name}</span>
           </a>
-        );
-      })}
-    </div>
+        ))}
+      </div>
+    </section>
   );
 }
 
