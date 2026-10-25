@@ -317,7 +317,7 @@ function Orbits({ heroes }) {
   return (
     <div
       aria-hidden="true"
-      className="anim-fade pointer-events-none absolute inset-0 overflow-hidden [mask-image:radial-gradient(closest-side,transparent_38%,black_62%,transparent_100%)]"
+      className="anim-fade pointer-events-none absolute inset-0 overflow-hidden [mask-image:radial-gradient(ellipse_36rem_17rem_at_50%_50%,transparent_45%,black_100%)]"
     >
       {RINGS.map(([radius, count, seconds], r) => {
         const ring = Array.from({ length: count }, (_, i) => heroes[(from + i) % heroes.length]);
