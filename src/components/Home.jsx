@@ -29,7 +29,7 @@ export default function Home({ indexes, errors }) {
         }
       />
 
-      <div className="page-x">
+      <div className="page-x pt-6 sm:pt-10 lg:pt-12">
         <ul className="overflow-hidden rounded-2xl border border-white/[0.07] bg-ink-900">
           {DATASETS.map((ds, i) => {
             const Icon = ds.icon;

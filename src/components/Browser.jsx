@@ -148,7 +148,7 @@ export default function Browser({ ds, route, index, error, indexes, catalog, wit
 
   return (
     <Page className="flex flex-1 flex-col">
-      <header className="relative isolate page-x flex flex-col items-center pt-12 pb-8 text-center sm:pt-20 sm:pb-12 lg:pt-24 lg:pb-14">
+      <header className="relative isolate page-x flex flex-col items-center pt-12 pb-4 text-center sm:pt-20 sm:pb-5 lg:pt-24">
         <HeadGlow />
         <Crumbs items={crumbs} className="[&>ol]:justify-center" />
         <div className="mt-5 flex max-w-full flex-col items-center gap-5">
@@ -200,6 +200,7 @@ export default function Browser({ ds, route, index, error, indexes, catalog, wit
       </header>
 
       <Toolbar
+        gap={false}
         below={
           view === "list" &&
           rows.length > 0 && (

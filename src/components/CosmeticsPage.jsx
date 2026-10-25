@@ -248,7 +248,7 @@ function Kinds({ catalog }) {
         <CosmeticsTabs current="/cosmetics" />
       </PageHead>
 
-      <div className="page-x space-y-14 pt-6">
+      <div className="page-x space-y-14 pt-8 sm:pt-12 lg:pt-16">
         {found && (
           <Section title={found.length === 1 ? "1 item" : `${formatCount(found.length)} items`} sub={`For “${query}”`}>
             {found.length === 0 && <Empty title="Nothing of that name" text="Try a shorter word, a hero's name or a kind like courier." />}

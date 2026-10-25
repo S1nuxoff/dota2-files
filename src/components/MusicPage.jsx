@@ -33,7 +33,7 @@ export default function MusicPage({ catalog, indexes, withCopies, route }) {
       >
         <CosmeticsTabs current="/music" />
       </PageHead>
-      <div className="page-x space-y-3 pt-4">
+      <div className="page-x space-y-3 pt-8 sm:pt-12 lg:pt-16">
         {shown.map((p, i) => (
           <Pack key={p.id} pack={p} catalog={catalog} indexes={indexes} withCopies={withCopies} route={route} open={open === p.id} onToggle={() => setOpen(open === p.id ? "" : p.id)} delay={Math.min(i, 20) * 20} />
         ))}

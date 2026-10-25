@@ -40,7 +40,7 @@ export function Crumbs({ items, className = "" }) {
 // to do with the whole of it (a search, tabs) under them
 export function PageHead({ crumbs, title, sub, search, actions, children, className = "" }) {
   return (
-    <header className={`relative isolate page-x flex flex-col items-center pt-14 pb-10 text-center sm:pt-24 sm:pb-16 lg:pt-28 lg:pb-20 ${className}`}>
+    <header className={`relative isolate page-x flex flex-col items-center pt-14 pb-4 text-center sm:pt-24 sm:pb-5 lg:pt-28 ${className}`}>
       <HeadGlow />
       {crumbs && <Crumbs items={crumbs} className="mb-6 [&>ol]:justify-center" />}
       <h1 className="max-w-4xl text-[clamp(2.1rem,4.6vw,3.6rem)] leading-[1.02] font-semibold tracking-[-0.045em] text-balance">{title}</h1>
@@ -73,9 +73,9 @@ function useStuck(offset = 57) {
   return [ref, stuck];
 }
 
-// A page's search and filters, sticking under the site's bar as the page scrolls, where they are
-// wanted most: deep in a long list
-export function Toolbar({ children, className = "", below }) {
+// A page's filters, sticking under the site's bar as the page scrolls, where they are wanted most:
+// deep in a long list; then the room before the content (gap)
+export function Toolbar({ children, className = "", below, gap = true }) {
   const [sentinel, stuck] = useStuck();
   return (
     <>
@@ -88,6 +88,7 @@ export function Toolbar({ children, className = "", below }) {
         <div className={`page-x flex flex-wrap items-center justify-center gap-2 py-3 ${className}`}>{children}</div>
         {below}
       </div>
+      {gap && <div aria-hidden="true" className="h-4 sm:h-8 lg:h-12" />}
     </>
   );
 }
