@@ -134,6 +134,13 @@ export default function HomePage({ catalog, indexes }) {
       <div ref={page}>
         <section className="relative flex min-h-[calc(100dvh-3.5rem)] flex-col">
           <div className="anim-fade pointer-events-none absolute inset-x-0 top-0 h-[44rem] bg-[radial-gradient(60%_50%_at_50%_0%,rgba(255,255,255,0.07),transparent_70%)]" />
+          {/* Light: Radiant's green at the left, Dire's red at the right, a white glow behind the title */}
+          <div aria-hidden="true" className="anim-fade pointer-events-none absolute inset-0 overflow-hidden">
+            <div className="absolute top-[30%] left-[8%] h-[30rem] w-[30rem] rounded-full bg-emerald-500/[0.10] blur-[120px]" />
+            <div className="absolute top-[35%] right-[8%] h-[30rem] w-[30rem] rounded-full bg-red-500/[0.10] blur-[120px]" />
+            <div className="absolute top-1/2 left-1/2 h-[26rem] w-[44rem] -translate-x-1/2 -translate-y-1/2 rounded-full bg-white/[0.05] blur-[90px]" />
+          </div>
+          {catalog && <Orbits heroes={catalog.heroes} />}
           <div className="relative z-10 mx-auto flex w-full max-w-5xl flex-1 flex-col items-center justify-center px-8 py-16 text-center">
             <h1 className="anim-card text-[clamp(2.6rem,5.2vw,5.2rem)] leading-[1.02] font-semibold tracking-[-0.05em] text-balance whitespace-nowrap max-sm:whitespace-normal">
               The Dota 2 file archive
@@ -294,6 +301,52 @@ export default function HomePage({ catalog, indexes }) {
           </div>
         </footer>
       </div>
+    </div>
+  );
+}
+
+// The heroes' icons on three rings turning slowly behind the title, the inner ones fading out so the
+// words stay clear; each icon turns back as its ring turns, to stay upright
+const RINGS = [
+  [17, 20, 90],
+  [27, 30, 130],
+  [37, 40, 180],
+];
+function Orbits({ heroes }) {
+  let from = 0;
+  return (
+    <div
+      aria-hidden="true"
+      className="anim-fade pointer-events-none absolute inset-0 overflow-hidden [mask-image:radial-gradient(closest-side,transparent_38%,black_62%,transparent_100%)]"
+    >
+      {RINGS.map(([radius, count, seconds], r) => {
+        const ring = Array.from({ length: count }, (_, i) => heroes[(from + i) % heroes.length]);
+        from += count;
+        return (
+          <div key={r}>
+            <div
+              className="absolute top-1/2 left-1/2 rounded-full border border-white/[0.07] shadow-[0_0_40px_rgba(255,255,255,0.05),inset_0_0_40px_rgba(255,255,255,0.03)]"
+              style={{ width: `${radius * 2}rem`, height: `${radius * 2}rem`, marginLeft: `${-radius}rem`, marginTop: `${-radius}rem` }}
+            />
+          <div
+            style={{ "--spin": `${seconds}s`, animationDirection: r % 2 ? "reverse" : "normal" }}
+            className="anim-spin-slow absolute top-1/2 left-1/2 h-0 w-0"
+          >
+            {ring.map((h, i) => (
+              <div key={`${h.id}${i}`} className="absolute" style={{ transform: `rotate(${(360 / count) * i}deg) translateX(${radius}rem) rotate(${-(360 / count) * i}deg)` }}>
+                <img
+                  src={heroIcon(h)}
+                  alt=""
+                  loading="lazy"
+                  style={{ "--spin": `${seconds}s`, animationDirection: r % 2 ? "normal" : "reverse" }}
+                  className="anim-spin-slow -mt-5 -ml-5 h-10 w-10 rounded-lg opacity-70 shadow-[0_0_18px_rgba(255,255,255,0.18)]"
+                />
+              </div>
+            ))}
+          </div>
+          </div>
+        );
+      })}
     </div>
   );
 }
