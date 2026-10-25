@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { lazy, Suspense, useEffect, useMemo, useRef, useState } from "react";
 import {
   ArrowRight,
   Box,
@@ -18,8 +18,8 @@ import {
 } from "lucide-react";
 import { DATASETS, DOTADEX, datasetById, fileUrl } from "../datasets.js";
 import { formatCount, formatSize } from "../lib/format.js";
-import { link, navigate, openItem } from "../lib/route.js";
-import { eventKind, picturesOf, previewOf } from "./CosmeticsPage.jsx";
+import { link, navigate } from "../lib/route.js";
+import { eventKind, picturesOf } from "./CosmeticsPage.jsx";
 import { heroIcon } from "./HeroPicker.jsx";
 import ItemCard from "./ItemCard.jsx";
 import { heroCard, imageUrl } from "../lib/catalog.js";
@@ -27,6 +27,8 @@ import { heroCard, imageUrl } from "../lib/catalog.js";
 const OWNER_URL = "https://huggingface.co/Sqls1";
 const SOURCE_URL = "https://github.com/S1nuxoff/dota2-files";
 const SUPPORT_URL = "https://ko-fi.com/s1nuxoff";
+
+const HeroViewer = lazy(() => import("./HeroViewer.jsx"));
 
 // A fine noise, drawn by the browser (an SVG turbulence), laid over the light as grain
 const GRAIN = `url("data:image/svg+xml,${encodeURIComponent(
@@ -179,7 +181,7 @@ export default function HomePage({ catalog, indexes }) {
               ))}
             </nav>
           </div>
-          {catalog && <Showcase catalog={catalog} />}
+          {catalog && <Showcase catalog={catalog} indexes={indexes} />}
         </section>
 
         {/* Every way in */}
@@ -289,64 +291,37 @@ export default function HomePage({ catalog, indexes }) {
   );
 }
 
-// A window of the site under the opening: the latest models of the game as cards, each its render
-// gently rising and falling. It starts tilted back and stands up as the page scrolls (--p, 0 to 1)
-function Showcase({ catalog }) {
-  const cards = useMemo(() => {
-    const kinds = new Set(["wearable", "courier", "ward", "bundle"]);
-    const out = [];
-    const seen = new Set();
-    const items = Object.values(catalog.items)
-      .filter((i) => kinds.has(i.prefab) && i.date)
-      .sort((a, b) => b.date.localeCompare(a.date) || Number(b.id) - Number(a.id));
-    for (const item of items) {
-      const url = previewOf(item, catalog);
-      if (!url || seen.has(url)) continue;
-      seen.add(url);
-      out.push([item, url]);
-      if (out.length === 12) break;
-    }
-    return out;
+// The hero of the day in 3D under the opening, in its default look, turning slowly on a lit floor; it
+// shows once it stands, and draws back a little as the page scrolls (--p, 0 to 1)
+function Showcase({ catalog, indexes }) {
+  const [ready, setReady] = useState(false);
+  const hero = useMemo(() => {
+    const withModel = catalog.heroes.filter((h) => h.model);
+    return withModel[Math.floor(Date.now() / 86400000) % withModel.length];
   }, [catalog]);
+  const models = useMemo(() => {
+    if (!hero || !indexes.models) return [];
+    const byPath = new Map(indexes.models.entries.map((e) => [e.path, e]));
+    return [hero.model, ...(hero.look || [])].map((p) => byPath.get(p)).filter(Boolean);
+  }, [hero, indexes.models]);
+  if (!models.length) return <div className="h-[min(62vh,42rem)]" />;
   return (
-    <div className="relative z-10 mx-auto mt-16 w-full max-w-[72rem] px-8 [perspective:1800px]">
-      <div style={{ animationDelay: "320ms" }} className="anim-stand">
+    <div className="relative mx-auto mt-6 w-full max-w-[80rem] px-8">
+      <div className="pointer-events-none absolute inset-x-[15%] bottom-[8%] h-40 rounded-[100%] bg-[radial-gradient(closest-side,rgba(214,96,28,0.18),transparent)] blur-2xl" />
       <div
-        style={{
-          transform: "rotateX(calc((1 - var(--p, 0)) * 26deg)) scale(calc(0.92 + var(--p, 0) * 0.08)) translateY(calc((1 - var(--p, 0)) * -1rem))",
-          transformOrigin: "50% 0%",
-        }}
-        className="rounded-2xl border border-white/[0.08] bg-ink-900/80 p-3 shadow-[0_40px_120px_-30px_rgba(0,0,0,0.9)] backdrop-blur [mask-image:linear-gradient(to_bottom,black_70%,transparent)]"
+        style={{ transform: "scale(calc(1 - var(--p, 0) * 0.08))", opacity: "calc(1 - var(--p, 0) * 0.5)" }}
+        className={`relative h-[min(62vh,42rem)] transition-opacity duration-1000 ${ready ? "" : "!opacity-0"}`}
       >
-        <div className="flex items-center gap-3 px-2 pt-1 pb-3">
-          <span className="text-[0.88rem] font-medium">New in the game</span>
-          <span className="text-[0.8rem] text-ink-400">{cards[0]?.[0].date}</span>
-          <a href={link("/3d")} className="ml-auto text-[0.8rem] text-ink-400 hover:text-ink-100">
-            All 3D models
-          </a>
-        </div>
-        <div className="grid grid-cols-3 gap-2 sm:grid-cols-4 lg:grid-cols-6">
-          {cards.map(([item, url], i) => (
-            <button
-              key={item.id}
-              onClick={() => openItem(item.id, cards.map(([x]) => x.id))}
-              title={item.name}
-              className="group overflow-hidden rounded-xl border border-white/[0.05] bg-[radial-gradient(circle_at_50%_60%,#29292e_0%,#151517_78%)] text-left transition-colors hover:border-white/[0.16]"
-            >
-              <div className="aspect-square p-3">
-                <img
-                  src={url}
-                  alt=""
-                  style={{ animationDelay: `${(i % 6) * -0.9}s` }}
-                  className="anim-float h-full w-full object-contain transition-transform duration-500 group-hover:scale-[1.06]"
-                />
-              </div>
-              <div className="truncate border-t border-white/[0.05] px-2.5 py-2 text-[0.76rem] text-ink-300">{item.name}</div>
-            </button>
-          ))}
-        </div>
+        <Suspense fallback={null}>
+          <HeroViewer models={models} bare showcase onReady={() => setReady(true)} />
+        </Suspense>
       </div>
-      </div>
+      <a
+        href={link(`/hero/${hero.key}`)}
+        className={`mx-auto -mt-4 flex w-fit items-center gap-2 rounded-full px-3 py-1.5 text-[0.86rem] text-ink-400 transition-[color,opacity] duration-700 hover:text-ink-100 ${ready ? "opacity-100" : "opacity-0"}`}
+      >
+        Today: <span className="text-ink-200">{hero.name}</span> <ArrowRight size={14} />
+      </a>
     </div>
   );
 }

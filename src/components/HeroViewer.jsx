@@ -53,8 +53,9 @@ const idleOf = (names) =>
   names[0] ||
   "";
 
-// bare: no backdrop of its own (the page behind lights it)
-export default function HeroViewer({ models, bare = false }) {
+// bare: no backdrop of its own (the page behind lights it); showcase: turning by itself, no zoom (the
+// wheel scrolls the page), no animation picker, no loading sign; onReady when the model stands
+export default function HeroViewer({ models, bare = false, showcase = false, onReady }) {
   const host = useRef(null);
   const stage = useRef(null);
   const [status, setStatus] = useState("loading");
@@ -80,6 +81,12 @@ export default function HeroViewer({ models, bare = false }) {
     const controls = new OrbitControls(camera, renderer.domElement);
     controls.enableDamping = true;
     controls.enablePan = false;
+    if (showcase) {
+      controls.autoRotate = true;
+      controls.autoRotateSpeed = 0.6;
+      controls.enableZoom = false;
+      controls.minPolarAngle = controls.maxPolarAngle = Math.PI * 0.46;
+    }
 
     const key = new THREE.DirectionalLight(0xfff4e8, 2.4);
     key.castShadow = true;
@@ -188,6 +195,7 @@ export default function HeroViewer({ models, bare = false }) {
       setClips(names);
       setClip(idle);
       setStatus("ready");
+      onReady?.();
     })().catch((e) => !controller.signal.aborted && setStatus(`error: ${e.message || e}`));
     return () => controller.abort();
   }, [key]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -203,12 +211,12 @@ export default function HeroViewer({ models, bare = false }) {
   return (
     <div className={`relative h-full w-full ${bare ? "" : "bg-[radial-gradient(ellipse_at_50%_40%,#202022_0%,#0f0f11_70%)]"}`}>
       <div ref={host} className="absolute inset-0" />
-      {status !== "ready" && (
+      {status !== "ready" && !showcase && (
         <div className="pointer-events-none absolute inset-0 flex items-center justify-center text-sm text-ink-400">
           {status === "loading" ? <LoaderCircle size={18} className="animate-spin" /> : status}
         </div>
       )}
-      {clips.length > 0 && (
+      {clips.length > 0 && !showcase && (
         <Dropdown
           up
           value={clip}
