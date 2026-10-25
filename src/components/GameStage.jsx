@@ -49,11 +49,13 @@ export function LookSwitch({ look, setLook, className = "" }) {
 }
 
 // Dotadex's embed of a hero or an item (path: hero/<key>?persona=<n>, item/<id>), started at once,
-// without its own link to Dotadex (the page has one)
+// without its own link to Dotadex (the page has one) and without a background of its own (bg=0): the
+// model stands on this page's light, as the simple view does
 export default function GameStage({ path, title }) {
   const [page, query] = path.split("?");
   const params = new URLSearchParams(query || "");
   params.set("autoplay", "1");
   params.set("link", "0");
-  return <iframe key={path} src={`${DOTADEX}/embed/${page}?${params}`} title={`${title} in 3D`} allow="fullscreen" className="absolute inset-0 h-full w-full border-0" />;
+  params.set("bg", "0");
+  return <iframe key={path} src={`${DOTADEX}/embed/${page}?${params}`} title={`${title} in 3D`} allow="fullscreen" className="absolute inset-0 h-full w-full border-0 bg-transparent [color-scheme:dark]" />;
 }

@@ -15,6 +15,7 @@ export default function EmbedButton({ path, title, className = "" }) {
   const [open, setOpen] = useState(false);
   const [size, setSize] = useState(1);
   const [autoplay, setAutoplay] = useState(false);
+  const [clear, setClear] = useState(false);
   const [copied, setCopied] = useState(false);
   const panel = useRef(null);
   const button = useRef(null);
@@ -28,7 +29,7 @@ export default function EmbedButton({ path, title, className = "" }) {
     const left = Math.max(12, Math.min(b.right - p.width, window.innerWidth - p.width - 12));
     const top = b.top - p.height - 8 >= 12 ? b.top - p.height - 8 : Math.min(b.bottom + 8, window.innerHeight - p.height - 12);
     setAt({ left, top });
-  }, [open, size, autoplay]);
+  }, [open, size, autoplay, clear]);
   useEffect(() => {
     if (!open) return;
     const onDown = (e) => !panel.current?.contains(e.target) && !button.current?.contains(e.target) && setOpen(false);
@@ -45,8 +46,9 @@ export default function EmbedButton({ path, title, className = "" }) {
   const [page, query] = path.split("?");
   const params = new URLSearchParams(query || "");
   if (autoplay) params.set("autoplay", "1");
+  if (clear) params.set("bg", "0");
   const src = `${DOTADEX}/embed/${page}${params.toString() ? `?${params}` : ""}`;
-  const code = `<iframe src="${src}" width="${width}" height="${height}" title="${title.replace(/"/g, "&quot;")} in 3D, Dotadex" style="border:0;border-radius:12px" allow="fullscreen" loading="lazy"></iframe>`;
+  const code = `<iframe src="${src}" width="${width}" height="${height}" title="${title.replace(/"/g, "&quot;")} in 3D, Dotadex" style="border:0;border-radius:12px${clear ? ";background:transparent;color-scheme:dark" : ""}" allow="fullscreen" loading="lazy"></iframe>`;
 
   return (
     <div className="relative">
@@ -72,9 +74,15 @@ export default function EmbedButton({ path, title, className = "" }) {
                 {label}
               </button>
             ))}
-            <label className="ml-auto flex cursor-pointer items-center gap-2 text-[0.84rem] text-ink-300 select-none">
+          </div>
+          <div className="mt-3 flex flex-wrap items-center gap-x-5 gap-y-2">
+            <label className="flex cursor-pointer items-center gap-2 text-[0.84rem] text-ink-300 select-none">
               <input type="checkbox" checked={autoplay} onChange={(e) => setAutoplay(e.target.checked)} className="accent-ink-100" />
               Start at once
+            </label>
+            <label className="flex cursor-pointer items-center gap-2 text-[0.84rem] text-ink-300 select-none" title="No background of its own: the model stands on your page">
+              <input type="checkbox" checked={clear} onChange={(e) => setClear(e.target.checked)} className="accent-ink-100" />
+              Transparent background
             </label>
           </div>
           <pre className="mt-3 max-h-32 overflow-auto rounded-xl bg-ink-950 p-3 font-mono text-[0.74rem] leading-relaxed break-all whitespace-pre-wrap text-ink-300">{code}</pre>
