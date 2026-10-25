@@ -1,6 +1,6 @@
 import { useDeferredValue, useEffect, useMemo, useRef, useState } from "react";
-import { ArrowRight, Box, ClockFading, CornerDownLeft, FolderOpen, Gem, Gift, Layers, Music, Package, Search, Shirt, Users, X } from "lucide-react";
-import { DATASETS } from "../datasets.js";
+import { ArrowRight, Box, ClockFading, CornerDownLeft, FolderOpen, Gem, Gift, Layers, Music, Package, Search, Shirt, Sparkles, Users, X } from "lucide-react";
+import { DATASETS, DOTADEX } from "../datasets.js";
 import { imageUrl, prefabTitle } from "../lib/catalog.js";
 import { searchNames } from "../lib/smart.js";
 import { link, navigate, openItem } from "../lib/route.js";
@@ -17,6 +17,7 @@ const PLACES = [
   ["/music", "Music", Music, "Every music pack, to play and download"],
   ["/3d", "3D Models", Box, "Every model, by type, theme and size"],
   ["/files", "Files", FolderOpen, "The raw datasets by folder"],
+  [DOTADEX, "Dotadex", Sparkles, "Heroes and items as the game shows them, in 3D"],
   ...DATASETS.map((d) => [`/${d.id}`, `${d.title} dataset`, d.icon || Layers, d.blurb]),
 ];
 
@@ -66,7 +67,7 @@ function Palette({ initial, catalog }) {
     });
     if (!q) {
       for (const r of recentSearches()) out.push({ ...everything(r), key: `recent:${r}`, group: "Recent", icon: ClockFading, title: r, meta: "" });
-      for (const [path, title, icon, meta] of PLACES.slice(0, 8)) out.push({ key: path, group: "Go to", icon, title, meta, run: () => navigate(routeOf(path)) });
+      for (const [path, title, icon, meta] of PLACES.slice(0, 9)) out.push({ key: path, group: "Go to", icon, title, meta, run: () => go(path) });
       return out;
     }
     if (catalog) {
@@ -90,7 +91,7 @@ function Palette({ initial, catalog }) {
       }
     }
     const words = q.toLowerCase().split(/\s+/);
-    for (const [path, title, icon, meta] of PLACES) if (words.every((w) => title.toLowerCase().includes(w))) out.push({ key: path, group: "Go to", icon, title, meta, run: () => navigate(routeOf(path)) });
+    for (const [path, title, icon, meta] of PLACES) if (words.every((w) => title.toLowerCase().includes(w))) out.push({ key: path, group: "Go to", icon, title, meta, run: () => go(path) });
     out.push(everything(q));
     return out;
   }, [q, catalog]);
@@ -196,6 +197,9 @@ function Palette({ initial, catalog }) {
     </div>
   );
 }
+
+// A place: a page of the site, or another site in a new tab
+const go = (path) => (path.startsWith("http") ? window.open(path, "_blank", "noopener") : navigate(routeOf(path)));
 
 // A place's path as a route
 function routeOf(path) {

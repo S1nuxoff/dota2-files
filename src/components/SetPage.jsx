@@ -1,5 +1,5 @@
 import { lazy, Suspense, useMemo } from "react";
-import { ExternalLink, FileArchive, LoaderCircle } from "lucide-react";
+import { FileArchive, LoaderCircle } from "lucide-react";
 import { DATASETS, DOTADEX, datasetById } from "../datasets.js";
 import { imageUrl, setDotadexPath, setFiles, setModels } from "../lib/catalog.js";
 import { formatSize } from "../lib/format.js";
@@ -8,7 +8,7 @@ import { link, openItem } from "../lib/route.js";
 import FileTable from "./FileTable.jsx";
 import ItemCard from "./ItemCard.jsx";
 import SetCard from "./SetCard.jsx";
-import { DetailTop, SideActions, SideBlock, SideTitle, Tag } from "./Detail.jsx";
+import { DetailTop, SideActions, SideBlock, SideTitle, Tag, DotadexCard } from "./Detail.jsx";
 import { heroIcon } from "./HeroPicker.jsx";
 import EmbedButton from "./EmbedButton.jsx";
 import GameStage, { LookSwitch, useLook } from "./GameStage.jsx";
@@ -113,13 +113,8 @@ export default function SetPage({ setKey, catalog, indexes, withCopies, route })
             )
           }
         >
-          {dotadex && (
-            <Button as="a" ghost href={`${DOTADEX}/${dotadex}`} target="_blank" rel="noreferrer" title="See the set on its hero in Dotadex">
-              <ExternalLink size={16} /> Dotadex
-            </Button>
-          )}
-          {dotadex && <EmbedButton path={dotadex} title={set.name} className={`${buttonClass({ ghost: true })} w-full`} />}
         </SideActions>
+        {dotadex && <DotadexCard href={`${DOTADEX}/${dotadex}`} name={hero ? `${hero.name} in it` : set.name} embed={<EmbedButton path={dotadex} title={set.name} className={buttonClass({ ghost: true, size: "sm" })} />} />}
       </DetailTop>
 
       <div className="page-x mt-12 space-y-14">

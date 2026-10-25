@@ -1,4 +1,5 @@
 import { Crumbs, Dropdown } from "./ui.jsx";
+import { ArrowUpRight } from "lucide-react";
 import { imageUrl } from "../lib/catalog.js";
 // The parts a hero's, a set's and an item's pages share, so the three read alike: where it sits, then
 // three columns under the front page's light, over the model standing on the page itself in the
@@ -149,6 +150,24 @@ export function StyleSwitch({ models, value, onChange }) {
         options={models.map((m, i) => [i, name(m)])}
         buttonClass="flex h-9 max-w-[15rem] min-w-[10rem] items-center gap-2 rounded-full bg-black/45 pr-3 pl-4 text-[0.82rem] text-ink-100 capitalize backdrop-blur-md transition-colors hover:bg-black/65"
       />
+    </div>
+  );
+}
+
+// The way to Dotadex from a hero, set or item: what it shows there, and the code to put it on another
+// site (embed) beside it
+export function DotadexCard({ href, name, embed }) {
+  return (
+    <div className="flex items-stretch overflow-hidden rounded-2xl border border-white/[0.08] bg-[linear-gradient(120deg,rgba(229,70,46,0.10),transparent_55%)]">
+      <a href={href} target="_blank" rel="noreferrer" className="group flex min-w-0 flex-1 items-center gap-3.5 p-3.5 transition-colors hover:bg-white/[0.03]">
+        <span className="min-w-0 flex-1 leading-tight">
+          <span className="flex items-center gap-1.5 text-[0.92rem] font-medium">
+            See {name} in Dotadex <ArrowUpRight size={15} className="text-ink-400 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+          </span>
+          <span className="mt-1 block text-[0.8rem] text-ink-400">The game's own shading, effects and voice lines</span>
+        </span>
+      </a>
+      {embed && <div className="flex items-center border-l border-white/[0.06] px-1.5">{embed}</div>}
     </div>
   );
 }

@@ -1,5 +1,5 @@
 import { lazy, Suspense, useMemo, useState } from "react";
-import { Download, ExternalLink, FileArchive, Image as ImageIcon, LoaderCircle, Package } from "lucide-react";
+import { Download, FileArchive, Image as ImageIcon, LoaderCircle, Package } from "lucide-react";
 import { DATASETS, DOTADEX, datasetById, fileUrl } from "../datasets.js";
 import { imageUrl, itemDotadexPath, itemFiles, prefabTitle } from "../lib/catalog.js";
 import { formatSize } from "../lib/format.js";
@@ -13,7 +13,7 @@ import { link, navigate, openItem } from "../lib/route.js";
 import { Button, Empty, GRID, Page, Section, Spinner, buttonClass, LoadingDetail } from "./ui.jsx";
 import EmbedButton from "./EmbedButton.jsx";
 import GameStage, { LookSwitch, useLook } from "./GameStage.jsx";
-import { DetailTop, IconRow, SideActions, SideBlock, SideTitle, StyleSwitch, Tag } from "./Detail.jsx";
+import { DetailTop, IconRow, SideActions, SideBlock, SideTitle, StyleSwitch, Tag, DotadexCard } from "./Detail.jsx";
 
 const HeroViewer = lazy(() => import("./HeroViewer.jsx"));
 
@@ -157,11 +157,8 @@ export default function ItemPage({ itemId, catalog, indexes, withCopies, route }
               <Download size={16} /> Model glb <span className="font-normal text-ink-400">{formatSize(model.size)}</span>
             </Button>
           )}
-          <Button as="a" ghost href={`${DOTADEX}/item/${item.id}`} target="_blank" rel="noreferrer" title="See the item in Dotadex, as the game shows it">
-            <ExternalLink size={16} /> Dotadex
-          </Button>
-          <EmbedButton path={`item/${item.id}`} title={item.name} className={`${buttonClass({ ghost: true })} w-full`} />
         </SideActions>
+        <DotadexCard href={`${DOTADEX}/item/${item.id}`} name="it" embed={<EmbedButton path={`item/${item.id}`} title={item.name} className={buttonClass({ ghost: true, size: "sm" })} />} />
       </DetailTop>
 
       <div className="page-x mt-12 space-y-14">

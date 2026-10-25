@@ -1,10 +1,11 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { ArrowRight, ArrowUpRight, Check, Copy, Heart, Search } from "lucide-react";
 import { DATASETS, DOTADEX } from "../datasets.js";
 import { formatCount, formatSize } from "../lib/format.js";
 import { link, openItem } from "../lib/route.js";
 import { openPalette } from "../lib/palette.js";
 import { previewOf } from "./CosmeticsPage.jsx";
+import GameStage from "./GameStage.jsx";
 import { heroCard, heroPortrait, imageUrl } from "../lib/catalog.js";
 import { DATASETS_URL, SEARCH_KEY, SOURCE_URL, SUPPORT_URL } from "./TopBar.jsx";
 import { TOP_LIGHT } from "./ui.jsx";
@@ -60,6 +61,7 @@ export default function HomePage({ catalog, indexes }) {
         <>
           <Numbers stats={stats} />
           <Browse catalog={catalog} stats={stats} indexes={indexes} n={n} />
+          <InTheGame catalog={catalog} />
           <Treasures catalog={catalog} n={n} stats={stats} />
           <Developers n={n} stats={stats} />
           <Closing />
@@ -321,6 +323,73 @@ function Browse({ catalog, stats, indexes, n }) {
           </ul>
           {caption("Files", `${n(stats.files)} files in eight datasets, by folder, with previews`)}
         </a>
+      </div>
+    </section>
+  );
+}
+
+// Heroes to show in Dotadex on the front page, picked from by the row under the stage
+const SHOWN = ["pudge", "invoker", "juggernaut", "crystal_maiden", "nevermore", "phantom_assassin", "lina", "axe"];
+
+// Dotadex, the site that shows heroes and items as the game does: the scene itself, live (started once
+// it comes into view, so the front page stays light), a row of heroes to switch it, and what it holds
+function InTheGame({ catalog }) {
+  const heroes = useMemo(() => SHOWN.map((k) => catalog.heroByKey.get(k)).filter(Boolean), [catalog]);
+  const [key, setKey] = useState(() => heroes[Math.floor(Date.now() / 86400000) % heroes.length]?.key);
+  const box = useRef(null);
+  const [seen, setSeen] = useState(false);
+  useEffect(() => {
+    const io = new IntersectionObserver(([e]) => e.isIntersecting && (setSeen(true), io.disconnect()), { rootMargin: "200px" });
+    if (box.current) io.observe(box.current);
+    return () => io.disconnect();
+  }, []);
+  const hero = catalog.heroByKey.get(key);
+  if (!hero) return null;
+  return (
+    <section className="page-x mt-28 sm:mt-36">
+      <div data-reveal className="grid items-center gap-10 lg:grid-cols-[minmax(0,26rem)_minmax(0,1fr)] xl:gap-16">
+        <div className="max-lg:text-center">
+          <img src={`${import.meta.env.BASE_URL}logo.png`} alt="Dotadex" width="875" height="113" className="h-5 w-auto max-lg:mx-auto" />
+          <h2 className="mt-6 text-[clamp(1.9rem,3.4vw,3rem)] leading-[1.05] font-semibold tracking-[-0.045em] text-balance">Every hero, as the game shows it</h2>
+          <p className="mt-4 text-[1.02rem] leading-relaxed text-pretty text-ink-400">
+            Dotadex draws heroes and items with the game's own shaders, lights and particles: every persona and set worn together, the voice lines with their lip sync, the treasures and scenes of the client. Free, in the browser.
+          </p>
+          <ul className="mt-7 space-y-3 text-left text-[0.92rem] text-ink-300 max-lg:mx-auto max-lg:max-w-sm">
+            {["The game's hero shading, not a generic viewer", "Effects of every item and arcana, as in a match", "Any set on its hero, any style, one link to share"].map((t) => (
+              <li key={t} className="flex gap-3">
+                <span aria-hidden="true" className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-ember" />
+                {t}
+              </li>
+            ))}
+          </ul>
+          <div className="mt-8 flex flex-wrap gap-3 max-lg:justify-center">
+            <a href={`${DOTADEX}/hero/${hero.key}`} target="_blank" rel="noreferrer" className="flex h-12 items-center gap-2 rounded-xl bg-ink-100 px-6 text-[0.95rem] font-medium text-ink-950 transition-colors hover:bg-white">
+              Open {hero.name} in Dotadex <ArrowUpRight size={17} />
+            </a>
+            <a href={DOTADEX} target="_blank" rel="noreferrer" className="flex h-12 items-center rounded-xl border border-white/[0.1] px-6 text-[0.95rem] text-ink-100 transition-colors hover:border-white/25">
+              All of Dotadex
+            </a>
+          </div>
+        </div>
+        <div ref={box}>
+          <div className="relative h-[min(64vh,40rem)] max-sm:h-[26rem]">
+            <div aria-hidden="true" className="pointer-events-none absolute inset-x-[10%] bottom-[6%] h-[30%] rounded-[50%] bg-[radial-gradient(closest-side,rgba(229,70,46,0.14),transparent)] blur-2xl" />
+            {seen && <GameStage path={`hero/${hero.key}`} title={hero.name} />}
+          </div>
+          <div className="no-bar mt-4 flex justify-center gap-2 overflow-x-auto px-1 pb-1">
+            {heroes.map((h) => (
+              <button
+                key={h.key}
+                onClick={() => setKey(h.key)}
+                title={h.name}
+                aria-pressed={h.key === key}
+                className={`h-12 w-[4.5rem] shrink-0 overflow-hidden rounded-lg border transition-all ${h.key === key ? "border-white/60 opacity-100" : "border-white/[0.08] opacity-55 hover:opacity-90"}`}
+              >
+                <img src={heroPortrait(h)} alt={h.name} loading="lazy" className="h-full w-full object-cover" />
+              </button>
+            ))}
+          </div>
+        </div>
       </div>
     </section>
   );

@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import { Box, Code, Database, FolderOpen, Gem, Heart, Search, Users } from "lucide-react";
+import { ArrowUpRight, Box, Code, Database, FolderOpen, Gem, Heart, Search, Users } from "lucide-react";
+import { DOTADEX } from "../datasets.js";
 import { link } from "../lib/route.js";
 import { datasetById } from "../datasets.js";
 import { openPalette } from "../lib/palette.js";
@@ -66,6 +67,11 @@ export default function TopBar({ route }) {
                 </li>
               );
             })}
+            <li className="hidden xl:block">
+              <a href={DOTADEX} target="_blank" rel="noreferrer" title="Heroes and items as the game shows them" className="flex h-8 items-center gap-1 rounded-lg px-3 text-[0.9rem] text-ink-400 transition-colors hover:bg-white/[0.05] hover:text-ink-100">
+                Dotadex <ArrowUpRight size={13} className="text-ember" />
+              </a>
+            </li>
           </ul>
         </div>
         <button
