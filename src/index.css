@@ -189,14 +189,15 @@ model-viewer {
 
 /* Front page: hero icons drifting about the opening, each on its own slow path */
 @keyframes drift {
-  0% {
-    transform: translate(0, 0) rotate(0deg);
-  }
-  50% {
-    transform: translate(var(--dx, 12px), var(--dy, -16px)) rotate(var(--dr, 4deg));
-  }
+  0%,
   100% {
-    transform: translate(0, 0) rotate(0deg);
+    transform: translate(0, 0) rotate(0deg) scale(1);
+  }
+  33% {
+    transform: translate(var(--dx, 60px), var(--dy, -40px)) rotate(var(--dr, 8deg)) scale(1.06);
+  }
+  66% {
+    transform: translate(var(--dx2, -40px), var(--dy2, 50px)) rotate(calc(var(--dr, 8deg) * -1)) scale(0.95);
   }
 }
 @utility anim-drift {

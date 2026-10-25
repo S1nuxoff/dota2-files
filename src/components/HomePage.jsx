@@ -315,11 +315,13 @@ function HeroField({ heroes }) {
         y,
         depth,
         hero: heroes[Math.floor(rand() * heroes.length)],
-        drift: `${12 + rand() * 14}s`,
-        delay: `${-rand() * 20}s`,
-        dx: `${(rand() - 0.5) * 50}px`,
-        dy: `${(rand() - 0.5) * 50}px`,
-        dr: `${(rand() - 0.5) * 16}deg`,
+        drift: `${9 + rand() * 9}s`,
+        delay: `${-rand() * 18}s`,
+        dx: `${(rand() - 0.5) * 280}px`,
+        dy: `${(rand() - 0.5) * 180}px`,
+        dx2: `${(rand() - 0.5) * 280}px`,
+        dy2: `${(rand() - 0.5) * 180}px`,
+        dr: `${(rand() - 0.5) * 30}deg`,
       });
     }
     return out;
@@ -339,6 +341,8 @@ function HeroField({ heroes }) {
               "--drift": o.drift,
               "--dx": o.dx,
               "--dy": o.dy,
+              "--dx2": o.dx2,
+              "--dy2": o.dy2,
               "--dr": o.dr,
               animationDelay: o.delay,
               width: `${1.4 + o.depth * 2.2}rem`,
