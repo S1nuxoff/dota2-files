@@ -202,6 +202,30 @@ export function loadModels() {
   return modelsPromise;
 }
 
+// When each sound plays (catalog/sounds.json): per file its sound event and the talker rules that
+// speak it, each a concept (Killing a hero) and conditions (Target: Pudge, 25% chance), in words.
+// Gives a Map of path -> { event, rules: [{ concept, conditions }] }
+let soundsPromise = null;
+
+export function loadSounds() {
+  soundsPromise ??= (async () => {
+    let data = null;
+    if (import.meta.env.DEV) {
+      const local = await fetch("./dev/sounds.json").catch(() => null);
+      if (local?.ok && local.headers.get("content-type")?.includes("json")) data = await local.json();
+    }
+    if (!data) {
+      const res = await fetch(`${fileUrl(datasetById("data"), "catalog/sounds.json")}.gz`);
+      if (!res.ok || !res.body) throw new Error(`${res.status} sounds`);
+      data = await new Response(res.body.pipeThrough(new DecompressionStream("gzip"))).json();
+    }
+    const rules = data.rules.map(([c, conds]) => ({ concept: data.concepts[c], conditions: conds.map((i) => data.conditions[i]) }));
+    return new Map(Object.entries(data.files).map(([path, [event, r]]) => [path, { event, rules: r.map((i) => rules[i]) }]));
+  })();
+  soundsPromise.catch(() => (soundsPromise = null));
+  return soundsPromise;
+}
+
 // Size classes by a model's longest side, in the units the models are exported in (a hero is about 4)
 export const SIZES = [
   ["tiny", "Tiny", 0.5],

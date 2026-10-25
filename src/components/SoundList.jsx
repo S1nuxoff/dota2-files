@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { ChevronRight, Download, Pause, Play } from "lucide-react";
 import { datasetById, fileUrl } from "../datasets.js";
 import { formatCount, formatSize } from "../lib/format.js";
+import { loadSounds } from "../lib/catalog.js";
 import FileTable from "./FileTable.jsx";
 
 // The game's sound folders, named for people (sounds/<folder>/...): the first that fits
@@ -16,19 +17,30 @@ const KINDS = [
 ];
 const kindOf = (path) => KINDS.find(([re]) => re.test(path))?.[1] || path.split("/").slice(1, -1).join(" / ") || "Other";
 
-// What a line is about, from its name: auto_axe_ability_berserk_03.mp3 -> ability berserk,
-// axe_attack_07.mp3 -> attack (the speaker's name, "auto" and the number off); topics of fewer than
-// three lines go together
-const topicOf = (name, speaker, pack = "") => {
-  const parts = name.replace(/\.\w+$/, "").replace(/_\d+[a-z]?$/, "").split("_").filter((p) => p !== "auto" && p !== speaker && p !== pack);
+// What a line is about when the game says nothing of it, from its name: auto_axe_ability_berserk_03.mp3
+// -> ability berserk (the speaker's name, "auto" and the number off)
+const topicOf = (name, speaker) => {
+  const parts = name.replace(/\.\w+$/, "").replace(/_\d+[a-z]?$/, "").split("_").filter((p) => p !== "auto" && p !== speaker);
   return (parts[0] === "ability" || parts[0] === "item" ? parts.slice(0, 2) : parts.slice(0, 1)).join(" ") || "other";
 };
+// A sound event in words, without its owner: Hero_Axe.Attack.Jungle -> Attack jungle
+const eventTopic = (event) => {
+  const rest = event.includes(".") ? event.slice(event.indexOf(".") + 1) : event;
+  const w = rest.replace(/[._]+/g, " ").replace(/([a-z])([A-Z])/g, "$1 $2").trim().toLowerCase();
+  return w || "other";
+};
+const VOICE = "Voice: ";
 
 // A hero's sounds: grouped by what they are, each line played in place, one at a time; the files
 // that are not sounds (phonemes) under them
 export default function SoundList({ files, route }) {
   const audio = useRef(null);
   const [playing, setPlaying] = useState("");
+  // When each sound plays, from the tracker (null while it loads or when it could not)
+  const [info, setInfo] = useState(null);
+  useEffect(() => {
+    loadSounds().then(setInfo, () => setInfo(new Map()));
+  }, []);
   useEffect(() => () => audio.current?.pause(), []);
   const play = (e) => {
     if (!audio.current) audio.current = new Audio();
@@ -44,52 +56,59 @@ export default function SoundList({ files, route }) {
     setPlaying(e.path);
   };
 
-  const sounds = files.filter((e) => e.kind === "audio");
-  const others = files.filter((e) => e.kind !== "audio");
-  const groups = useMemo(() => {
-    const byKind = new Map();
-    for (const e of sounds) {
-      const k = kindOf(e.path);
-      if (!byKind.has(k)) byKind.set(k, []);
-      byKind.get(k).push(e);
-    }
-    // A kind's lines in topics; a topic holding a big share of them is another voice pack of the
-    // hero (axe_jung_*: Jungle Axe), its own group with its own topics
-    const topicsOf = (list, pack) => {
-      const byTopic = new Map();
-      for (const e of list) {
-        const t = topicOf(e.name, e.path.split("/").at(-2), pack);
-        if (!byTopic.has(t)) byTopic.set(t, []);
-        byTopic.get(t).push(e);
-      }
-      return byTopic;
-    };
-    const out = [];
-    for (const [kind, list] of [...byKind.entries()].sort((a, b) => b[1].length - a[1].length)) {
-      list.sort((a, b) => a.name.localeCompare(b.name, "en", { numeric: true }));
-      if (list.length < 30) {
-        out.push({ kind, list, topics: null });
+  const sounds = useMemo(() => files.filter((e) => e.kind === "audio"), [files]);
+  const others = useMemo(() => files.filter((e) => e.kind !== "audio"), [files]);
+  // Sounds by kind (their folder); voice lines the talker speaks in topics by when (its concepts),
+  // each other voice the hero has (Voice: Jungle Axe) a group of its own; other sounds in topics by
+  // their sound event; a line's conditions noted under it (notes: "<topic>|<path>" -> text)
+  const { groups, notes } = useMemo(() => {
+    const notes = new Map();
+    const byGroup = new Map();
+    const groupOf = (title) => byGroup.get(title) || byGroup.set(title, { kind: title, list: [], topics: new Map() }).get(title);
+    const sorted = [...sounds].sort((a, b) => a.name.localeCompare(b.name, "en", { numeric: true }));
+    for (const e of sorted) {
+      const kind = kindOf(e.path);
+      const rec = info?.get(e.path);
+      if (rec?.rules.length) {
+        const voice = rec.rules.flatMap((r) => r.conditions).find((c) => c.startsWith(VOICE));
+        const g = groupOf(voice ? `${kind}: ${voice.slice(VOICE.length)}` : kind);
+        g.list.push(e);
+        for (const r of rec.rules) {
+          const t = r.concept;
+          if (!g.topics.has(t)) g.topics.set(t, []);
+          const l = g.topics.get(t);
+          if (!l.includes(e)) l.push(e);
+          const cond = r.conditions.filter((c) => !c.startsWith(VOICE)).join(", ");
+          const key = `${t}|${e.path}`;
+          if (cond) notes.set(key, notes.has(key) ? `${notes.get(key)}; or ${cond}` : cond);
+        }
         continue;
       }
-      const packs = [];
-      for (const [t, l] of topicsOf(list)) if (l.length >= 60 && l.length > list.length * 0.25) packs.push([t, l]);
-      const own = list.filter((e) => !packs.some(([, l]) => l.includes(e)));
-      for (const [kindList, pack, title] of [[own, "", kind], ...packs.map(([t, l]) => [l, t, `${kind}: ${t[0].toUpperCase()}${t.slice(1)}`])]) {
-        const topics = [];
-        const rest = [];
-        for (const [t, l] of topicsOf(kindList, pack)) (l.length >= 3 ? topics.push([t, l]) : rest.push(...l));
-        topics.sort((a, b) => b[1].length - a[1].length);
-        if (rest.length) topics.push(["other", rest]);
-        if (kindList.length) out.push({ kind: title, list: kindList, topics });
-      }
+      const g = groupOf(kind);
+      g.list.push(e);
+      const t = rec ? eventTopic(rec.event) : topicOf(e.name, e.path.split("/").at(-2));
+      if (!g.topics.has(t)) g.topics.set(t, []);
+      g.topics.get(t).push(e);
     }
-    return out;
-  }, [sounds]);
+    const groups = [...byGroup.values()]
+      .sort((a, b) => b.list.length - a.list.length)
+      .map((g) => {
+        // Topics of one or two sounds go together, unless that is all there is
+        let topics = [...g.topics.entries()].sort((a, b) => b[1].length - a[1].length);
+        const small = topics.filter(([, l]) => l.length < 3);
+        if (small.length > 1 && small.length < topics.length) {
+          topics = topics.filter(([, l]) => l.length >= 3);
+          topics.push(["other", small.flatMap(([, l]) => l)]);
+        }
+        return { kind: g.kind, list: g.list, topics: topics.length > 1 ? topics : null };
+      });
+    return { groups, notes };
+  }, [sounds, info]);
 
-  const rows = (list) => (
+  const rows = (list, topic = "") => (
     <div className="divide-y divide-white/[0.04]">
       {list.map((e) => (
-        <SoundRow key={e.path} e={e} playing={playing === e.path} onPlay={() => play(e)} />
+        <SoundRow key={e.path} e={e} note={notes.get(`${topic}|${e.path}`)} playing={playing === e.path} onPlay={() => play(e)} />
       ))}
     </div>
   );
@@ -107,10 +126,10 @@ export default function SoundList({ files, route }) {
                   <details key={topic} className="group border-b border-white/[0.06] last:border-b-0">
                     <summary className="flex cursor-pointer list-none items-center gap-3 px-5 py-3 transition-colors select-none hover:bg-ink-850">
                       <ChevronRight size={16} className="text-ink-400 transition-transform group-open:rotate-90" />
-                      <span className="flex-1 text-[0.92rem] capitalize">{topic.replace(/_/g, " ")}</span>
+                      <span className="flex-1 text-[0.92rem] first-letter:uppercase">{topic.replace(/_/g, " ")}</span>
                       <span className="text-[0.82rem] text-ink-400 tabular-nums">{l.length}</span>
                     </summary>
-                    <div className="border-t border-white/[0.04]">{rows(l)}</div>
+                    <div className="border-t border-white/[0.04]">{rows(l, topic)}</div>
                   </details>
                 ))
               : rows(list)}
@@ -134,7 +153,7 @@ export default function SoundList({ files, route }) {
   );
 }
 
-function SoundRow({ e, playing, onPlay }) {
+function SoundRow({ e, note, playing, onPlay }) {
   return (
     <div className={`group flex items-center gap-4 px-4 py-2 transition-colors ${playing ? "bg-ink-850" : "hover:bg-ink-850"}`}>
       <button
@@ -146,7 +165,7 @@ function SoundRow({ e, playing, onPlay }) {
       </button>
       <div className="min-w-0 flex-1 leading-tight">
         <div className="truncate text-[0.9rem]">{e.name.replace(/\.\w+$/, "")}</div>
-        <div className="truncate text-[0.76rem] text-ink-400">{e.path.slice(0, e.path.lastIndexOf("/"))}</div>
+        <div className="truncate text-[0.76rem] text-ink-400" title={note}>{note || e.path.slice(0, e.path.lastIndexOf("/"))}</div>
       </div>
       <span className="text-[0.8rem] text-ink-400 tabular-nums">{formatSize(e.size)}</span>
       <a
