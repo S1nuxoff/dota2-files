@@ -393,16 +393,16 @@ function HeroSlider({ heroes }) {
             <a
               key={h.id}
               href={link(`/hero/${h.key}`)}
-              className="group relative aspect-[448/678] w-[15rem] shrink-0 snap-start overflow-hidden rounded-2xl border border-white/[0.07] bg-[radial-gradient(circle_at_50%_35%,#2a2a2f_0%,#141416_75%)] transition-[transform,border-color] duration-300 hover:-translate-y-1.5 hover:border-white/20"
+              className="group relative w-[15rem] shrink-0 snap-start"
             >
               <img
                 src={heroCard(h)}
                 alt=""
                 loading="lazy"
                 onError={(e) => (e.currentTarget.src = heroPortrait(h))}
-                className="h-full w-full object-cover object-top transition-transform duration-500 group-hover:scale-[1.04]"
+                className="aspect-[448/678] w-full object-contain object-bottom mix-blend-lighten transition-transform duration-500 [mask-image:linear-gradient(to_bottom,black_85%,transparent)] group-hover:-translate-y-1.5"
               />
-              <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/85 via-black/40 to-transparent px-4 pt-14 pb-4">
+              <div className="mt-2 text-center">
                 <div className="text-[1.02rem] font-medium">{h.name}</div>
                 <div className="mt-0.5 text-[0.8rem] text-ink-300">
                   {h.items.length} items{h.about?.attribute ? `, ${h.about.attribute}` : ""}
