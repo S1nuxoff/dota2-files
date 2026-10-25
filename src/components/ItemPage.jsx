@@ -44,6 +44,8 @@ export default function ItemPage({ itemId, catalog, indexes, withCopies, route }
   const model = models[Math.min(style, models.length - 1)];
   const textures = files.filter((e) => e.ds === "textures");
   const sounds = files.filter((e) => e.ds === "sounds");
+  // An item that is only an effect (ambient effects, a courier's): seen in the game's look, on its hero
+  const effectOnly = !files.some((e) => e.ext === "glb") && files.some((e) => e.ds === "particles");
   // The item's pictures but its icon (a loading screen, a HUD's art, cursors), the largest on the stage
   const pictures = files.filter((e) => e.kind === "image" && e.ds !== "textures" && e.path !== item?.icon);
   const poster = pictures.reduce((best, e) => (!best || e.size > best.size ? e : best), null);
@@ -65,7 +67,7 @@ export default function ItemPage({ itemId, catalog, indexes, withCopies, route }
         </a>
 
         <div className="relative mt-4 h-[min(70vh,46rem)] overflow-hidden rounded-3xl border border-white/[0.06] bg-[radial-gradient(circle_at_50%_45%,#3a3a3f_0%,#232326_45%,#141416_100%)]">
-          {shown === "game" && models.length > 0 ? (
+          {(shown === "game" && models.length > 0) || effectOnly ? (
             <GameStage path={itemDotadexPath(item, catalog)} title={item.name} />
           ) : model ? (
             <Suspense fallback={null}>

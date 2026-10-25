@@ -33,6 +33,8 @@ export default function ItemModal({ itemId, catalog, indexes, withCopies }) {
   const models = files.filter((e) => e.ext === "glb");
   const textures = files.filter((e) => e.ds === "textures");
   const sounds = files.filter((e) => e.ds === "sounds");
+  // An item that is only an effect (ambient effects, a courier's): seen in the game's look, on its hero
+  const effectOnly = !files.some((e) => e.ext === "glb") && files.some((e) => e.ds === "particles");
   // The item's pictures but its icon (a loading screen, a HUD's art, cursors), the largest on the stage
   const pictures = files.filter((e) => e.kind === "image" && e.ds !== "textures" && e.path !== item?.icon);
   const poster = pictures.reduce((best, e) => (!best || e.size > best.size ? e : best), null);
@@ -71,7 +73,7 @@ export default function ItemModal({ itemId, catalog, indexes, withCopies }) {
     <div className="anim-fade fixed inset-0 z-40 bg-black/70 backdrop-blur-sm" role="dialog" aria-modal="true" aria-label={item.name} onClick={closeItem}>
       <div key={itemId} className="anim-open absolute inset-5 grid grid-cols-[minmax(0,1fr)_25rem] gap-4" onClick={(e) => e.stopPropagation()}>
         <div className="relative overflow-hidden rounded-2xl border border-white/[0.06] bg-[radial-gradient(circle_at_50%_42%,#3a3a3f_0%,#232326_45%,#161618_100%)]">
-          {shown === "game" && models.length > 0 ? (
+          {(shown === "game" && models.length > 0) || effectOnly ? (
             <GameStage path={itemDotadexPath(item, catalog)} title={item.name} />
           ) : model ? (
             <Suspense fallback={null}>
@@ -211,11 +213,10 @@ export default function ItemModal({ itemId, catalog, indexes, withCopies }) {
                 </div>
               </section>
             )}
+            {textures.length > 0 && (
             <section>
               <h3 className="font-medium">Textures</h3>
-              {textures.length === 0 ? (
-                <p className="mt-2 text-[0.88rem] text-ink-400">No textures of its own.</p>
-              ) : (
+              {(
                 <div className="mt-3 grid grid-cols-3 gap-2">
                   {textures.map((t, i) => (
                     <a
@@ -234,6 +235,7 @@ export default function ItemModal({ itemId, catalog, indexes, withCopies }) {
                 </div>
               )}
             </section>
+            )}
           </div>
         </aside>
       </div>
