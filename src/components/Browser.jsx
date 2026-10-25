@@ -41,7 +41,8 @@ export default function Browser({ ds, route, index, error, indexes, catalog, wit
   const searching = !!route.q;
   const allMode = !ds;
   const ready = allMode ? Object.keys(indexes).length > 0 : !!index;
-  const kind = route.kind;
+  // Only a kind of file filters (a hero page's tab, kind=sounds, may come along in an old link)
+  const kind = KINDS.some((k) => k.id === route.kind) ? route.kind : undefined;
 
   const dir = useMemo(() => (index && !allMode ? findDir(index.tree(withCopies), route.dir) : null), [index, route.dir, withCopies, allMode]);
 

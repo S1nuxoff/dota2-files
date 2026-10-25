@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { Code, Coffee, Database, Search, X } from "lucide-react";
 import { link, navigate } from "../lib/route.js";
 import { datasetById } from "../datasets.js";
+import { KINDS } from "../lib/format.js";
 
 // Where the files and the code come from, and where to support the work
 const OUTSIDE = [
@@ -30,7 +31,9 @@ export default function TopBar({ route }) {
   useEffect(() => {
     if (text === route.q) return;
     const inDataset = !!datasetById(route.ds);
-    const next = inDataset ? { ds: route.ds, dir: route.dir, q: text, kind: route.kind } : text ? { ds: "all", q: text, kind: route.kind } : {};
+    // The filter by kind of file goes along, not a hero page's tab (kind=sounds there)
+    const kind = KINDS.some((k) => k.id === route.kind) ? route.kind : undefined;
+    const next = inDataset ? { ds: route.ds, dir: route.dir, q: text, kind } : text ? { ds: "all", q: text, kind } : {};
     const t = setTimeout(() => navigate(next, !!route.q), 220);
     return () => clearTimeout(t);
   }, [text]); // eslint-disable-line react-hooks/exhaustive-deps
