@@ -1,33 +1,12 @@
-import { useEffect, useMemo, useRef, useState } from "react";
-import {
-  ArrowRight,
-  ChevronLeft,
-  ChevronRight,
-  Users,
-  Box,
-  Check,
-  Code2,
-  Copy,
-  Database,
-  Gift,
-  Heart,
-  Search,
-} from "lucide-react";
+import { useMemo, useState } from "react";
+import { ArrowRight, ArrowUpRight, Check, Copy, Heart, Search } from "lucide-react";
 import { DATASETS, DOTADEX } from "../datasets.js";
-import { formatCount } from "../lib/format.js";
-import { link, navigate, openItem } from "../lib/route.js";
+import { formatCount, formatSize } from "../lib/format.js";
+import { link, openItem } from "../lib/route.js";
+import { openPalette } from "../lib/palette.js";
 import { previewOf } from "./CosmeticsPage.jsx";
-import { heroIcon } from "./HeroPicker.jsx";
 import { heroCard, heroPortrait, imageUrl } from "../lib/catalog.js";
-
-const OWNER_URL = "https://huggingface.co/Sqls1";
-const SOURCE_URL = "https://github.com/S1nuxoff/dota2-files";
-const SUPPORT_URL = "https://ko-fi.com/s1nuxoff";
-
-// A fine noise, drawn by the browser (an SVG turbulence), laid over the light as grain
-const GRAIN = `url("data:image/svg+xml,${encodeURIComponent(
-  '<svg xmlns="http://www.w3.org/2000/svg" width="220" height="220"><filter id="n"><feTurbulence type="fractalNoise" baseFrequency="0.85" numOctaves="3" stitchTiles="stitch"/><feColorMatrix values="0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 1.4 -0.25"/></filter><rect width="100%" height="100%" filter="url(#n)"/></svg>'
-)}")`;
+import { DATASETS_URL, SEARCH_KEY, SOURCE_URL, SUPPORT_URL } from "./TopBar.jsx";
 
 // "3 hours ago", "2 days ago"
 function ago(iso) {
@@ -38,482 +17,441 @@ function ago(iso) {
   return `${Math.round(s / 86400)} days ago`;
 }
 
-// The front page: what the site holds and a way into each part of it
-export default function HomePage({ catalog, indexes }) {
-  const [query, setQuery] = useState("");
-  // Blocks below the opening show as they scroll into view
-  const page = useRef(null);
-  useEffect(() => {
-    const root = page.current;
-    if (!root) return;
-    const seen = new IntersectionObserver(
-      (list) => {
-        for (const e of list) if (e.isIntersecting) (e.target.classList.add("is-shown"), seen.unobserve(e.target));
-      },
-      { rootMargin: "0px 0px -8% 0px" }
-    );
-    const watch = () => root.querySelectorAll("[data-reveal]:not(.is-shown)").forEach((el) => seen.observe(el));
-    watch();
-    const later = new MutationObserver(watch);
-    later.observe(root, { childList: true, subtree: true });
-    return () => {
-      seen.disconnect();
-      later.disconnect();
-    };
-  }, []);
-  const search = () => query.trim() && navigate({ ds: "all", q: query.trim() });
+// The heroes of the day, by a seeded shuffle: the same all day, others tomorrow
+function daily(list, n) {
+  let seed = Math.floor(Date.now() / 86400000);
+  const rand = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+  for (let i = 0; i < 5; i++) rand();
+  const out = [...list];
+  for (let i = out.length - 1; i > 0; i--) {
+    const j = Math.floor(rand() * (i + 1));
+    [out[i], out[j]] = [out[j], out[i]];
+  }
+  return out.slice(0, n);
+}
 
+// The front page: what the site holds and the way into each part of it, every number and picture
+// taken from the files themselves
+export default function HomePage({ catalog, indexes }) {
   const stats = useMemo(() => {
     if (!catalog) return null;
     const items = Object.values(catalog.items);
-    const files = DATASETS.reduce((n, d) => n + (indexes[d.id]?.entries.filter((e) => !e.copy).length || 0), 0);
-    const bytes = DATASETS.reduce((n, d) => n + (indexes[d.id]?.entries.reduce((m, e) => m + (e.copy ? 0 : e.size), 0) || 0), 0);
-    const models = indexes.models?.entries.filter((e) => e.ext === "glb" && !e.path.startsWith("previews/")).length || 0;
-    const sounds = indexes.sounds?.entries.filter((e) => e.kind === "audio").length || 0;
+    const loaded = DATASETS.filter((d) => indexes[d.id]);
     return {
       heroes: catalog.heroes.length,
       items: items.length,
       sets: catalog.setByKey.size,
-      bundles: items.filter((i) => i.prefab === "bundle").length,
       treasures: items.filter((i) => i.loot).length,
       music: items.filter((i) => i.prefab === "music").length,
-      events: Object.keys(catalog.events || {}).length,
-      files,
-      bytes,
-      models,
-      sounds,
+      files: loaded.reduce((n, d) => n + indexes[d.id].entries.filter((e) => !e.copy).length, 0),
+      bytes: loaded.reduce((n, d) => n + indexes[d.id].entries.reduce((m, e) => m + (e.copy ? 0 : e.size), 0), 0),
+      models: indexes.models?.entries.filter((e) => e.ext === "glb" && !e.path.startsWith("previews/")).length || 0,
+      sounds: indexes.sounds?.entries.filter((e) => e.kind === "audio").length || 0,
+      complete: loaded.length === DATASETS.length,
     };
   }, [catalog, indexes]);
-
-
-  const n = (v) => (stats ? formatCount(v) : "…");
+  const n = (v) => (stats && v ? formatCount(v) : "…");
 
   return (
-    <div
-      className="min-h-0 flex-1 overflow-y-auto pt-0"
-      onScroll={(e) => {
-        const top = e.currentTarget.scrollTop;
-        e.currentTarget.style.setProperty("--p", String(Math.min(1, top / (e.currentTarget.clientHeight * 0.7))));
-        e.currentTarget.style.setProperty("--s", String(top));
-      }}
-    >
-      <div ref={page}>
-        {/* The opening reaches up under the top bar, so its light shows through the bar's blur */}
-        <section className="relative flex min-h-[100dvh] flex-col pt-14">
-          {catalog && <HeroField heroes={catalog.heroes} />}
-          {/* Light as in the game's menu: the deep red of the Dota mark from above, embers rising from below */}
-          <div aria-hidden="true" className="anim-fade pointer-events-none absolute inset-0 overflow-hidden [mask-image:linear-gradient(to_bottom,black_65%,transparent)]">
-            <div className="absolute inset-x-0 top-0 h-[46rem] bg-[radial-gradient(55%_55%_at_50%_0%,rgba(178,34,24,0.28),rgba(120,20,14,0.10)_45%,transparent_75%)]" />
-            <div className="absolute inset-x-0 bottom-[12%] h-[30rem] bg-[radial-gradient(45%_50%_at_50%_70%,rgba(214,96,28,0.12),transparent_70%)]" />
-            <div className="absolute top-1/2 left-1/2 h-[24rem] w-[46rem] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[rgba(200,60,30,0.07)] blur-[100px]" />
-            {/* a grain over the light, like worn stone */}
-            <div className="absolute inset-0 opacity-[0.04] mix-blend-overlay" style={{ backgroundImage: GRAIN, backgroundSize: "220px 220px" }} />
-          </div>
-          <div
-            style={{ transform: "translateY(calc(var(--p, 0) * -60px)) scale(calc(1 - var(--p, 0) * 0.06))", opacity: "calc(1 - var(--p, 0) * 0.9)" }}
-            className="relative z-10 mx-auto flex w-full max-w-5xl flex-1 flex-col items-center justify-center px-8 py-16 text-center"
-          >
-            <h1 className="anim-card text-[clamp(2.6rem,5.2vw,5.2rem)] leading-[1.02] font-semibold tracking-[-0.05em] text-balance whitespace-nowrap max-sm:whitespace-normal">
-              The Dota 2 file archive
-            </h1>
-            <p style={{ animationDelay: "90ms" }} className="anim-card mt-6 text-[clamp(1rem,1.15vw,1.15rem)] leading-relaxed text-balance text-ink-400 lg:whitespace-nowrap">
-              Models, voice lines, effects and chest drops straight from the game{stats ? `, ${formatCount(stats.files)} files` : ""}, all free to download.
-            </p>
-            <form
-              onSubmit={(e) => (e.preventDefault(), search())}
-              style={{ animationDelay: "180ms" }}
-              className="anim-card mt-10 flex h-[3.75rem] w-full max-w-[38rem] items-center gap-3 rounded-2xl border border-white/[0.1] bg-ink-900/90 p-1.5 pl-5 shadow-[0_20px_60px_-20px_rgba(0,0,0,0.8)] backdrop-blur transition-colors focus-within:border-white/25"
-            >
-              <Search size={19} className="shrink-0 text-ink-400" />
-              <input
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                placeholder="Pudge, Crimson Witness, courier, berserkers_call..."
-                className="h-full min-w-0 flex-1 bg-transparent text-[1rem] outline-none placeholder:text-ink-400"
-              />
-              <button type="submit" className="h-full rounded-xl bg-ink-100 px-5 text-[0.92rem] font-medium text-ink-950 transition-colors hover:bg-white">
-                Search
-              </button>
-            </form>
-            <nav style={{ animationDelay: "260ms" }} className="anim-card mt-6 flex flex-wrap items-center justify-center gap-x-1 gap-y-2 text-[0.9rem]">
-              <span className="mr-1 text-ink-400">or open</span>
-              {[
-                ["/heroes", "Heroes"],
-                ["/sets", "Sets"],
-                ["/cosmetics/treasures", "Treasures"],
-                ["/music", "Music"],
-                ["/3d", "3D models"],
-              ].map(([href, label]) => (
-                <a key={href} href={link(href)} className="rounded-lg px-2.5 py-1 text-ink-300 transition-colors hover:bg-white/[0.06] hover:text-ink-100">
-                  {label}
-                </a>
-              ))}
-            </nav>
-          </div>
-
-        </section>
-
-        {catalog && (
-          <>
-            <HeroSlider heroes={catalog.heroes} />
-
-            <Feature
-              icon={Gift}
-              label="Treasures"
-              href="/cosmetics/treasures"
-              title="Every chest, and what is inside it"
-              text={`${n(stats?.treasures)} treasures and capsules with their contents and rare bonus drops, ${n(stats?.sets)} sets and ${n(stats?.bundles)} bundles, all linked: an item knows the chests it drops from and the bundles it comes in.`}
-              points={[
-                ["Contents and bonus drops", "What a chest gives, and its rare extras with the chance the game shows."],
-                ["Where an item comes from", "The chests it drops from, the bundles it is sold in, the event it came with."],
-                ["By year and event", `Battle passes and events with all they brought, ${n(stats?.events)} of them.`],
-              ]}
-            >
-              <TreasurePanel catalog={catalog} />
-            </Feature>
-
-            <Feature
-              icon={Box}
-              label="3D models"
-              href="/3d"
-              title="Every model in the game"
-              text={`${n(stats?.models)} models as glb with their textures: heroes, items, couriers, creeps, trees, rocks and buildings, sorted by type, theme and size.`}
-              points={[
-                ["Find one by a screenshot", "Drop a picture from the game and get the models that look like it."],
-                ["Textures included", "Each model lists its textures, to download with it as one zip."],
-                ["Rendered for you", "A preview of every model, as it stands and as the game camera sees it."],
-              ]}
-            >
-              <ModelWall catalog={catalog} />
-            </Feature>
-
-            <Feature
-              icon={Database}
-              label="Files"
-              href="/files"
-              title="Take the files anywhere"
-              text={`${n(stats?.files)} files in public datasets on Hugging Face, updated after each patch. Download one file, a folder or all of it, or show any hero and item in 3D on your own site.`}
-            >
-              <div className="grid gap-4 p-4 md:grid-cols-2 md:p-6">
-                <Code title="Download a dataset" href={OWNER_URL} link="Hugging Face" lines={["pip install -U huggingface_hub", "hf download Sqls1/dota2-models --repo-type dataset"]} />
-                <Code
-                  title="Embed a hero in 3D"
-                  href={DOTADEX}
-                  link="Dotadex"
-                  lines={[`<iframe src="${DOTADEX}/embed/hero/pudge"`, '  width="800" height="500"', '  style="border:0;border-radius:12px"></iframe>']}
-                />
-              </div>
-            </Feature>
-          </>
-        )}
-
-        {/* The last word: who makes it, and a way to help */}
-        <section data-reveal className="relative mt-24 overflow-hidden px-8 py-32 text-center">
-          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(40%_60%_at_50%_100%,rgba(178,34,24,0.22),transparent_70%)]" />
-          <h2 className="relative text-[clamp(2.2rem,4vw,3.6rem)] leading-[1.05] font-semibold tracking-[-0.045em]">Made by one person</h2>
-          <p className="relative mx-auto mt-5 max-w-xl text-[1.05rem] leading-relaxed text-balance text-ink-400">
-            This site, Dotadex and the datasets behind them are built and kept running by hand. If they saved you time, you can help keep them going.
-          </p>
-          <div className="relative mt-9 flex flex-wrap justify-center gap-3">
-            <a href={SUPPORT_URL} target="_blank" rel="noreferrer" className="flex h-12 items-center gap-2 rounded-xl bg-ink-100 px-6 text-[0.95rem] font-medium text-ink-950 transition-colors hover:bg-white">
-              <Heart size={17} /> Support the author
-            </a>
-            <a href={SOURCE_URL} target="_blank" rel="noreferrer" className="flex h-12 items-center gap-2 rounded-xl border border-white/[0.1] bg-ink-900/80 px-6 text-[0.95rem] text-ink-100 transition-colors hover:border-white/25">
-              <Code2 size={17} /> Source on GitHub
-            </a>
-          </div>
-        </section>
-
-        <footer className="border-t border-white/[0.06]">
-          <div className="mx-auto grid max-w-[128rem] gap-10 px-8 py-14 sm:grid-cols-2 lg:grid-cols-[1.4fr_1fr_1fr_1fr]">
-            <div>
-              <div className="text-[0.95rem] font-medium">Dotadex Files</div>
-              <p className="mt-2 max-w-xs text-[0.86rem] leading-relaxed text-ink-400">Every file of Dota 2, sorted and free. Not affiliated with Valve; Dota 2 belongs to Valve Corporation.</p>
-            </div>
-            {[
-              ["Browse", [["/heroes", "Heroes"], ["/sets", "Sets"], ["/bundles", "Bundles"], ["/cosmetics/treasures", "Treasures"], ["/music", "Music"]]],
-              ["Files", [["/3d", "3D models"], ["/cosmetics", "Cosmetics"], ["/files", "Datasets"], [OWNER_URL, "Hugging Face"]]],
-              ["Project", [[DOTADEX, "Dotadex"], [SOURCE_URL, "Source"], [SUPPORT_URL, "Support the author"]]],
-            ].map(([head, links]) => (
-              <div key={head}>
-                <div className="text-[0.86rem] text-ink-400">{head}</div>
-                <ul className="mt-3 space-y-2 text-[0.9rem]">
-                  {links.map(([href, label]) => (
-                    <li key={label}>
-                      <a
-                        href={href.startsWith("http") ? href : link(href)}
-                        {...(href.startsWith("http") ? { target: "_blank", rel: "noreferrer" } : {})}
-                        className="text-ink-300 transition-colors hover:text-ink-100"
-                      >
-                        {label}
-                      </a>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ))}
-          </div>
-        </footer>
-      </div>
+    <div className="pt-14">
+      <Opening catalog={catalog} stats={stats} />
+      {catalog && (
+        <>
+          <Numbers stats={stats} />
+          <Browse catalog={catalog} stats={stats} indexes={indexes} n={n} />
+          <Treasures catalog={catalog} n={n} stats={stats} />
+          <Developers n={n} stats={stats} />
+          <Closing />
+        </>
+      )}
     </div>
   );
 }
 
-// Hero icons drifting all over the opening, clear of the words in its middle: each at its own depth
-// (the far ones smaller, fainter, a little blurred, moving less as the page scrolls), each on its own
-// slow path. Placed by a seeded random, so the same each visit of a day
-function HeroField({ heroes }) {
-  const icons = useMemo(() => {
-    let seed = Math.floor(Date.now() / 86400000);
-    const rand = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
-    for (let i = 0; i < 5; i++) rand();
-    const out = [];
-    for (let tries = 0; out.length < 34 && tries < 2000; tries++) {
-      const x = rand() * 100;
-      const y = 8 + rand() * 84;
-      // the words' ground: an ellipse in the middle
-      if (((x - 50) / 31) ** 2 + ((y - 50) / 30) ** 2 < 1) continue;
-      if (out.some((o) => Math.hypot((o.x - x) * 1.6, o.y - y) < 9)) continue;
-      const depth = 0.25 + rand() * 0.75;
-      out.push({
-        x,
-        y,
-        depth,
-        hero: heroes[Math.floor(rand() * heroes.length)],
-        drift: `${9 + rand() * 9}s`,
-        delay: `${-rand() * 18}s`,
-        dx: `${(rand() - 0.5) * 280}px`,
-        dy: `${(rand() - 0.5) * 180}px`,
-        dx2: `${(rand() - 0.5) * 280}px`,
-        dy2: `${(rand() - 0.5) * 180}px`,
-        dr: `${(rand() - 0.5) * 30}deg`,
-        spin: Math.round((rand() - 0.5) * 240),
-      });
-    }
-    return out;
-  }, [heroes]);
+// The opening: what this is, the search, and the heroes going round on an arc of light under it
+function Opening({ catalog, stats }) {
   return (
-    <div aria-hidden="true" className="anim-fade pointer-events-none absolute inset-0 overflow-hidden">
-      {icons.map((o, i) => (
-        <div
-          key={i}
-          className="absolute"
-          style={{
-            left: `${o.x}%`,
-            top: `${o.y}%`,
-            // with the scroll (--p, 0 to 1) it flies out from the middle, turning and growing, the near ones faster
-            transform: `translate(-50%, -50%) translate(calc(var(--p, 0) * ${(((o.x - 50) / 50) * 260 * o.depth).toFixed(0)}px), calc(var(--p, 0) * ${(((o.y - 50) / 50) * 220 * o.depth).toFixed(0)}px - var(--s, 0) * ${(0.5 * o.depth).toFixed(2)}px)) rotate(calc(var(--p, 0) * ${o.spin}deg)) scale(calc(1 + var(--p, 0) * ${(0.5 * o.depth).toFixed(2)}))`,
-          }}
+    <section className="relative -mt-14 flex min-h-[min(100svh,64rem)] flex-col overflow-hidden pt-14">
+      {/* the red of the Dotadex mark, as a light from above */}
+      <div aria-hidden="true" className="anim-fade pointer-events-none absolute inset-x-0 top-0 h-[42rem] bg-[radial-gradient(50%_60%_at_50%_0%,rgba(229,70,46,0.16),rgba(150,30,18,0.05)_50%,transparent_78%)]" />
+      <div className="relative z-10 page-x flex flex-col items-center pt-[clamp(3rem,11vh,8rem)] text-center">
+        <a
+          href={link("/heroes")}
+          className="anim-card group inline-flex items-center gap-2 rounded-full border border-white/[0.08] bg-ink-900/70 py-1 pr-3 pl-2 text-[0.8rem] text-ink-300 backdrop-blur transition-colors hover:border-white/[0.16] hover:text-ink-100"
         >
-          <img
-            src={heroIcon(o.hero)}
-            alt=""
-            style={{
-              "--drift": o.drift,
-              "--dx": o.dx,
-              "--dy": o.dy,
-              "--dx2": o.dx2,
-              "--dy2": o.dy2,
-              "--dr": o.dr,
-              animationDelay: o.delay,
-              width: `${1.4 + o.depth * 2.2}rem`,
-              opacity: 0.15 + o.depth * 0.55,
-              filter: o.depth < 0.5 ? `blur(${((0.5 - o.depth) * 4).toFixed(1)}px)` : undefined,
-            }}
-            className="anim-drift block h-auto max-w-none"
-          />
-        </div>
-      ))}
-    </div>
-  );
-}
-
-// A part of the site told the way a product page tells a feature: a small label, a heading, a few
-// words, a large picture of the real thing, and under it the points that matter, side by side
-function Feature({ icon: Icon, label, href, title, text, points = [], frame = true, children }) {
-  return (
-    <section data-reveal className="mx-auto mt-32 flex max-w-[128rem] flex-col items-center px-8 text-center">
-      <a href={link(href)} className="group inline-flex items-center gap-2 text-[0.92rem] text-ink-300 transition-colors hover:text-ink-100">
-        <Icon size={16} /> {label} <ArrowRight size={14} className="transition-transform group-hover:translate-x-0.5" />
-      </a>
-      <h2 className="mt-4 max-w-3xl text-[clamp(2rem,3.4vw,3rem)] leading-[1.06] font-semibold tracking-[-0.04em] text-balance">{title}</h2>
-      <p className="mt-4 max-w-2xl text-[1.02rem] leading-relaxed text-balance text-ink-400">{text}</p>
-      {frame ? (
-        <div className="relative mt-10 w-full overflow-hidden rounded-3xl border text-left border-white/[0.07] bg-[linear-gradient(180deg,#17171a_0%,#0f0f11_100%)]">
-          <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent" />
-          <div className="pointer-events-none absolute inset-x-0 top-0 h-48 bg-[radial-gradient(50%_100%_at_50%_0%,rgba(255,255,255,0.05),transparent)]" />
-          <div className="relative">{children}</div>
-        </div>
-      ) : (
-        <div className="mt-6">{children}</div>
-      )}
-      {points.length > 0 && (
-        <div className="mt-10 grid w-full gap-8 text-left md:grid-cols-3">
-          {points.map(([head, body]) => (
-            <div key={head} className="border-t border-white/[0.08] pt-5">
-              <h3 className="text-[0.98rem] font-medium">{head}</h3>
-              <p className="mt-2 text-[0.92rem] leading-relaxed text-ink-400">{body}</p>
-            </div>
+          <span className="relative flex h-2 w-2">
+            <span className="absolute inset-0 animate-ping rounded-full bg-ember opacity-60" />
+            <span className="relative h-2 w-2 rounded-full bg-ember" />
+          </span>
+          {catalog?.updated ? `Updated ${ago(catalog.updated)}, after every patch` : "Updated after every patch"}
+          <ArrowRight size={13} className="transition-transform group-hover:translate-x-0.5" />
+        </a>
+        <h1 style={{ animationDelay: "70ms" }} className="anim-card mt-7 max-w-4xl text-[clamp(2.5rem,6.4vw,5.6rem)] leading-[0.98] font-semibold tracking-[-0.055em] text-balance">
+          Every file of Dota&nbsp;2
+        </h1>
+        <p style={{ animationDelay: "140ms" }} className="anim-card mt-6 max-w-2xl text-[clamp(1rem,1.25vw,1.2rem)] leading-relaxed text-pretty text-ink-400">
+          Heroes, cosmetics, models, voice lines, effects and chest drops, straight from the game{stats?.files ? `: ${formatCount(stats.files)} files` : ""}. Sorted, linked and free to download.
+        </p>
+        <button
+          onClick={() => openPalette()}
+          style={{ animationDelay: "210ms" }}
+          className="anim-card group mt-9 flex h-14 w-full max-w-[36rem] items-center gap-3 rounded-2xl border border-white/[0.1] bg-ink-900/85 pr-2 pl-5 text-left shadow-[0_24px_70px_-24px_rgba(0,0,0,0.9)] backdrop-blur-md transition-colors hover:border-white/[0.2]"
+        >
+          <Search size={19} className="shrink-0 text-ink-400" />
+          <span className="flex-1 truncate text-[1rem] text-ink-500">Pudge, Crimson Witness, courier…</span>
+          <kbd className="hidden rounded-lg border border-white/10 px-2 py-1 font-sans text-[0.74rem] text-ink-400 sm:block">{SEARCH_KEY}</kbd>
+          <span className="flex h-10 items-center rounded-xl bg-ink-100 px-4 text-[0.9rem] font-medium text-ink-950 transition-colors group-hover:bg-white">Search</span>
+        </button>
+        <nav style={{ animationDelay: "280ms" }} className="anim-card mt-5 flex flex-wrap items-center justify-center gap-x-1 gap-y-1.5 text-[0.88rem]" aria-label="Popular">
+          <span className="mr-1 text-ink-500">Popular:</span>
+          {[
+            ["/sets", "Sets"],
+            ["/cosmetics/treasures", "Treasures"],
+            ["/cosmetics/courier", "Couriers"],
+            ["/music", "Music"],
+            ["/3d", "3D models"],
+          ].map(([href, label]) => (
+            <a key={href} href={link(href)} className="rounded-lg px-2.5 py-1 text-ink-300 transition-colors hover:bg-white/[0.06] hover:text-ink-100">
+              {label}
+            </a>
           ))}
-        </div>
-      )}
+        </nav>
+      </div>
+      {catalog && <HeroArc heroes={catalog.heroes} />}
     </section>
   );
 }
 
-// Every hero as a card in a row that slides sideways: by the arrows, a wheel or a drag, each card
-// settling at the edge; the row fades out at both ends
-function HeroSlider({ heroes }) {
-  const row = useRef(null);
-  const [edge, setEdge] = useState([true, false]);
-  const update = () => {
-    const el = row.current;
-    if (el) setEdge([el.scrollLeft < 8, el.scrollLeft + el.clientWidth > el.scrollWidth - 8]);
-  };
-  const step = (dir) => row.current?.scrollBy({ left: dir * row.current.clientWidth * 0.8, behavior: "smooth" });
-  const arrow = "flex h-11 w-11 items-center justify-center rounded-full border border-white/[0.1] bg-ink-900/80 text-ink-100 backdrop-blur transition-[opacity,background-color] hover:bg-ink-800 disabled:opacity-0";
+// Heroes standing on a great wheel that turns slowly, only its top showing, tilted along it; a line
+// of light runs under them. The wheel stops under the pointer; each hero opens its page
+function HeroArc({ heroes }) {
+  const picks = useMemo(() => daily(heroes, 36), [heroes]);
+  const step = 360 / picks.length;
   return (
-    <section data-reveal className="flex min-h-[100dvh] flex-col justify-center py-16">
-      <div className="mx-auto flex max-w-[128rem] flex-col items-center px-8 text-center">
-        <a href={link("/heroes")} className="group inline-flex items-center gap-2 text-[0.92rem] text-ink-300 transition-colors hover:text-ink-100">
-          <Users size={16} /> Heroes <ArrowRight size={14} className="transition-transform group-hover:translate-x-0.5" />
-        </a>
-        <h2 className="mt-4 max-w-3xl text-[clamp(2rem,3.4vw,3rem)] leading-[1.06] font-semibold tracking-[-0.04em] text-balance">Every hero, down to the last voice line</h2>
-        <p className="mt-4 max-w-2xl text-[1.02rem] leading-relaxed text-balance text-ink-400">
-          {heroes.length} heroes, each with its model in 3D, its personas and abilities, its items by set, and every sound, effect and picture of it.
-        </p>
+    <div
+      className="group anim-fade relative mt-auto h-[clamp(15rem,30vw,27rem)] w-full shrink-0 [--r:max(34rem,min(62vw,68rem))] [mask-image:linear-gradient(to_right,transparent,black_18%,black_82%,transparent)]"
+      style={{ animationDelay: "350ms" }}
+    >
+      {/* the line of light the heroes stand on: the top of a circle inside the wheel, and its glow */}
+      <div
+        aria-hidden="true"
+        className="anim-breathe pointer-events-none absolute left-1/2 h-[calc(var(--r)*1.8)] w-[calc(var(--r)*1.8)] -translate-x-1/2 rounded-full"
+        style={{
+          top: "calc(var(--r) * 0.1 + 3.5rem)",
+          background: "radial-gradient(closest-side, transparent 97.6%, rgba(255,120,90,0.85) 99.4%, transparent 100%)",
+          boxShadow: "0 -30px 90px -20px rgba(229,70,46,0.55), inset 0 40px 110px -40px rgba(229,70,46,0.35)",
+        }}
+      />
+      <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-ink-950 to-transparent" />
+      <div className="anim-turn absolute left-1/2 h-0 w-0 group-hover:[animation-play-state:paused]" style={{ top: "calc(var(--r) + 3.5rem)", "--turn": "260s" }}>
+        {picks.map((hero, i) => (
+          <a
+            key={hero.id}
+            href={link(`/hero/${hero.key}`)}
+            title={hero.name}
+            className="absolute top-0 left-0 block w-[calc(var(--r)*0.13)] overflow-hidden rounded-xl border border-white/[0.1] bg-ink-900 shadow-[0_20px_40px_-18px_rgba(0,0,0,0.9)] transition-[border-color,box-shadow] duration-300 hover:border-white/40 hover:shadow-[0_0_40px_-6px_rgba(229,70,46,0.6)]"
+            style={{ transform: `translate(-50%, -50%) rotate(${i * step}deg) translateY(calc(var(--r) * -1))` }}
+          >
+            <img
+              src={heroCard(hero)}
+              alt={hero.name}
+              loading="lazy"
+              decoding="async"
+              onError={(e) => (e.currentTarget.src = heroPortrait(hero))}
+              className="aspect-[3/4] w-full object-cover object-top"
+            />
+          </a>
+        ))}
       </div>
-      <div className="relative mt-12">
-        <div
-          ref={row}
-          onScroll={update}
-          className="flex snap-x snap-mandatory gap-5 overflow-x-auto scroll-smooth px-[max(2rem,calc((100%-128rem)/2+2rem))] pb-4 [scrollbar-width:none] [mask-image:linear-gradient(to_right,transparent,black_5%,black_95%,transparent)] [&::-webkit-scrollbar]:hidden"
-        >
-          {heroes.map((h) => (
-            <a
-              key={h.id}
-              href={link(`/hero/${h.key}`)}
-              className="group relative w-[15rem] shrink-0 snap-start"
-            >
+    </div>
+  );
+}
+
+// The numbers of it, in a row
+function Numbers({ stats }) {
+  const cells = [
+    [stats.heroes, "heroes"],
+    [stats.items, "cosmetic items"],
+    [stats.sets, "sets"],
+    [stats.models, "3D models"],
+    [stats.sounds, "sounds"],
+    [stats.bytes, "of files", true],
+  ];
+  return (
+    <section data-reveal className="page-x relative z-10 -mt-6">
+      <dl className="grid grid-cols-2 gap-px overflow-hidden rounded-2xl border border-white/[0.07] bg-white/[0.06] sm:grid-cols-3 lg:grid-cols-6">
+        {cells.map(([v, label, size]) => (
+          <div key={label} className="bg-ink-950/90 px-5 py-5 backdrop-blur sm:px-6">
+            <dd className="text-[clamp(1.5rem,2.4vw,2.1rem)] font-semibold tracking-[-0.04em] tabular-nums">{v ? (size ? formatSize(v) : formatCount(v)) : "…"}</dd>
+            <dt className="mt-1 text-[0.84rem] text-ink-400">{label}</dt>
+          </div>
+        ))}
+      </dl>
+    </section>
+  );
+}
+
+// A heading of a block of the front page
+function Head({ eyebrow, title, text, href, more }) {
+  return (
+    <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+      <div className="max-w-2xl">
+        {eyebrow && <div className="mb-3 text-[0.82rem] font-medium text-ember">{eyebrow}</div>}
+        <h2 className="text-[clamp(1.9rem,3.4vw,3rem)] leading-[1.05] font-semibold tracking-[-0.045em] text-balance">{title}</h2>
+        {text && <p className="mt-4 text-[1.02rem] leading-relaxed text-pretty text-ink-400">{text}</p>}
+      </div>
+      {href && (
+        <a href={link(href)} className="group inline-flex shrink-0 items-center gap-1.5 text-[0.92rem] text-ink-300 transition-colors hover:text-ink-100">
+          {more} <ArrowRight size={15} className="transition-transform group-hover:translate-x-0.5" />
+        </a>
+      )}
+    </div>
+  );
+}
+
+// The site's parts as tiles of different sizes, each pictured by what it holds
+function Browse({ catalog, stats, indexes, n }) {
+  const heroes = useMemo(() => daily(catalog.heroes, 3), [catalog]);
+  const sets = useMemo(
+    () =>
+      [...catalog.setByKey.values()]
+        .filter((s) => s.icon && s.hero)
+        .sort((a, b) => b.items.length - a.items.length)
+        .slice(0, 60),
+    [catalog]
+  );
+  const shownSets = useMemo(() => daily(sets, 5), [sets]);
+  const chest = useMemo(() => latestChest(catalog), [catalog]);
+  const pack = useMemo(
+    () =>
+      Object.values(catalog.items)
+        .filter((i) => i.prefab === "music" && i.icon)
+        .sort((a, b) => (b.date || "").localeCompare(a.date || ""))[0],
+    [catalog]
+  );
+  const models = useMemo(() => latestModels(catalog, 6), [catalog]);
+  const tile = "group relative flex flex-col overflow-hidden rounded-3xl border border-white/[0.07] bg-ink-900 transition-[border-color,transform] duration-500 ease-[var(--ease-out-soft)] hover:border-white/[0.16]";
+  const caption = (title, text) => (
+    <div className="relative z-10 mt-auto flex items-end justify-between gap-4 p-5 sm:p-6">
+      <div className="min-w-0">
+        <h3 className="text-[1.15rem] font-semibold tracking-[-0.02em]">{title}</h3>
+        <p className="mt-1 text-[0.88rem] leading-snug text-ink-400">{text}</p>
+      </div>
+      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-white/[0.1] text-ink-300 transition-all group-hover:border-white/30 group-hover:bg-white group-hover:text-ink-950">
+        <ArrowUpRight size={16} />
+      </span>
+    </div>
+  );
+
+  return (
+    <section className="page-x mt-28 sm:mt-36">
+      <div data-reveal>
+        <Head eyebrow="Browse" title="Everything in its place, and linked" text="A hero knows its sets, a set its items, an item the chests it drops from and every file it is made of." />
+      </div>
+      <div className="mt-10 grid gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-12 lg:grid-rows-[repeat(3,minmax(15rem,auto))]">
+        <a data-reveal href={link("/heroes")} className={`${tile} min-h-[24rem] lg:col-span-6 lg:row-span-2`}>
+          <div aria-hidden="true" className="absolute inset-x-0 top-0 h-[78%] bg-[radial-gradient(60%_70%_at_50%_100%,rgba(229,70,46,0.18),transparent_70%)]" />
+          <div className="absolute inset-x-0 top-6 bottom-24 flex items-end justify-center">
+            {heroes.map((h, i) => (
               <img
+                key={h.id}
                 src={heroCard(h)}
                 alt=""
                 loading="lazy"
                 onError={(e) => (e.currentTarget.src = heroPortrait(h))}
-                className="aspect-[448/678] w-full object-contain object-bottom mix-blend-lighten transition-transform duration-500 [mask-composite:intersect] [mask-image:linear-gradient(to_bottom,black_85%,transparent),linear-gradient(to_right,transparent,black_14%,black_86%,transparent)] group-hover:-translate-y-1.5"
+                className={`h-full max-h-[30rem] w-auto object-contain transition-transform duration-700 ease-[var(--ease-out-soft)] [mask-image:linear-gradient(to_bottom,black_80%,transparent)] ${
+                  i === 1 ? "relative z-10 group-hover:-translate-y-2" : `-mx-[8%] opacity-70 ${i === 0 ? "group-hover:-translate-x-3" : "group-hover:translate-x-3"}`
+                } ${i !== 1 ? "max-h-[24rem] scale-90" : ""}`}
               />
-              <div className="mt-2 text-center">
-                <div className="text-[1.02rem] font-medium">{h.name}</div>
-                <div className="mt-0.5 text-[0.8rem] text-ink-300">
-                  {h.items.length} items{h.about?.attribute ? `, ${h.about.attribute}` : ""}
-                </div>
+            ))}
+          </div>
+          {caption("Heroes", `${n(stats.heroes)} heroes, each with its model, personas, items, abilities and voice lines`)}
+        </a>
+
+        <a data-reveal href={link("/sets")} className={`${tile} min-h-[17rem] lg:col-span-6`}>
+          <div className="flex gap-2 p-5 pb-0 sm:gap-3 sm:p-6 sm:pb-0">
+            {shownSets.map((s, i) => (
+              <img
+                key={s.key}
+                src={imageUrl(s.icon)}
+                alt=""
+                loading="lazy"
+                style={{ transitionDelay: `${i * 40}ms` }}
+                className="aspect-[448/678] min-w-0 flex-1 rounded-xl border border-white/[0.06] object-cover object-top transition-transform duration-500 group-hover:-translate-y-1.5 max-sm:[&:nth-child(n+4)]:hidden"
+              />
+            ))}
+          </div>
+          {caption("Sets", `${n(stats.sets)} sets on their heroes, a whole set in one download`)}
+        </a>
+
+        <a data-reveal href={link("/cosmetics/treasures")} className={`${tile} min-h-[17rem] lg:col-span-3`}>
+          <div className="flex flex-1 items-center justify-center p-6 pb-0">
+            {chest && <img src={imageUrl(chest.icon)} alt="" loading="lazy" className="max-h-36 w-auto rounded-xl transition-transform duration-700 ease-[var(--ease-out-soft)] group-hover:scale-105 group-hover:-rotate-2" />}
+          </div>
+          {caption("Treasures", `${n(stats.treasures)} chests and what drops from them`)}
+        </a>
+
+        <a data-reveal href={link("/music")} className={`${tile} min-h-[17rem] lg:col-span-3`}>
+          <div className="flex flex-1 items-center justify-center gap-5 p-6 pb-0">
+            {pack && <img src={imageUrl(pack.icon)} alt="" loading="lazy" className="h-24 w-auto rounded-xl" />}
+            <span aria-hidden="true" className="flex h-14 items-end gap-1">
+              {[0, 1, 2, 3, 4].map((b) => (
+                <span key={b} className="h-full w-1.5 origin-bottom rounded-full bg-ink-300 [animation-play-state:paused] group-hover:[animation-play-state:running]" style={{ animation: `bar ${0.6 + b * 0.13}s ease-in-out ${b * -0.17}s infinite`, transform: `scaleY(${0.3 + (b % 3) * 0.25})` }} />
+              ))}
+            </span>
+          </div>
+          {caption("Music", `${n(stats.music)} music packs to play and download`)}
+        </a>
+
+        <a data-reveal href={link("/3d")} className={`${tile} min-h-[17rem] lg:col-span-6`}>
+          <div className="grid grid-cols-3 gap-px bg-white/[0.04] sm:grid-cols-6 lg:grid-cols-3 xl:grid-cols-6">
+            {models.map(([item, url]) => (
+              <div key={item.id} className="stage flex aspect-square items-center justify-center p-3">
+                <img src={url} alt="" loading="lazy" onError={(e) => (e.currentTarget.style.visibility = "hidden")} className="h-full w-full object-contain transition-transform duration-700 group-hover:scale-110" />
               </div>
-            </a>
-          ))}
-        </div>
-        <div className="pointer-events-none absolute inset-y-0 left-0 right-0 mx-auto flex max-w-[132rem] items-center justify-between px-4">
-          <button onClick={() => step(-1)} disabled={edge[0]} aria-label="Earlier heroes" className={`pointer-events-auto ${arrow}`}>
-            <ChevronLeft size={20} />
-          </button>
-          <button onClick={() => step(1)} disabled={edge[1]} aria-label="More heroes" className={`pointer-events-auto ${arrow}`}>
-            <ChevronRight size={20} />
-          </button>
+            ))}
+          </div>
+          {caption("3D Models", `${n(stats.models)} models as glb with textures, found by name, by look or by a screenshot`)}
+        </a>
+
+        <a data-reveal href={link("/files")} className={`${tile} min-h-[17rem] lg:col-span-6`}>
+          <ul className="px-5 pt-4 text-[0.86rem] sm:px-6">
+            {DATASETS.slice(0, 5).map((d) => {
+              const Icon = d.icon;
+              const index = indexes[d.id];
+              return (
+                <li key={d.id} className="flex items-center gap-3 border-b border-white/[0.05] py-2.5">
+                  <Icon size={15} className="text-ink-400" />
+                  <span className="flex-1">{d.title}</span>
+                  <span className="text-ink-500 tabular-nums">{index ? `${formatCount(index.count)} files` : ""}</span>
+                  <span className="w-16 text-right text-ink-300 tabular-nums">{index ? formatSize(index.size) : "…"}</span>
+                </li>
+              );
+            })}
+          </ul>
+          {caption("Files", `${n(stats.files)} files in eight datasets, by folder, with previews`)}
+        </a>
+      </div>
+    </section>
+  );
+}
+
+// The latest chest that gives several things with pictures
+function latestChest(catalog) {
+  return Object.values(catalog.items)
+    .filter((i) => i.loot && i.icon && i.loot.drops.filter((d) => catalog.items[d]?.icon).length >= 6)
+    .sort((a, b) => (b.date || "").localeCompare(a.date || ""))[0];
+}
+
+// The site's renders of the latest models of wearables, couriers and wards, each picture once
+function latestModels(catalog, count) {
+  const kinds = new Set(["wearable", "courier", "ward"]);
+  const out = [];
+  const seen = new Set();
+  const items = Object.values(catalog.items)
+    .filter((i) => kinds.has(i.prefab) && i.date)
+    .sort((a, b) => b.date.localeCompare(a.date) || Number(b.id) - Number(a.id));
+  for (const item of items) {
+    const url = previewOf(item, catalog);
+    if (!url || seen.has(url)) continue;
+    seen.add(url);
+    out.push([item, url]);
+    if (out.length === count) break;
+  }
+  return out;
+}
+
+// The latest chest open: its picture and name, what drops from it with each rarity's colour, and
+// its rare extras
+function Treasures({ catalog, n, stats }) {
+  const chest = useMemo(() => latestChest(catalog), [catalog]);
+  if (!chest) return null;
+  const drops = chest.loot.drops.map((d) => catalog.items[d]).filter((d) => d?.icon).slice(0, 12);
+  const bonus = chest.loot.bonus.map(([d]) => catalog.items[d]).filter((d) => d?.icon).slice(0, 6);
+  const list = [...drops, ...bonus].map((d) => d.id);
+  const cell = (item) => (
+    <button
+      key={item.id}
+      onClick={() => openItem(item.id, list)}
+      title={item.name}
+      className="group/cell relative aspect-[4/3] overflow-hidden rounded-xl border border-white/[0.06] bg-ink-850 transition-colors hover:border-white/25"
+    >
+      <img src={imageUrl(item.icon)} alt={item.name} loading="lazy" className="h-full w-full object-cover transition-transform duration-500 group-hover/cell:scale-[1.06]" />
+      <span className="absolute inset-x-0 bottom-0 h-[2px]" style={{ background: catalog.rarities[item.rarity || "common"]?.color || "transparent" }} />
+    </button>
+  );
+  return (
+    <section className="page-x mt-28 sm:mt-36">
+      <div data-reveal>
+        <Head
+          eyebrow="Treasures"
+          title="Every chest, and what is inside it"
+          text={`${n(stats.treasures)} treasures and capsules with their contents and rare bonus drops. An item knows the chests it drops from and the bundles it comes in.`}
+          href="/cosmetics/treasures"
+          more="All treasures"
+        />
+      </div>
+      <div data-reveal className="surface mt-10 grid gap-8 overflow-hidden rounded-3xl p-5 sm:p-8 md:grid-cols-[16rem_1fr] lg:grid-cols-[19rem_1fr] lg:p-10">
+        <button onClick={() => openItem(chest.id)} className="group flex flex-row items-center gap-5 text-left md:flex-col md:items-start">
+          <img src={imageUrl(chest.icon)} alt={chest.name} className="w-32 rounded-2xl transition-transform duration-500 group-hover:scale-[1.03] md:w-full" />
+          <span>
+            <span className="block text-[1.1rem] font-semibold tracking-[-0.02em]">{chest.name}</span>
+            <span className="mt-1 block text-[0.86rem] text-ink-400">
+              {chest.date?.slice(0, 4)}, {chest.loot.drops.length} items inside
+            </span>
+            <span className="mt-4 inline-flex items-center gap-1.5 text-[0.88rem] text-ink-200 group-hover:text-ink-100">
+              Open the chest <ArrowRight size={14} className="transition-transform group-hover:translate-x-0.5" />
+            </span>
+          </span>
+        </button>
+        <div>
+          <div className="text-[0.82rem] font-medium text-ink-400">Contents</div>
+          <div className="mt-3 grid grid-cols-3 gap-2 sm:grid-cols-4 xl:grid-cols-6">{drops.map(cell)}</div>
+          {bonus.length > 0 && (
+            <>
+              <div className="mt-7 text-[0.82rem] font-medium text-ink-400">Rare bonus drops</div>
+              <div className="mt-3 grid grid-cols-3 gap-2 sm:grid-cols-4 xl:grid-cols-6">{bonus.map(cell)}</div>
+            </>
+          )}
         </div>
       </div>
     </section>
   );
 }
 
-// The latest chest that gives several things: its picture and name, and what drops from it, each with
-// its rarity's colour
-function TreasurePanel({ catalog }) {
-  const chest = useMemo(
-    () =>
-      Object.values(catalog.items)
-        .filter((i) => i.loot && i.icon && i.loot.drops.filter((d) => catalog.items[d]?.icon).length >= 6)
-        .sort((a, b) => (b.date || "").localeCompare(a.date || ""))[0],
-    [catalog]
-  );
-  if (!chest) return null;
-  const drops = chest.loot.drops.map((d) => catalog.items[d]).filter((d) => d?.icon).slice(0, 12);
-  const bonus = chest.loot.bonus.map(([d]) => catalog.items[d]).filter((d) => d?.icon).slice(0, 4);
-  const cell = (item) => (
-    <button
-      key={item.id}
-      onClick={() => openItem(item.id, drops.map((d) => d.id))}
-      title={item.name}
-      className="group relative aspect-[4/3] overflow-hidden rounded-xl border border-white/[0.06] bg-ink-850 transition-colors hover:border-white/20"
-    >
-      <img src={imageUrl(item.icon)} alt="" loading="lazy" className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.05]" />
-      <span className="absolute inset-x-0 bottom-0 h-[2px]" style={{ background: catalog.rarities[item.rarity || "common"]?.color || "transparent" }} />
-    </button>
-  );
+// For people who build: the datasets from the command line, a hero in 3D on their own page
+function Developers({ n, stats }) {
   return (
-    <div className="grid gap-8 p-6 md:grid-cols-[18rem_1fr] md:p-10">
-      <button onClick={() => openItem(chest.id)} className="flex flex-col items-center text-center">
-        <img src={imageUrl(chest.icon)} alt="" className="w-full max-w-[16rem] rounded-2xl" />
-        <span className="mt-4 text-[1.02rem] font-medium">{chest.name}</span>
-        <span className="mt-1 text-[0.84rem] text-ink-400">
-          {chest.date?.slice(0, 4)}, {chest.loot.drops.length} items inside
-        </span>
-      </button>
-      <div>
-        <div className="text-[0.86rem] text-ink-400">Contents</div>
-        <div className="mt-3 grid grid-cols-3 gap-2 sm:grid-cols-4 lg:grid-cols-6">{drops.map(cell)}</div>
-        {bonus.length > 0 && (
-          <>
-            <div className="mt-6 text-[0.86rem] text-ink-400">Rare bonus drops</div>
-            <div className="mt-3 grid grid-cols-3 gap-2 sm:grid-cols-4 lg:grid-cols-6">{bonus.map(cell)}</div>
-          </>
-        )}
+    <section className="page-x mt-28 sm:mt-36">
+      <div data-reveal>
+        <Head
+          eyebrow="For developers"
+          title="Take the files anywhere"
+          text={`${n(stats.files)} files in public datasets on Hugging Face, updated after each patch. Download one file, a folder or all of it, or show any hero and item in 3D on your own site.`}
+        />
       </div>
-    </div>
-  );
-}
-
-// The site's renders of the latest models, a wall of them on a dark floor
-function ModelWall({ catalog }) {
-  const cards = useMemo(() => {
-    const kinds = new Set(["wearable", "courier", "ward"]);
-    const out = [];
-    const seen = new Set();
-    const items = Object.values(catalog.items)
-      .filter((i) => kinds.has(i.prefab) && i.date)
-      .sort((a, b) => b.date.localeCompare(a.date) || Number(b.id) - Number(a.id));
-    for (const item of items) {
-      const url = previewOf(item, catalog);
-      if (!url || seen.has(url)) continue;
-      seen.add(url);
-      out.push([item, url]);
-      if (out.length === 12) break;
-    }
-    return out;
-  }, [catalog]);
-  return (
-    <div className="grid grid-cols-3 gap-px bg-white/[0.04] sm:grid-cols-4 lg:grid-cols-6">
-      {cards.map(([item, url]) => (
-        <button
-          key={item.id}
-          onClick={() => openItem(item.id, cards.map(([x]) => x.id))}
-          title={item.name}
-          className="group flex aspect-square items-center justify-center bg-[radial-gradient(circle_at_50%_60%,#1f1f23_0%,#111113_75%)] p-5"
-        >
-          <img src={url} alt="" loading="lazy" onError={(e) => (e.currentTarget.style.visibility = "hidden")} className="h-full w-full object-contain transition-transform duration-500 group-hover:scale-[1.08]" />
-        </button>
-      ))}
-    </div>
+      <div data-reveal className="mt-10 grid gap-4 lg:grid-cols-2">
+        <Code title="Download a dataset" href={DATASETS_URL} label="Hugging Face" lines={["pip install -U huggingface_hub", "hf download Sqls1/dota2-models --repo-type dataset"]} />
+        <Code title="Embed a hero in 3D" href={DOTADEX} label="Dotadex" lines={[`<iframe src="${DOTADEX}/embed/hero/pudge"`, '  width="800" height="500"', '  style="border:0;border-radius:12px"></iframe>']} />
+      </div>
+    </section>
   );
 }
 
 // A few lines of code in a terminal-like panel, copied with a click
-function Code({ title, href, link: label, lines }) {
+function Code({ title, href, label, lines }) {
   const [done, setDone] = useState(false);
   return (
-    <div className="flex flex-col overflow-hidden rounded-2xl border border-white/[0.07] bg-ink-950">
+    <div className="flex flex-col overflow-hidden rounded-2xl border border-white/[0.07] bg-ink-900">
       <div className="flex items-center gap-3 border-b border-white/[0.06] px-4 py-3">
-        <span className="text-[0.88rem] font-medium">{title}</span>
+        <span className="flex gap-1.5" aria-hidden="true">
+          <span className="h-2.5 w-2.5 rounded-full bg-ink-700" />
+          <span className="h-2.5 w-2.5 rounded-full bg-ink-700" />
+          <span className="h-2.5 w-2.5 rounded-full bg-ink-700" />
+        </span>
+        <span className="text-[0.86rem] font-medium">{title}</span>
         <a href={href} target="_blank" rel="noreferrer" className="ml-auto inline-flex items-center gap-1 text-[0.82rem] text-ink-400 hover:text-ink-100">
-          {label} <ArrowRight size={13} />
+          {label} <ArrowUpRight size={13} />
         </a>
         <button
           onClick={async () => {
@@ -522,19 +460,41 @@ function Code({ title, href, link: label, lines }) {
             setTimeout(() => setDone(false), 1400);
           }}
           title="Copy"
+          aria-label="Copy"
           className="text-ink-400 hover:text-ink-100"
         >
-          {done ? <Check size={15} /> : <Copy size={15} />}
+          {done ? <Check size={15} className="text-emerald-400" /> : <Copy size={15} />}
         </button>
       </div>
-      <pre className="overflow-x-auto p-4 font-mono text-[0.8rem] leading-relaxed text-ink-300">
+      <pre className="overflow-x-auto p-4 font-mono text-[0.78rem] leading-relaxed text-ink-300 sm:p-5">
         {lines.map((l, i) => (
           <div key={i}>
-            <span className="mr-3 text-ink-600 select-none">{i + 1}</span>
+            <span className="mr-4 text-ink-600 select-none">{i + 1}</span>
             {l}
           </div>
         ))}
       </pre>
     </div>
+  );
+}
+
+// The last word: who makes it, and a way to help
+function Closing() {
+  return (
+    <section data-reveal className="relative mt-28 overflow-hidden px-4 py-24 text-center sm:mt-36 sm:py-32">
+      <div aria-hidden="true" className="pointer-events-none absolute inset-0 bg-[radial-gradient(40%_70%_at_50%_100%,rgba(229,70,46,0.2),transparent_70%)]" />
+      <h2 className="relative text-[clamp(2rem,4vw,3.4rem)] leading-[1.05] font-semibold tracking-[-0.045em]">Made by one person</h2>
+      <p className="relative mx-auto mt-5 max-w-xl text-[1.02rem] leading-relaxed text-balance text-ink-400">
+        This site, Dotadex and the datasets behind them are built and kept running by hand. If they saved you time, you can help keep them going.
+      </p>
+      <div className="relative mt-9 flex flex-wrap justify-center gap-3">
+        <a href={SUPPORT_URL} target="_blank" rel="noreferrer" className="flex h-12 items-center gap-2 rounded-xl bg-ink-100 px-6 text-[0.95rem] font-medium text-ink-950 transition-colors hover:bg-white">
+          <Heart size={17} className="text-ember" /> Support the author
+        </a>
+        <a href={SOURCE_URL} target="_blank" rel="noreferrer" className="flex h-12 items-center gap-2 rounded-xl border border-white/[0.1] bg-ink-900/80 px-6 text-[0.95rem] text-ink-100 transition-colors hover:border-white/25">
+          Source on GitHub
+        </a>
+      </div>
+    </section>
   );
 }
