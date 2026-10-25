@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Code, Coffee, Database, Search, X } from "lucide-react";
+import { Code, Database, Heart, Search, X } from "lucide-react";
 import { link, navigate } from "../lib/route.js";
 import { datasetById } from "../datasets.js";
 import { KINDS } from "../lib/format.js";
@@ -79,7 +79,7 @@ export default function TopBar({ route }) {
             title="Support the project on Ko-fi"
             className="flex h-8 items-center gap-1.5 rounded-lg bg-ink-800 px-3 text-[0.85rem] text-ink-100 transition-colors hover:bg-ink-700"
           >
-            <Coffee size={15} /> Ko-fi
+            <Heart size={15} /> Support
           </a>
         </div>
         <label className="flex h-9 w-64 items-center gap-2.5 rounded-lg border border-white/[0.08] bg-ink-900 px-3 transition-colors focus-within:border-white/20">
