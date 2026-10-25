@@ -1,6 +1,6 @@
 import { lazy, Suspense, useEffect, useMemo, useState } from "react";
-import { ChevronLeft, ChevronRight, Download, FileArchive, Image as ImageIcon, Maximize2, Package, X } from "lucide-react";
-import { datasetById, fileUrl } from "../datasets.js";
+import { ChevronLeft, ChevronRight, Download, ExternalLink, FileArchive, Image as ImageIcon, Maximize2, Package, X } from "lucide-react";
+import { DOTADEX, datasetById, fileUrl } from "../datasets.js";
 import { filesOfRefs, imageUrl, prefabTitle } from "../lib/catalog.js";
 import { formatSize } from "../lib/format.js";
 import { startJob } from "../lib/jobs.js";
@@ -143,6 +143,9 @@ export default function ItemModal({ itemId, catalog, indexes, withCopies }) {
                   <Download size={16} /> Model <span className="font-normal text-ink-400">{formatSize(model.size)}</span>
                 </Button>
               )}
+              <Button as="a" href={`${DOTADEX}/item/${item.id}`} target="_blank" rel="noreferrer" title="See it in Dotadex, as the game shows it" className="flex-1">
+                <ExternalLink size={16} /> Dotadex
+              </Button>
               <Button as="a" href={link(`/item/${item.id}`)} onClick={(e) => (e.preventDefault(), (location.href = link(`/item/${item.id}`)))} title="Open its own page" className="px-3">
                 <Maximize2 size={15} />
               </Button>

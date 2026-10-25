@@ -1,6 +1,6 @@
 import { lazy, Suspense, useMemo, useState } from "react";
-import { ChevronLeft, Download, FileArchive, FolderDown, LoaderCircle } from "lucide-react";
-import { DATASETS, datasetById, fileUrl } from "../datasets.js";
+import { ChevronLeft, Download, ExternalLink, FileArchive, FolderDown, LoaderCircle } from "lucide-react";
+import { DATASETS, DOTADEX, datasetById, fileUrl } from "../datasets.js";
 import { heroFiles, heroPortrait, prefabTitle } from "../lib/catalog.js";
 import { formatCount, formatSize } from "../lib/format.js";
 import { startJob } from "../lib/jobs.js";
@@ -106,6 +106,15 @@ export default function HeroPage({ heroKey, catalog, indexes, withCopies, route 
           )}
 
           <div className="absolute right-6 bottom-6 flex items-center gap-1.5 rounded-2xl bg-black/40 p-1.5 backdrop-blur-md">
+            <a
+              href={`${DOTADEX}/hero/${hero.key}${looks.indexOf(look) > 0 ? `?persona=${looks.indexOf(look)}` : ""}`}
+              target="_blank"
+              rel="noreferrer"
+              title="See the hero in Dotadex, as the game shows it"
+              className="flex h-10 items-center gap-2 rounded-xl px-4 text-[0.88rem] text-ink-100 transition-colors hover:bg-white/10"
+            >
+              <ExternalLink size={16} /> Dotadex
+            </a>
             {modelEntry && (
               <a
                 href={fileUrl(datasetById("models"), modelEntry.path, true)}

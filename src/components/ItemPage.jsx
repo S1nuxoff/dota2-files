@@ -1,6 +1,6 @@
 import { lazy, Suspense, useMemo, useState } from "react";
-import { ChevronLeft, Download, FileArchive, Image as ImageIcon, LoaderCircle, Package } from "lucide-react";
-import { DATASETS, datasetById, fileUrl } from "../datasets.js";
+import { ChevronLeft, Download, ExternalLink, FileArchive, Image as ImageIcon, LoaderCircle, Package } from "lucide-react";
+import { DATASETS, DOTADEX, datasetById, fileUrl } from "../datasets.js";
 import { filesOfRefs, imageUrl, prefabTitle } from "../lib/catalog.js";
 import { formatSize } from "../lib/format.js";
 import { startJob } from "../lib/jobs.js";
@@ -103,6 +103,15 @@ export default function ItemPage({ itemId, catalog, indexes, withCopies, route }
           )}
 
           <div className="absolute right-6 bottom-6 flex items-center gap-1.5 rounded-2xl bg-black/40 p-1.5 backdrop-blur-md">
+            <a
+              href={`${DOTADEX}/item/${item.id}`}
+              target="_blank"
+              rel="noreferrer"
+              title="See the item in Dotadex, as the game shows it"
+              className="flex h-10 items-center gap-2 rounded-xl px-4 text-[0.88rem] text-ink-100 transition-colors hover:bg-white/10"
+            >
+              <ExternalLink size={16} /> Dotadex
+            </a>
             {model && (
               <a href={fileUrl(datasetById("models"), model.path, true)} className="flex h-10 items-center gap-2 rounded-xl px-4 text-[0.88rem] text-ink-100 transition-colors hover:bg-white/10">
                 <Download size={16} /> Model <span className="text-ink-400">{formatSize(model.size)}</span>

@@ -17,6 +17,9 @@ export const DATASETS = [
 
 export const datasetById = (id) => DATASETS.find((d) => d.id === id);
 
+// Dotadex, the site that shows heroes and items as the game does: /hero/<key>?persona=<n>, /item/<id>
+export const DOTADEX = "https://s1nuxoff.github.io/Dotadex";
+
 export const repoUrl = (ds) => `https://huggingface.co/datasets/${OWNER}/${ds.repo}`;
 
 const encodePath = (path) => path.split("/").map(encodeURIComponent).join("/");
