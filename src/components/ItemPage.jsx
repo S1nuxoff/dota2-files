@@ -8,6 +8,7 @@ import FileTable from "./FileTable.jsx";
 import ItemCard from "./ItemCard.jsx";
 import { link } from "../lib/route.js";
 import { Spinner } from "./ui.jsx";
+import EmbedButton from "./EmbedButton.jsx";
 
 const HeroViewer = lazy(() => import("./HeroViewer.jsx"));
 
@@ -112,6 +113,7 @@ export default function ItemPage({ itemId, catalog, indexes, withCopies, route }
             >
               <ExternalLink size={16} /> Dotadex
             </a>
+            <EmbedButton path={`item/${item.id}`} title={item.name} className="flex h-10 items-center gap-2 rounded-xl px-4 text-[0.88rem] text-ink-100 transition-colors hover:bg-white/10" />
             {model && (
               <a href={fileUrl(datasetById("models"), model.path, true)} className="flex h-10 items-center gap-2 rounded-xl px-4 text-[0.88rem] text-ink-100 transition-colors hover:bg-white/10">
                 <Download size={16} /> Model <span className="text-ink-400">{formatSize(model.size)}</span>

@@ -9,6 +9,7 @@ import FileTable from "./FileTable.jsx";
 import ItemCard from "./ItemCard.jsx";
 import { link, navigate } from "../lib/route.js";
 import { Button, Chip, Spinner } from "./ui.jsx";
+import EmbedButton from "./EmbedButton.jsx";
 
 const HeroViewer = lazy(() => import("./HeroViewer.jsx"));
 
@@ -115,6 +116,11 @@ export default function HeroPage({ heroKey, catalog, indexes, withCopies, route 
             >
               <ExternalLink size={16} /> Dotadex
             </a>
+            <EmbedButton
+              path={`hero/${hero.key}${looks.indexOf(look) > 0 ? `?persona=${looks.indexOf(look)}` : ""}`}
+              title={look.name}
+              className="flex h-10 items-center gap-2 rounded-xl px-4 text-[0.88rem] text-ink-100 transition-colors hover:bg-white/10"
+            />
             {modelEntry && (
               <a
                 href={fileUrl(datasetById("models"), modelEntry.path, true)}

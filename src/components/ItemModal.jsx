@@ -6,6 +6,7 @@ import { formatSize } from "../lib/format.js";
 import { startJob } from "../lib/jobs.js";
 import { closeItem, link, openItem, openItems } from "../lib/route.js";
 import { Button } from "./ui.jsx";
+import EmbedButton from "./EmbedButton.jsx";
 
 const HeroViewer = lazy(() => import("./HeroViewer.jsx"));
 
@@ -146,6 +147,7 @@ export default function ItemModal({ itemId, catalog, indexes, withCopies }) {
               <Button as="a" href={`${DOTADEX}/item/${item.id}`} target="_blank" rel="noreferrer" title="See it in Dotadex, as the game shows it" className="flex-1">
                 <ExternalLink size={16} /> Dotadex
               </Button>
+              <EmbedButton path={`item/${item.id}`} title={item.name} className="inline-flex h-10 items-center justify-center gap-2 rounded-lg border border-white/[0.08] bg-ink-850 px-3 text-[0.9rem] font-medium text-ink-100 transition-colors hover:bg-ink-800" />
               <Button as="a" href={link(`/item/${item.id}`)} onClick={(e) => (e.preventDefault(), (location.href = link(`/item/${item.id}`)))} title="Open its own page" className="px-3">
                 <Maximize2 size={15} />
               </Button>
