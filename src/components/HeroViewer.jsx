@@ -208,7 +208,7 @@ export default function HeroViewer({ models, bare = false, showcase = false, tur
   };
 
   return (
-    <div className={`relative h-full w-full ${bare ? "" : "bg-[radial-gradient(ellipse_at_50%_40%,#202022_0%,#0f0f11_70%)]"}`}>
+    <div className={bare ? "absolute inset-0" : "relative h-full w-full bg-[radial-gradient(ellipse_at_50%_40%,#202022_0%,#0f0f11_70%)]"}>
       <div ref={host} className="absolute inset-0" />
       {status !== "ready" && !showcase && (
         <div className="pointer-events-none absolute inset-0 flex items-center justify-center text-sm text-ink-400">

@@ -502,23 +502,26 @@ export function LoadingList({ title, sub, ratio = "aspect-[4/3.4]", grid = GRID.
   );
 }
 
-// A hero's, set's or item's page while its data comes: the trail, the stage and the side beside it
+// A hero's, set's or item's page while its data comes: the trail, its name, the stage, the side
 export function LoadingDetail() {
   return (
     <Page className="min-h-[100svh]" aria-busy="true">
       <div className="page-x pt-5 sm:pt-6">
         <div className="skeleton h-3.5 w-40 rounded" />
       </div>
-      <div className="page-x mt-4 grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(24rem,30rem)] lg:gap-8 xl:gap-12">
-        <div className="skeleton h-[min(60svh,32rem)] rounded-2xl sm:rounded-3xl lg:h-[min(74vh,44rem)]" />
-        <div className="space-y-5 lg:py-2">
-          <div className="skeleton h-11 w-3/4 rounded-lg" />
+      <div className="page-x mt-4 grid items-center gap-6 lg:grid-cols-[minmax(17rem,23rem)_minmax(0,1fr)_minmax(17rem,23rem)] xl:gap-10">
+        <div className="space-y-4 max-lg:flex max-lg:flex-col max-lg:items-center">
+          <div className="skeleton h-4 w-28 rounded" />
+          <div className="skeleton h-14 w-4/5 rounded-lg" />
           <div className="skeleton h-3.5 w-1/2 rounded" />
-          <div className="space-y-2 pt-2">
+          <div className="w-full space-y-2 pt-2">
             <div className="skeleton h-3 w-full rounded" />
             <div className="skeleton h-3 w-11/12 rounded" />
             <div className="skeleton h-3 w-2/3 rounded" />
           </div>
+        </div>
+        <div className="skeleton mx-auto h-[min(58svh,30rem)] w-full rounded-[50%] opacity-40 lg:h-[min(80vh,52rem)]" />
+        <div className="space-y-4">
           <div className="skeleton h-16 w-full rounded-xl" />
           <div className="skeleton h-12 w-full rounded-xl" />
           <div className="grid grid-cols-2 gap-2">

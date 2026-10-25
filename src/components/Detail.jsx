@@ -1,21 +1,28 @@
-import { Crumbs } from "./ui.jsx";
+import { Crumbs, HeadGlow } from "./ui.jsx";
 import { imageUrl } from "../lib/catalog.js";
 // The parts a hero's, a set's and an item's pages share, so the three read alike: where it sits, then
-// two columns, as a product's page: the stage on the left, on the right what it is and its downloads
-// (on a phone, one under the other)
+// three columns under the front page's light: what it is on the left, the model standing on the page
+// itself in the middle (no frame), its numbers, contents and downloads on the right (on a phone, one
+// under the other)
 
-export function DetailTop({ crumbs, stage, children }) {
+export function DetailTop({ crumbs, stage, left, children }) {
   return (
     <>
       <div className="page-x pt-5 sm:pt-6">
         <Crumbs items={crumbs} />
       </div>
-      <section className="page-x mt-4 grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(24rem,30rem)] lg:gap-8 xl:gap-12">
-        <div className="stage relative h-[min(60svh,32rem)] overflow-hidden rounded-2xl border border-white/[0.06] sm:rounded-3xl lg:h-[min(74vh,44rem)]">
-          {stage}
-          <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/15 to-transparent" />
+      <section className="relative isolate">
+        <HeadGlow />
+        <div className="page-x grid items-center gap-6 pt-4 lg:grid-cols-[minmax(17rem,23rem)_minmax(0,1fr)_minmax(17rem,23rem)] lg:gap-6 lg:pt-0 xl:gap-10">
+          <div className="flex min-w-0 flex-col gap-5 max-lg:items-center max-lg:text-center">{left}</div>
+          <div className="relative h-[min(58svh,30rem)] lg:h-[min(80vh,52rem)]">
+            {/* the floor the model stands on: a soft light under it, fading into the page */}
+            <div aria-hidden="true" className="pointer-events-none absolute inset-x-[8%] bottom-[4%] h-[30%] rounded-[50%] bg-[radial-gradient(closest-side,rgba(255,255,255,0.07),rgba(229,70,46,0.07)_55%,transparent)] blur-xl" />
+            <div aria-hidden="true" className="pointer-events-none absolute inset-x-[20%] top-[12%] bottom-[20%] rounded-[50%] bg-[radial-gradient(closest-side,rgba(255,255,255,0.045),transparent)] blur-2xl" />
+            {stage}
+          </div>
+          <aside className="flex min-w-0 flex-col gap-6">{children}</aside>
         </div>
-        <aside className="flex min-w-0 flex-col gap-6 lg:py-2">{children}</aside>
       </section>
     </>
   );
@@ -25,14 +32,14 @@ export function DetailTop({ crumbs, stage, children }) {
 export function SideTitle({ icon, title, line, tags }) {
   return (
     <header>
-      <div className="flex items-start gap-3.5">
+      <div className="flex flex-col gap-3 max-lg:items-center">
         {icon}
         <div className="min-w-0">
-          <h1 className="text-[clamp(1.9rem,3.2vw,2.75rem)] leading-[1.04] font-semibold tracking-[-0.04em] text-balance">{title}</h1>
+          <h1 className="text-[clamp(2.3rem,3.6vw,3.9rem)] leading-[0.98] font-semibold tracking-[-0.05em] text-balance">{title}</h1>
           {line && <p className="mt-2 text-[0.9rem] text-ink-400">{line}</p>}
         </div>
       </div>
-      {tags && <div className="mt-4 flex flex-wrap gap-1.5">{tags}</div>}
+      {tags && <div className="mt-4 flex flex-wrap gap-1.5 max-lg:justify-center">{tags}</div>}
     </header>
   );
 }

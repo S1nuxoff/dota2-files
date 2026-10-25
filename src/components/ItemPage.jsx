@@ -86,7 +86,7 @@ export default function ItemPage({ itemId, catalog, indexes, withCopies, route }
                 )}
               </div>
             )}
-            {models.length > 0 && <LookSwitch look={shown} setLook={setShown} className="absolute top-3 right-3 sm:top-4 sm:right-4" />}
+            {models.length > 0 && <LookSwitch look={shown} setLook={setShown} className="absolute top-2 right-0 sm:top-3" />}
             {shown === "simple" && models.length > 1 && !item.bundle && (
               <StageBar>
                 <StageSwitch items={models.map((m, i) => [i, m.name.replace(/\.glb$/, "").replace(/_/g, " ")])} value={style} onChange={setStyle} />
@@ -94,27 +94,29 @@ export default function ItemPage({ itemId, catalog, indexes, withCopies, route }
             )}
           </>
         }
+        left={
+          <>
+            <SideTitle
+              title={item.name}
+              icon={item.icon && <img src={imageUrl(item.icon)} alt="" className="h-14 w-auto shrink-0 rounded-xl border border-white/[0.06]" />}
+              line={[kind, item.slot, heroes.length ? `for ${heroes.map((h) => h.name).join(", ")}` : ""].filter(Boolean).join(" · ")}
+              tags={
+                <>
+                  {rarity && <Tag color={rarity.color}>{rarity.name}</Tag>}
+                  {item.date && <Tag>{item.date.slice(0, 4)}</Tag>}
+                  {item.event && catalog.events?.[item.event] && <Tag href={link(`/cosmetics/${eventKind(item.event)}`)}>{catalog.events[item.event]}</Tag>}
+                  {heroes.map((h) => (
+                    <Tag key={h.id} href={link(`/hero/${h.key}`)}>
+                      {h.name}
+                    </Tag>
+                  ))}
+                </>
+              }
+            />
+            {item.text && <p className="line-clamp-6 max-w-md text-[0.95rem] leading-relaxed whitespace-pre-line text-ink-300">{item.text}</p>}
+          </>
+        }
       >
-        <SideTitle
-          title={item.name}
-          icon={item.icon && <img src={imageUrl(item.icon)} alt="" className="h-14 w-auto shrink-0 rounded-xl border border-white/[0.06]" />}
-          line={[kind, item.slot, heroes.length ? `for ${heroes.map((h) => h.name).join(", ")}` : ""].filter(Boolean).join(" · ")}
-          tags={
-            <>
-              {rarity && <Tag color={rarity.color}>{rarity.name}</Tag>}
-              {item.date && <Tag>{item.date.slice(0, 4)}</Tag>}
-              {item.event && catalog.events?.[item.event] && <Tag href={link(`/cosmetics/${eventKind(item.event)}`)}>{catalog.events[item.event]}</Tag>}
-              {heroes.map((h) => (
-                <Tag key={h.id} href={link(`/hero/${h.key}`)}>
-                  {h.name}
-                </Tag>
-              ))}
-            </>
-          }
-        />
-
-        {item.text && <p className="line-clamp-6 text-[0.95rem] leading-relaxed whitespace-pre-line text-ink-300">{item.text}</p>}
-
         {others.length > 0 && (
           <SideBlock
             title={set.name}

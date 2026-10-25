@@ -55,26 +55,29 @@ export default function SetPage({ setKey, catalog, indexes, withCopies, route })
             ) : set.icon ? (
               <img src={imageUrl(set.icon)} alt="" className="mx-auto h-full object-contain" />
             ) : null}
-            {dotadex && <LookSwitch look={lookMode} setLook={setLookMode} className="absolute top-3 right-3 sm:top-4 sm:right-4" />}
+            {dotadex && <LookSwitch look={lookMode} setLook={setLookMode} className="absolute top-2 right-0 sm:top-3" />}
+          </>
+        }
+        left={
+          <>
+            <SideTitle
+              title={set.name}
+              icon={hero && <img src={heroIcon(hero)} alt="" className="h-8 w-8 shrink-0 rounded-lg" />}
+              line={
+                <>
+                  Set of {set.items.length} items{hero && <> for <a href={link(`/hero/${hero.key}`)} className="text-ink-200 hover:underline">{hero.name}</a></>}
+                  {ready && `, ${files.length} files`}
+                </>
+              }
+              tags={rarities.map((r) => (
+                <Tag key={r} color={catalog.rarities[r]?.color}>
+                  {catalog.rarities[r]?.name || r}
+                </Tag>
+              ))}
+            />
           </>
         }
       >
-        <SideTitle
-          title={set.name}
-          icon={hero && <img src={heroIcon(hero)} alt="" className="mt-1.5 h-8 w-8 shrink-0 rounded-lg sm:mt-2.5" />}
-          line={
-            <>
-              Set of {set.items.length} items{hero && <> for <a href={link(`/hero/${hero.key}`)} className="text-ink-200 hover:underline">{hero.name}</a></>}
-              {ready && `, ${files.length} files`}
-            </>
-          }
-          tags={rarities.map((r) => (
-            <Tag key={r} color={catalog.rarities[r]?.color}>
-              {catalog.rarities[r]?.name || r}
-            </Tag>
-          ))}
-        />
-
         <SideBlock title="In this set">
           <ul className="overflow-hidden rounded-xl border border-white/[0.07] bg-ink-900">
             {set.items.map((id) => {

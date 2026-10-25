@@ -16,7 +16,7 @@ import { link, navigate } from "../lib/route.js";
 import { Button, Chip, Empty, GRID, Page, Section, Segmented, Spinner, Toolbar, buttonClass, LoadingDetail, Progressive } from "./ui.jsx";
 import EmbedButton from "./EmbedButton.jsx";
 import GameStage, { LookSwitch, useLook } from "./GameStage.jsx";
-import { DetailTop, SideActions, SideBlock, SideTitle, StageSwitch, Tag } from "./Detail.jsx";
+import { DetailTop, SideActions, SideBlock, SideTitle, StageBar, StageSwitch, Tag } from "./Detail.jsx";
 
 const HeroViewer = lazy(() => import("./HeroViewer.jsx"));
 
@@ -100,26 +100,40 @@ export default function HeroPage({ heroKey, catalog, indexes, withCopies, route 
             ) : (
               <img src={heroPortrait(hero)} alt="" className="h-full w-full object-cover opacity-70" />
             )}
-            <LookSwitch look={lookMode} setLook={setLookMode} className="absolute top-3 right-3 sm:top-4 sm:right-4" />
+            <LookSwitch look={lookMode} setLook={setLookMode} className="absolute top-2 right-0 sm:top-3" />
+            {looks.length > 1 && (
+              <StageBar className="bottom-1 sm:bottom-2">
+                <StageSwitch items={looks.map((l) => [l.id, l.name])} value={look.id} onChange={setLook} />
+              </StageBar>
+            )}
+          </>
+        }
+        left={
+          <>
+            <SideTitle
+              title={hero.name}
+              icon={
+                about?.attribute && (
+                  <span className="flex items-center gap-2 text-[0.86rem] text-ink-300">
+                    <img src={attributeIcon(about.attribute)} alt="" className="h-6 w-6" /> {about.attribute}
+                    {about.attack && <span className="text-ink-500">· {about.attack}</span>}
+                  </span>
+                )
+              }
+              line={`${formatCount(items.length)} items, ${hero.sets.length} sets${ready ? `, ${formatCount(files.length)} files` : ""}`}
+              tags={about && about.roles.map(([r]) => <Tag key={r}>{r}</Tag>)}
+            />
+            {about?.hype && (
+              <p className="max-w-md text-[0.95rem] leading-relaxed text-ink-300">
+                <span className="line-clamp-5">{about.hype}</span>
+                <button onClick={() => setTab("about")} className="mt-2 text-[0.86rem] text-ink-100 underline decoration-white/25 underline-offset-4 hover:decoration-white">
+                  Story, numbers and abilities
+                </button>
+              </p>
+            )}
           </>
         }
       >
-        <SideTitle
-          title={hero.name}
-          icon={about?.attribute && <img src={attributeIcon(about.attribute)} alt={about.attribute} title={about.attribute} className="mt-1 h-8 w-8 shrink-0 sm:mt-2 sm:h-9 sm:w-9" />}
-          line={`${formatCount(items.length)} items, ${hero.sets.length} sets${ready ? `, ${formatCount(files.length)} files` : ""}`}
-          tags={about && [about.attack, ...about.roles.map(([r]) => r)].filter(Boolean).map((t) => <Tag key={t}>{t}</Tag>)}
-        />
-
-        {about?.hype && (
-          <p className="text-[0.95rem] leading-relaxed text-ink-300">
-            <span className="line-clamp-4">{about.hype}</span>
-            <button onClick={() => setTab("about")} className="mt-1.5 text-[0.86rem] text-ink-100 underline decoration-white/25 underline-offset-4 hover:decoration-white">
-              Story, numbers and abilities
-            </button>
-          </p>
-        )}
-
         {about?.stats && (
           <dl className="grid grid-cols-3 gap-px overflow-hidden rounded-xl border border-white/[0.07] bg-white/[0.06]">
             {[
@@ -156,11 +170,6 @@ export default function HeroPage({ heroKey, catalog, indexes, withCopies, route 
           </SideBlock>
         )}
 
-        {looks.length > 1 && (
-          <SideBlock title="Personas">
-            <StageSwitch light items={looks.map((l) => [l.id, l.name])} value={look.id} onChange={setLook} />
-          </SideBlock>
-        )}
 
         <SideActions
           main={
@@ -195,7 +204,7 @@ export default function HeroPage({ heroKey, catalog, indexes, withCopies, route 
         </SideActions>
       </DetailTop>
 
-      <Toolbar className="py-0">
+      <Toolbar className="py-0" gap={false}>
         <Segmented variant="line" label="Parts of the hero" value={tab} onChange={setTab} items={tabs} className="border-b-0" />
         {tab !== "items" && tab !== "about" && byDataset[tab] && (
           <div className="py-2 max-sm:w-full">
@@ -204,7 +213,7 @@ export default function HeroPage({ heroKey, catalog, indexes, withCopies, route 
         )}
       </Toolbar>
 
-      <div className="page-x pt-6">
+      <div className="page-x pt-8">
         {tab === "items" ? (
           <div key={`items-${grouping}`} className="anim-page space-y-12">
             <div className="flex flex-wrap items-center gap-2">
