@@ -122,3 +122,49 @@ export function heroFiles(hero, catalog, indexes, withCopies) {
 
 // The game's name of a kind of item (catalog.prefabs), else its own words
 export const prefabTitle = (prefab) => prefabNames[prefab] || (prefab || "other").replace(/_/g, " ");
+
+// The tracker's list of every 3D model (catalog/models.json): rows of the fields it names, with
+// texture paths as indexes into its own list. npm run dev reads public/dev/models.json when there is one
+let modelsPromise = null;
+
+export function loadModels() {
+  modelsPromise ??= (async () => {
+    let data = null;
+    if (import.meta.env.DEV) {
+      const local = await fetch("./dev/models.json").catch(() => null);
+      if (local?.ok && local.headers.get("content-type")?.includes("json")) data = await local.json();
+    }
+    if (!data) {
+      const res = await fetch(`${fileUrl(datasetById("data"), "catalog/models.json")}.gz`);
+      if (!res.ok || !res.body) throw new Error(`${res.status} models`);
+      data = await new Response(res.body.pipeThrough(new DecompressionStream("gzip"))).json();
+    }
+    const at = Object.fromEntries(data.fields.map((f, i) => [f, i]));
+    return data.models.map((r) => ({
+      ds: r[at.dataset],
+      path: r[at.path],
+      type: r[at.type],
+      group: r[at.group],
+      theme: r[at.theme],
+      hero: r[at.hero],
+      item: r[at.item],
+      dims: r[at.width] == null ? null : [r[at.width], r[at.height], r[at.depth]],
+      triangles: r[at.triangles],
+      animations: r[at.animations],
+      variant: r[at.variant],
+      textures: r[at.textures].map((i) => data.textures[i]),
+    }));
+  })();
+  modelsPromise.catch(() => (modelsPromise = null));
+  return modelsPromise;
+}
+
+// Size classes by a model's longest side, in the units the models are exported in (a hero is about 4)
+export const SIZES = [
+  ["tiny", "Tiny", 0.5],
+  ["small", "Small", 2],
+  ["medium", "Medium", 6],
+  ["large", "Large", 20],
+  ["huge", "Huge", Infinity],
+];
+export const sizeOf = (dims) => (dims ? SIZES.find(([, , max]) => Math.max(...dims) < max)[0] : "");

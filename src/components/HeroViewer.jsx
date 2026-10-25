@@ -10,7 +10,7 @@ import { datasetById, fileUrl } from "../datasets.js";
 // (the items' bones are the hero's, by name), playing the hero's animations. models: entries of
 // dota2-models, the hero's first; each is read from its gzipped copy where there is one
 async function loadGlb(entry, loader, signal) {
-  const ds = datasetById("models");
+  const ds = datasetById(entry.ds || "models");
   const res = await fetch(fileUrl(ds, entry.hasGz ? `${entry.path}.gz` : entry.path), { signal });
   if (!res.ok) throw new Error(`${res.status} ${entry.path}`);
   const body = entry.hasGz ? res.body.pipeThrough(new DecompressionStream("gzip")) : res.body;

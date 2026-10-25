@@ -114,7 +114,7 @@ export default function App() {
   } else if (route.ds === "hero") page = <HeroPage key={route.dir} heroKey={route.dir} {...common} />;
   else if (route.ds === "item") page = <ItemPage key={route.dir} itemId={route.dir} {...common} />;
   else if (route.ds === "cosmetics") page = <CosmeticsPage key={route.dir} prefab={route.dir} catalog={catalog} />;
-  else if (route.ds === "3d") page = <ModelsPage catalog={catalog} indexes={indexes} route={route} />;
+  else if (route.ds === "3d") page = <ModelsPage catalog={catalog} indexes={indexes} />;
   else if (route.ds === "files") page = <Home indexes={indexes} errors={errors} />;
   else page = <HeroesPage catalog={catalog} error={catalogError} />;
 
