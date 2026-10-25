@@ -6,6 +6,8 @@ import { formatSize } from "../lib/format.js";
 import { startJob } from "../lib/jobs.js";
 import FileTable from "./FileTable.jsx";
 import ItemCard from "./ItemCard.jsx";
+import Loot from "./Loot.jsx";
+import SoundList from "./SoundList.jsx";
 import { link } from "../lib/route.js";
 import { Spinner } from "./ui.jsx";
 import EmbedButton from "./EmbedButton.jsx";
@@ -40,6 +42,7 @@ export default function ItemPage({ itemId, catalog, indexes, withCopies, route }
   const models = files.filter((e) => e.ext === "glb");
   const model = models[Math.min(style, models.length - 1)];
   const textures = files.filter((e) => e.ds === "textures");
+  const sounds = files.filter((e) => e.ds === "sounds");
   const order = Object.fromEntries(DATASETS.map((d, i) => [d.id, i]));
   const sorted = [...files].sort((a, b) => order[a.ds] - order[b.ds] || a.path.localeCompare(b.path));
   const back = heroes[0] ? [link(`/hero/${heroes[0].key}`), heroes[0].name] : [link(`/cosmetics/${item.prefab}`), prefabTitle(item.prefab)];
@@ -157,6 +160,14 @@ export default function ItemPage({ itemId, catalog, indexes, withCopies, route }
                 <ItemCard key={id} item={catalog.items[id]} rarities={catalog.rarities} delay={i * 25} list={others} />
               ))}
             </div>
+          </section>
+        )}
+
+        <Loot item={item} catalog={catalog} />
+
+        {sounds.length > 0 && (
+          <section className="mt-14">
+            <SoundList files={sounds} route={route} />
           </section>
         )}
 

@@ -34,6 +34,15 @@ export function loadCatalog() {
     }
     for (const hero of catalog.heroes) hero.sets = [];
     for (const set of catalog.setByKey.values()) set.hero?.sets.push(set);
+    // Where an item drops: the treasures whose loot names it
+    catalog.foundIn = new Map();
+    for (const item of Object.values(catalog.items)) {
+      if (!item.loot) continue;
+      for (const id of [...item.loot.drops, ...item.loot.bonus.map(([b]) => b)]) {
+        if (!catalog.foundIn.has(id)) catalog.foundIn.set(id, []);
+        if (!catalog.foundIn.get(id).includes(item.id)) catalog.foundIn.get(id).push(item.id);
+      }
+    }
     prefabNames = catalog.prefabs || {};
     return catalog;
   });

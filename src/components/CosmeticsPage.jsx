@@ -117,12 +117,13 @@ function Kind({ prefab, catalog }) {
     if (distinct((i) => i.slot) > 1) out.push(["slot", "By slot"]);
     if (distinct((i) => i.type) > 1) out.push(["type", "By type"]);
     if (distinct((i) => i.rarity) > 1) out.push(["rarity", "By rarity"]);
+    if (distinct((i) => i.date?.slice(0, 4)) > 1) out.push(["year", "By year"]);
     return out;
   }, [all]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const [filter, setFilter] = useState("");
   const [sort, setSort] = useState("new");
-  const [group, setGroup] = useState(() => (groupings.some(([g]) => g === "hero") ? "hero" : "none"));
+  const [group, setGroup] = useState(() => (groupings.some(([g]) => g === "hero") ? "hero" : groupings.some(([g]) => g === "year") && all.some((i) => i.loot) ? "year" : "none"));
   const [heroKey, setHeroKey] = useState("");
   const [rarity, setRarity] = useState("");
   const [limit, setLimit] = useState(PAGE);
@@ -149,27 +150,27 @@ function Kind({ prefab, catalog }) {
     );
     const order = (i) => catalog.rarities[i.rarity]?.order || 0;
     const byName = (a, b) => a.name.localeCompare(b.name, "en", { numeric: true });
-    const sorts = { new: (a, b) => Number(b.id) - Number(a.id), name: byName, rarity: (a, b) => order(b) - order(a) || byName(a, b) };
+    const sorts = { new: (a, b) => (b.date || "").localeCompare(a.date || "") || Number(b.id) - Number(a.id), name: byName, rarity: (a, b) => order(b) - order(a) || byName(a, b) };
     return list.sort(sorts[sort]);
   }, [all, filter, heroKey, rarity, sort, catalog]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Sections in the order of their names (heroes, slots, types) or of rarity; items without one last
   const sections = useMemo(() => {
     if (group === "none") return [["", shown]];
-    const keyOf = { hero: (i) => heroOf(i)?.name, slot: (i) => i.slot, type: (i) => i.type, rarity: (i) => catalog.rarities[i.rarity]?.name }[group];
+    const keyOf = { hero: (i) => heroOf(i)?.name, slot: (i) => i.slot, type: (i) => i.type, rarity: (i) => catalog.rarities[i.rarity]?.name, year: (i) => i.date?.slice(0, 4) }[group];
     const by = new Map();
     for (const i of shown) {
       const k = keyOf(i) || "";
       if (!by.has(k)) by.set(k, []);
       by.get(k).push(i);
     }
-    const rank = (k) => (group === "rarity" ? -(Object.values(catalog.rarities).find((r) => r.name === k)?.order || 0) : 0);
+    const rank = (k) => (group === "rarity" ? -(Object.values(catalog.rarities).find((r) => r.name === k)?.order || 0) : group === "year" ? -Number(k) : 0);
     return [...by.entries()].sort(([a], [b]) => !a - !b || rank(a) - rank(b) || a.localeCompare(b));
   }, [shown, group, catalog]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const ids = useMemo(() => sections.flatMap(([, l]) => l.map((i) => i.id)), [sections]);
   let left = limit;
-  const none = { hero: "Without a hero", slot: "Without a slot", type: "Without a type", rarity: "Without a rarity" }[group];
+  const none = { hero: "Without a hero", slot: "Without a slot", type: "Without a type", rarity: "Without a rarity", year: "Without a date" }[group];
 
   return (
     <div

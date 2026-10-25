@@ -30,6 +30,12 @@ const eventTopic = (event) => {
   return w || "other";
 };
 const VOICE = "Voice: ";
+// A music pack's track by the moment of the game it plays at: battle_01_end.mp3 -> Battle
+const MOMENTS = { ui_main: "Main menu", ui_hero_select: "Hero select", ui_startup: "Startup", explore: "Exploration", killed: "Death", smoke: "Smoke of Deceit" };
+const musicTopic = (name) => {
+  const m = name.replace(/\.\w+$/, "").replace(/(_\d+.*|_end|_layer\w*)$/, "");
+  return MOMENTS[m] || m.replace(/_/g, " ");
+};
 
 // A hero's sounds: grouped by what they are, each line played in place, one at a time; the files
 // that are not sounds (phonemes) under them
@@ -86,7 +92,7 @@ export default function SoundList({ files, route }) {
       }
       const g = groupOf(kind);
       g.list.push(e);
-      const t = rec ? eventTopic(rec.event) : topicOf(e.name, e.path.split("/").at(-2));
+      const t = kind === "Music" ? musicTopic(e.name) : rec ? eventTopic(rec.event) : topicOf(e.name, e.path.split("/").at(-2));
       if (!g.topics.has(t)) g.topics.set(t, []);
       g.topics.get(t).push(e);
     }

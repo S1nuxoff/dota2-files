@@ -7,6 +7,8 @@ import { startJob } from "../lib/jobs.js";
 import { closeItem, link, openItem, openItems } from "../lib/route.js";
 import { Button } from "./ui.jsx";
 import EmbedButton from "./EmbedButton.jsx";
+import Loot from "./Loot.jsx";
+import SoundList from "./SoundList.jsx";
 import GameStage, { LookSwitch, useLook } from "./GameStage.jsx";
 
 const HeroViewer = lazy(() => import("./HeroViewer.jsx"));
@@ -29,6 +31,7 @@ export default function ItemModal({ itemId, catalog, indexes, withCopies }) {
   const files = useMemo(() => (item ? [...filesOfRefs(item.refs, indexes, withCopies).values()] : []), [item, indexes, withCopies]);
   const models = files.filter((e) => e.ext === "glb");
   const textures = files.filter((e) => e.ds === "textures");
+  const sounds = files.filter((e) => e.ds === "sounds");
   const [style, setStyle] = useState(0);
   const [shown, setShown] = useLook();
   const model = models[Math.min(style, models.length - 1)];
@@ -180,6 +183,8 @@ export default function ItemModal({ itemId, catalog, indexes, withCopies }) {
                 </div>
               </section>
             )}
+            <Loot item={item} catalog={catalog} compact />
+            {sounds.length > 0 && <SoundList files={sounds} route={{}} />}
             <section>
               <h3 className="font-medium">Textures</h3>
               {textures.length === 0 ? (
