@@ -16,7 +16,7 @@ export default function ItemCard({ item, rarities, delay = 0 }) {
       picture={
         <>
           {item.icon ? (
-            <img src={imageUrl(item.icon)} loading="lazy" decoding="async" alt="" className="h-full w-full object-contain transition-transform duration-500 ease-out group-hover:scale-[1.04]" />
+            <img src={imageUrl(item.icon)} loading="lazy" decoding="async" alt="" className="h-full w-full object-cover transition-transform duration-500 ease-out group-hover:scale-[1.04]" />
           ) : (
             <div className="flex h-full items-center justify-center">
               <Package size={28} strokeWidth={1.25} className="text-ink-600" />

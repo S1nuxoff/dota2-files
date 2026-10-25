@@ -31,21 +31,6 @@ export function DownloadButtons({ entries, title }) {
   );
 }
 
-// One way to download, as a line of the hero's card: what it is, how big, and its button
-function Offer({ title, sub, href, onClick, primary }) {
-  return (
-    <div className="flex items-center gap-4 py-3.5">
-      <div className="min-w-0 flex-1 leading-tight">
-        <div className="text-[0.95rem]">{title}</div>
-        <div className="mt-1 truncate text-[0.82rem] text-ink-400">{sub}</div>
-      </div>
-      <Button primary={primary} as={href ? "a" : "button"} href={href} onClick={onClick} className="h-9 px-3.5">
-        <Download size={15} /> Get
-      </Button>
-    </div>
-  );
-}
-
 export default function HeroPage({ heroKey, catalog, indexes, withCopies, route }) {
   const hero = catalog?.heroByKey.get(heroKey);
   const loaded = DATASETS.filter((d) => indexes[d.id]).length;
@@ -90,53 +75,72 @@ export default function HeroPage({ heroKey, catalog, indexes, withCopies, route 
           <ChevronLeft size={16} /> Heroes
         </a>
 
-        <div className="mt-4 grid grid-cols-[minmax(0,1fr)_24rem] gap-4">
-          <div className="relative h-[min(68vh,44rem)] overflow-hidden rounded-2xl border border-white/[0.06] bg-[radial-gradient(circle_at_50%_42%,#3a3a3f_0%,#232326_45%,#161618_100%)]">
-            {modelEntry ? (
-              <Suspense fallback={null}>
-                <HeroViewer models={lookEntries} bare />
-              </Suspense>
-            ) : (
-              <img src={heroPortrait(hero)} alt="" className="h-full w-full object-cover opacity-70" />
-            )}
+        <div className="relative mt-4 h-[min(74vh,50rem)] overflow-hidden rounded-3xl border border-white/[0.06] bg-[radial-gradient(circle_at_50%_45%,#3a3a3f_0%,#232326_45%,#141416_100%)]">
+          {modelEntry ? (
+            <Suspense fallback={null}>
+              <HeroViewer models={lookEntries} bare />
+            </Suspense>
+          ) : (
+            <img src={heroPortrait(hero)} alt="" className="h-full w-full object-cover opacity-70" />
+          )}
+
+          <div className="pointer-events-none absolute top-0 left-0 p-8">
+            <h1 className="text-[3.4rem] leading-none font-semibold tracking-[-0.04em]">{hero.name}</h1>
+            <p className="mt-3 text-[0.95rem] text-ink-300">
+              {items.length} items{ready && `, ${formatCount(files.length)} files`}
+            </p>
           </div>
 
-          <aside className="flex flex-col rounded-2xl border border-white/[0.06] bg-ink-900 p-6">
-            <img src={heroPortrait(hero)} alt="" className="h-14 w-fit rounded-lg" />
-            <h1 className="mt-4 text-[2.2rem] leading-none font-semibold tracking-[-0.035em]">{hero.name}</h1>
-            <p className="mt-2 text-[0.9rem] text-ink-400">
-              {items.length} items{ready && `, ${formatCount(files.length)} files in all`}
-            </p>
-            {looks.length > 1 && (
-              <div className="mt-5 flex flex-wrap gap-1.5">
-                {looks.map((l) => (
-                  <Chip key={l.id} active={look.id === l.id} onClick={() => setLook(l.id)}>
-                    {l.name}
-                  </Chip>
-                ))}
-              </div>
-            )}
-            <div className="mt-6 divide-y divide-white/[0.06] border-t border-white/[0.06]">
-              {modelEntry && <Offer title="Body model" sub={`${modelEntry.name}, ${formatSize(modelEntry.size)}`} href={fileUrl(datasetById("models"), modelEntry.path, true)} />}
-              {lookEntries.length > 1 && (
-                <Offer
-                  title="Default look"
-                  sub={`${lookEntries.length} models as you see them, ${bytes(lookEntries)}`}
-                  onClick={() => startJob("zip", lookEntries.map((e) => ({ ds: e.ds, path: e.path, size: e.size, name: e.name })), `${look.id.replace("npc_dota_hero_", "")}-look`)}
-                />
-              )}
-              {ready ? (
-                <Offer primary title="Everything" sub={`Models, items, sounds, effects, pictures: ${bytes(files)}`} onClick={() => startJob("zip", asDownload(files), hero.key)} />
-              ) : (
-                <div className="flex items-center gap-2 py-4 text-[0.88rem] text-ink-400">
-                  <LoaderCircle size={14} className="animate-spin" /> Gathering its files, {loaded} of {DATASETS.length} lists
-                </div>
-              )}
+          {looks.length > 1 && (
+            <div className="absolute top-8 right-8 flex gap-1 rounded-full bg-black/35 p-1 backdrop-blur-md">
+              {looks.map((l) => (
+                <button
+                  key={l.id}
+                  onClick={() => setLook(l.id)}
+                  className={`h-8 rounded-full px-3.5 text-[0.85rem] transition-colors ${look.id === l.id ? "bg-ink-100 text-ink-950" : "text-ink-300 hover:text-ink-100"}`}
+                >
+                  {l.name}
+                </button>
+              ))}
             </div>
-          </aside>
+          )}
+
+          <div className="absolute right-6 bottom-6 flex items-center gap-1.5 rounded-2xl bg-black/40 p-1.5 backdrop-blur-md">
+            {modelEntry && (
+              <a
+                href={fileUrl(datasetById("models"), modelEntry.path, true)}
+                title={`${modelEntry.name}, ${formatSize(modelEntry.size)}`}
+                className="flex h-10 items-center gap-2 rounded-xl px-4 text-[0.88rem] text-ink-100 transition-colors hover:bg-white/10"
+              >
+                <Download size={16} /> Body <span className="text-ink-400">{formatSize(modelEntry.size)}</span>
+              </a>
+            )}
+            {lookEntries.length > 1 && (
+              <button
+                onClick={() => startJob("zip", lookEntries.map((e) => ({ ds: e.ds, path: e.path, size: e.size, name: e.name })), `${look.id.replace("npc_dota_hero_", "")}-look`)}
+                title={`${lookEntries.length} models as you see them`}
+                className="flex h-10 items-center gap-2 rounded-xl px-4 text-[0.88rem] text-ink-100 transition-colors hover:bg-white/10"
+              >
+                <Download size={16} /> Default look <span className="text-ink-400">{bytes(lookEntries)}</span>
+              </button>
+            )}
+            {ready ? (
+              <button
+                onClick={() => startJob("zip", asDownload(files), hero.key)}
+                title="Models, items, sounds, effects, pictures"
+                className="flex h-10 items-center gap-2 rounded-xl bg-ink-100 px-4 text-[0.88rem] font-medium text-ink-950 transition-colors hover:bg-white"
+              >
+                <FileArchive size={16} /> Everything <span className="font-normal opacity-55">{bytes(files)}</span>
+              </button>
+            ) : (
+              <span className="flex h-10 items-center gap-2 px-4 text-[0.85rem] text-ink-400">
+                <LoaderCircle size={14} className="animate-spin" /> Gathering its files
+              </span>
+            )}
+          </div>
         </div>
 
-        <div className="mt-10 flex flex-wrap items-center gap-2">
+        <div className="mt-8 flex flex-wrap items-center gap-2">
           {tabs.map(([id, title, count]) => (
             <Chip key={id} active={tab === id} onClick={() => setTab(id)}>
               {title} <span className="ml-1 opacity-50 tabular-nums">{formatCount(count)}</span>
