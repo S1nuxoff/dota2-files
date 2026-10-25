@@ -1,8 +1,8 @@
 import { Crumbs } from "./ui.jsx";
 import { imageUrl } from "../lib/catalog.js";
 // The parts a hero's, a set's and an item's pages share, so the three read alike: where it sits, then
-// three columns under the front page's light: what it is on the left, the model standing on the page
-// itself in the middle (no frame), its numbers, contents and downloads on the right (on a phone, one
+// three columns under the front page's light: what it is on the left, lying over the model standing
+// on the page itself (no frame, it spans the left two columns), its numbers, contents and downloads on the right (on a phone, one
 // under the other)
 
 export function DetailTop({ crumbs, stage, left, children }) {
@@ -12,15 +12,17 @@ export function DetailTop({ crumbs, stage, left, children }) {
         <Crumbs items={crumbs} />
       </div>
       <section>
-        <div className="page-x grid items-center gap-6 pt-4 lg:grid-cols-[minmax(17rem,23rem)_minmax(0,1fr)_minmax(17rem,23rem)] lg:gap-6 lg:pt-0 xl:gap-10">
-          <div className="flex min-w-0 flex-col gap-5 max-lg:items-center max-lg:text-center">{left}</div>
-          <div className="relative h-[min(58svh,30rem)] lg:h-[min(80vh,52rem)]">
+        <div className="page-x grid items-center gap-6 pt-4 lg:grid-cols-[minmax(24rem,34rem)_minmax(0,1fr)_minmax(17rem,23rem)] lg:gap-6 lg:pt-0 xl:gap-10">
+          {/* on a large screen the words lie over the stage's left part: the pointer passes through
+              them to the model, but for their links and buttons */}
+          <div className="relative z-10 flex min-w-0 flex-col gap-5 max-lg:items-center max-lg:text-center lg:pointer-events-none lg:col-start-1 lg:row-start-1 lg:[&_a]:pointer-events-auto lg:[&_button]:pointer-events-auto">{left}</div>
+          <div className="relative h-[min(58svh,30rem)] lg:col-span-2 lg:col-start-1 lg:row-start-1 lg:h-[min(80vh,52rem)]">
             {/* the floor the model stands on: a soft light under it, fading into the page */}
             <div aria-hidden="true" className="pointer-events-none absolute inset-x-[8%] bottom-[4%] h-[30%] rounded-[50%] bg-[radial-gradient(closest-side,rgba(255,255,255,0.07),rgba(229,70,46,0.07)_55%,transparent)] blur-xl" />
             <div aria-hidden="true" className="pointer-events-none absolute inset-x-[20%] top-[12%] bottom-[20%] rounded-[50%] bg-[radial-gradient(closest-side,rgba(255,255,255,0.045),transparent)] blur-2xl" />
             {stage}
           </div>
-          <aside className="flex min-w-0 flex-col gap-6">{children}</aside>
+          <aside className="flex min-w-0 flex-col gap-6 lg:col-start-3 lg:row-start-1">{children}</aside>
         </div>
       </section>
     </>
@@ -34,7 +36,7 @@ export function SideTitle({ icon, title, line, tags }) {
       <div className="flex flex-col gap-3 max-lg:items-center">
         {icon}
         <div className="min-w-0">
-          <h1 className="text-[clamp(2.3rem,3.6vw,3.9rem)] leading-[0.98] font-semibold tracking-[-0.05em] text-balance">{title}</h1>
+          <h1 className="text-[clamp(2.4rem,4.4vw,4.8rem)] leading-[0.96] font-semibold tracking-[-0.05em] text-balance [text-shadow:0_2px_24px_rgb(0_0_0/0.7)]">{title}</h1>
           {line && <p className="mt-2 text-[0.9rem] text-ink-400">{line}</p>}
         </div>
       </div>

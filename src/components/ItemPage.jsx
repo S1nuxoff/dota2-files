@@ -113,7 +113,7 @@ export default function ItemPage({ itemId, catalog, indexes, withCopies, route }
                 </>
               }
             />
-            {item.text && <p className="line-clamp-6 max-w-md text-[0.95rem] leading-relaxed whitespace-pre-line text-ink-300">{item.text}</p>}
+            {item.text && <p className="line-clamp-6 max-w-lg [text-shadow:0_1px_12px_rgb(0_0_0/0.8)] text-[0.95rem] leading-relaxed whitespace-pre-line text-ink-300">{item.text}</p>}
           </>
         }
       >

@@ -124,7 +124,7 @@ export default function HeroPage({ heroKey, catalog, indexes, withCopies, route 
               tags={about && about.roles.map(([r]) => <Tag key={r}>{r}</Tag>)}
             />
             {about?.hype && (
-              <p className="max-w-md text-[0.95rem] leading-relaxed text-ink-300">
+              <p className="max-w-lg text-[1rem] leading-relaxed text-ink-300 [text-shadow:0_1px_12px_rgb(0_0_0/0.8)]">
                 <span className="line-clamp-5">{about.hype}</span>
                 <button onClick={() => setTab("about")} className="mt-2 text-[0.86rem] text-ink-100 underline decoration-white/25 underline-offset-4 hover:decoration-white">
                   Story, numbers and abilities
