@@ -43,6 +43,9 @@ export function loadCatalog() {
         if (!catalog.foundIn.get(id).includes(item.id)) catalog.foundIn.get(id).push(item.id);
       }
     }
+    // The bundles an item comes in
+    catalog.inBundles = new Map();
+    for (const item of Object.values(catalog.items)) for (const id of item.bundle || []) (catalog.inBundles.get(id) || catalog.inBundles.set(id, []).get(id)).push(item.id);
     prefabNames = catalog.prefabs || {};
     return catalog;
   });
@@ -93,6 +96,20 @@ export function setDotadexPath(set, catalog) {
   if (persona) params.set("persona", persona);
   return `hero/${set.hero.key}?${params}`;
 }
+// The items a file belongs to: those with a ref (a path prefix) it starts with; an index of every
+// item's prefixes per dataset, made at the first question
+const owners = new WeakMap();
+export function ownersOf(catalog, ds, path) {
+  if (!owners.has(catalog)) {
+    const byDs = {};
+    for (const item of Object.values(catalog.items)) for (const [d, prefixes] of Object.entries(item.refs)) for (const p of prefixes) (byDs[d] ??= []).push([p, item.id]);
+    owners.set(catalog, byDs);
+  }
+  const ids = [];
+  for (const [p, id] of owners.get(catalog)[ds] || []) if (path.startsWith(p) && !ids.includes(id)) ids.push(id);
+  return ids;
+}
+
 // An item's files with a bundle's: the bundle has only its picture, its items the models
 export function itemFiles(item, catalog, indexes, withCopies) {
   const out = filesOfRefs(item.refs, indexes, withCopies);

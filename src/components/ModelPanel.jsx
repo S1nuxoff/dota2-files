@@ -1,4 +1,5 @@
 import { lazy, Suspense, useEffect, useState } from "react";
+import Related from "./Related.jsx";
 import { createPortal } from "react-dom";
 import { ChevronLeft, ChevronRight, Download, FileArchive, Image as ImageIcon, X } from "lucide-react";
 import { datasetById, fileUrl } from "../datasets.js";
@@ -138,6 +139,9 @@ export default function ModelPanel({ card, entries, onClose, onPrev, onNext }) {
                   ))}
                 </div>
               )}
+              <div className="mt-4">
+                <Related ds={model.ds} path={model.path} heroKey={model.hero} />
+              </div>
             </div>
             <button onClick={onClose} title="Close (Esc)" aria-label="Close" className="-mt-1 -mr-2 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-ink-400 transition-colors hover:bg-ink-800 hover:text-ink-100">
               <X size={19} />

@@ -14,7 +14,8 @@ export default function Loot({ item, catalog, compact = false }) {
   const loot = item.loot;
   const from = (catalog.foundIn.get(item.id) || []).filter((id) => catalog.items[id]);
   const bundle = (item.bundle || []).filter((id) => catalog.items[id]);
-  if (!loot && !from.length && !bundle.length) return null;
+  const bundles = (catalog.inBundles.get(item.id) || []).filter((id) => catalog.items[id]);
+  if (!loot && !from.length && !bundle.length && !bundles.length) return null;
 
   const bonus = new Map();
   for (const [id, r] of loot?.bonus || []) if (catalog.items[id]) (bonus.get(r) || bonus.set(r, []).get(r)).push(id);
@@ -23,6 +24,7 @@ export default function Loot({ item, catalog, compact = false }) {
     ...(bundle.length ? [["In this bundle", bundle, "Its items, each with its own files"]] : []),
     ...(loot?.drops.length ? [["Contents", loot.drops.filter((id) => catalog.items[id]), "One of these"]] : []),
     ...[...bonus.entries()].sort((a, b) => order.indexOf(a[0]) - order.indexOf(b[0])).map(([r, ids]) => [bonusTitle(r), ids, "A chance on top of the contents"]),
+    ...(bundles.length ? [["Comes in", bundles, "The bundles that hold it"]] : []),
     ...(from.length ? [["Drops from", from.sort((a, b) => (catalog.items[b].date || "").localeCompare(catalog.items[a].date || "")), "The treasures that can give it"]] : []),
   ];
 

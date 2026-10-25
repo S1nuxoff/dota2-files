@@ -1,4 +1,5 @@
 import { lazy, Suspense, useEffect, useRef, useState } from "react";
+import Related from "./Related.jsx";
 import { Copy, Check, Download, ExternalLink, Pause, Play, X } from "lucide-react";
 import { fileUrl, hubUrl } from "../datasets.js";
 import { formatSize } from "../lib/format.js";
@@ -49,7 +50,8 @@ export default function Preview({ entry, ds, onClose }) {
             )}
           </div>
 
-          <div className="mt-7 space-y-4 border-t border-white/[0.06] pt-5 text-[0.88rem]">
+          <div className="mt-7 min-h-0 space-y-4 overflow-y-auto border-t border-white/[0.06] pt-5 text-[0.88rem]">
+            <Related ds={ds.id} path={entry.path} />
             <div>
               <div className="text-ink-400">Folder</div>
               <div className="mt-1 break-all text-ink-300">{folder}</div>
