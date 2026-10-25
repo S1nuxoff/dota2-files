@@ -158,6 +158,7 @@ export default function HomePage({ catalog, indexes }) {
               label="Heroes"
               href="/heroes"
               title="Every hero, down to the last voice line"
+              frame={false}
               text={`${catalog.heroes.length} heroes, each on a page of its own: the model in 3D with its animations, its personas and abilities, its items by set, and every sound, effect and picture of it.`}
               points={[
                 ["In 3D, as in the game", "The body in its default look, every persona, every animation, to turn and to download as glb."],
@@ -341,7 +342,7 @@ function HeroField({ heroes }) {
 
 // A part of the site told the way a product page tells a feature: a small label, a heading, a few
 // words, a large picture of the real thing, and under it the points that matter, side by side
-function Feature({ icon: Icon, label, href, title, text, points = [], children }) {
+function Feature({ icon: Icon, label, href, title, text, points = [], frame = true, children }) {
   return (
     <section data-reveal className="mx-auto mt-32 max-w-[80rem] px-8">
       <a href={link(href)} className="group inline-flex items-center gap-2 text-[0.92rem] text-ink-300 transition-colors hover:text-ink-100">
@@ -349,11 +350,15 @@ function Feature({ icon: Icon, label, href, title, text, points = [], children }
       </a>
       <h2 className="mt-4 max-w-3xl text-[clamp(2rem,3.4vw,3rem)] leading-[1.06] font-semibold tracking-[-0.04em] text-balance">{title}</h2>
       <p className="mt-4 max-w-2xl text-[1.02rem] leading-relaxed text-ink-400">{text}</p>
-      <div className="relative mt-10 overflow-hidden rounded-3xl border border-white/[0.07] bg-[linear-gradient(180deg,#17171a_0%,#0f0f11_100%)]">
-        <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent" />
-        <div className="pointer-events-none absolute inset-x-0 top-0 h-48 bg-[radial-gradient(50%_100%_at_50%_0%,rgba(255,255,255,0.05),transparent)]" />
-        <div className="relative">{children}</div>
-      </div>
+      {frame ? (
+        <div className="relative mt-10 overflow-hidden rounded-3xl border border-white/[0.07] bg-[linear-gradient(180deg,#17171a_0%,#0f0f11_100%)]">
+          <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent" />
+          <div className="pointer-events-none absolute inset-x-0 top-0 h-48 bg-[radial-gradient(50%_100%_at_50%_0%,rgba(255,255,255,0.05),transparent)]" />
+          <div className="relative">{children}</div>
+        </div>
+      ) : (
+        <div className="mt-6">{children}</div>
+      )}
       {points.length > 0 && (
         <div className="mt-10 grid gap-8 md:grid-cols-3">
           {points.map(([head, body]) => (
@@ -375,7 +380,7 @@ function HeroStrip({ heroes }) {
     return Array.from({ length: 7 }, (_, i) => heroes[(day * 7 + i * 19) % heroes.length]);
   }, [heroes]);
   return (
-    <div className="flex items-end justify-center gap-3 px-6 pt-10 [mask-image:linear-gradient(to_bottom,black_75%,transparent)]">
+    <div className="relative flex items-end justify-center [mask-image:linear-gradient(to_right,transparent,black_10%,black_90%,transparent)]">
       {row.map((h, i) => {
         const far = Math.abs(i - 3);
         return (
@@ -383,16 +388,16 @@ function HeroStrip({ heroes }) {
             key={h.id}
             href={link(`/hero/${h.key}`)}
             title={h.name}
-            style={{ height: `${26 - far * 2.6}rem` }}
-            className="group relative flex min-w-0 flex-1 flex-col items-center justify-end"
+            style={{ height: `${32 - far * 3}rem`, zIndex: 10 - far }}
+            className="group relative -mx-6 flex min-w-0 flex-1 flex-col items-center justify-end"
           >
             <img
               src={heroCard(h)}
               alt={h.name}
               loading="lazy"
-              className={`h-full w-auto max-w-full object-contain object-bottom mix-blend-lighten transition-transform duration-500 group-hover:-translate-y-2 ${far ? "opacity-70 group-hover:opacity-100" : ""}`}
+              className={`h-full w-auto max-w-none object-contain object-bottom mix-blend-lighten transition-transform duration-500 [mask-image:linear-gradient(to_bottom,black_82%,transparent)] group-hover:-translate-y-2 ${far ? "opacity-75 group-hover:opacity-100" : ""}`}
             />
-            <span className="absolute bottom-6 text-[0.82rem] text-ink-300 opacity-0 transition-opacity group-hover:opacity-100">{h.name}</span>
+            <span className="absolute -bottom-7 text-[0.82rem] text-ink-300 opacity-0 transition-opacity group-hover:opacity-100">{h.name}</span>
           </a>
         );
       })}
