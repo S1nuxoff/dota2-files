@@ -4,6 +4,8 @@ import { Copy, Check, Download, ExternalLink, Pause, Play, X } from "lucide-reac
 import { fileUrl, hubUrl } from "../datasets.js";
 import { formatSize } from "../lib/format.js";
 import { Button } from "./ui.jsx";
+import { sizeKey, sizeLabel } from "./FileTable.jsx";
+import { loadIndex } from "../lib/lists.js";
 
 const HeroViewer = lazy(() => import("./HeroViewer.jsx"));
 
@@ -11,7 +13,24 @@ const TEXT_LIMIT = 3 * 1024 * 1024;
 
 // A file opened in a window over the page: the file itself large on a stage (a picture, a sound in
 // its player, a video, a model in 3D, a text), and beside it its name, where it lives and its download
-export default function Preview({ entry, ds, onClose }) {
+export default function Preview({ entry: opened, ds, onClose }) {
+  // The other sizes the game keeps of a picture (..._small_png.png), to switch between on the stage
+  const [entry, setEntry] = useState(opened);
+  const [sizes, setSizes] = useState([]);
+  useEffect(() => {
+    setEntry(opened);
+    setSizes([]);
+    if (opened.kind !== "image") return;
+    let live = true;
+    loadIndex(ds).then((index) => {
+      const key = sizeKey(opened);
+      const same = index.entries.filter((e) => !e.copy && sizeKey(e) === key);
+      if (live && same.length > 1) setSizes(same.sort((a, b) => b.size - a.size));
+    }, () => {});
+    return () => {
+      live = false;
+    };
+  }, [opened, ds]);
   const url = fileUrl(ds, entry.path);
   useEffect(() => {
     const onKey = (e) => e.key === "Escape" && onClose();
@@ -25,6 +44,21 @@ export default function Preview({ entry, ds, onClose }) {
       <div className="anim-open absolute inset-x-[6%] inset-y-[7%] grid grid-cols-[minmax(0,1fr)_23rem] gap-4" onClick={(e) => e.stopPropagation()}>
         <div className="relative overflow-hidden rounded-2xl border border-white/[0.06] bg-[radial-gradient(circle_at_50%_42%,#2e2e33_0%,#1d1d20_50%,#141416_100%)]">
           <Body key={entry.path} entry={entry} ds={ds} url={url} />
+          {sizes.length > 1 && (
+            <div className="absolute inset-x-0 bottom-5 flex justify-center">
+              <div className="flex gap-1 rounded-full bg-black/45 p-1 backdrop-blur-md">
+                {sizes.map((e) => (
+                  <button
+                    key={e.path}
+                    onClick={() => setEntry(e)}
+                    className={`h-8 rounded-full px-3.5 text-[0.82rem] capitalize transition-colors ${e.path === entry.path ? "bg-ink-100 text-ink-950" : "text-ink-300 hover:text-ink-100"}`}
+                  >
+                    {sizeLabel(e)} <span className="opacity-55">{formatSize(e.size)}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
 
         <aside className="flex min-h-0 flex-col rounded-2xl border border-white/[0.06] bg-ink-900 p-6">

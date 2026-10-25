@@ -96,10 +96,12 @@ export function Row({ e, active, onOpen }) {
 // The sizes the game keeps of one picture (abaddon_anointed_ruination_png.png and
 // ..._small_png.png) as one: the largest, with the others as its sizes
 const SIZE_WORD = /_(small|large|big|tiny|thumb|full|sm|md|lg)(?=(_(png|jpg|jpeg|psd|tga))?\.\w+$)/;
+export const sizeKey = (e) => `${e.ds}:${e.path.replace(SIZE_WORD, "")}`;
+export const sizeLabel = (e) => SIZE_WORD.exec(e.path)?.[1] || "full";
 export function withSizes(list) {
   const by = new Map();
   for (const e of list) {
-    const key = `${e.ds}:${e.path.replace(SIZE_WORD, "")}`;
+    const key = sizeKey(e);
     (by.get(key) || by.set(key, []).get(key)).push(e);
   }
   return [...by.values()].map((group) => {
