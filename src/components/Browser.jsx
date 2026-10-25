@@ -148,7 +148,7 @@ export default function Browser({ ds, route, index, error, indexes, catalog, wit
 
   return (
     <Page className="flex flex-1 flex-col">
-      <header className="page-x flex flex-col items-center pt-8 pb-5 text-center sm:pt-12">
+      <header className="page-x flex flex-col items-center pt-12 pb-5 text-center sm:pt-20 lg:pt-24">
         <Crumbs items={crumbs} className="[&>ol]:justify-center" />
         <div className="mt-5 flex max-w-full flex-col items-center gap-5">
           <div className="max-w-full min-w-0">
