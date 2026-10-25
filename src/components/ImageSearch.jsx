@@ -92,9 +92,9 @@ export default function ImageSearch({ onResults, onClose }) {
   const box = image && rect && { left: `${(rect.x / image.width) * 100}%`, top: `${(rect.y / image.height) * 100}%`, width: `${(rect.w / image.width) * 100}%`, height: `${(rect.h / image.height) * 100}%` };
 
   return (
-    <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/70 p-8 backdrop-blur-sm" onClick={onClose}>
-      <div className="flex max-h-full w-full max-w-5xl flex-col rounded-3xl border border-ink-700 bg-ink-900 shadow-2xl" onClick={(e) => e.stopPropagation()}>
-        <div className="flex items-center gap-3 border-b border-ink-800 px-6 py-4">
+    <div className="anim-fade fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-8 backdrop-blur-sm" onClick={onClose}>
+      <div className="anim-open flex max-h-full w-full max-w-5xl flex-col rounded-3xl border border-white/[0.08] bg-ink-900 shadow-2xl shadow-black/60" onClick={(e) => e.stopPropagation()}>
+        <div className="flex items-center gap-3 border-b border-white/[0.06] px-6 py-4">
           <ScanSearch size={18} className="text-accent" />
           <div className="flex-1">
             <div className="font-medium">Search by picture</div>
@@ -129,7 +129,7 @@ export default function ImageSearch({ onResults, onClose }) {
           )}
         </div>
 
-        <div className="flex items-center gap-4 border-t border-ink-800 px-6 py-4">
+        <div className="flex items-center gap-4 border-t border-white/[0.06] px-6 py-4">
           <div className="min-w-0 flex-1 text-sm text-ink-400">
             {error ? (
               <span className="text-accent">{error}</span>

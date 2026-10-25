@@ -1,50 +1,38 @@
 import { useState } from "react";
-import { LoaderCircle, Search } from "lucide-react";
+import { Search } from "lucide-react";
 import { heroPortrait } from "../lib/catalog.js";
 import { link } from "../lib/route.js";
+import { Card, PageHead, SearchField, Spinner } from "./ui.jsx";
 
 export default function HeroesPage({ catalog, error }) {
   const [filter, setFilter] = useState("");
-  if (!catalog) {
-    return (
-      <div className="flex flex-1 items-center justify-center gap-3 text-sm text-ink-400">
-        {error ? `The catalog could not be loaded: ${error}` : <><LoaderCircle size={16} className="animate-spin" /> Loading heroes…</>}
-      </div>
-    );
-  }
+  if (!catalog) return error ? <div className="p-16 text-center text-ink-400">The heroes could not be loaded: {error}</div> : <Spinner text="Loading heroes" />;
   const words = filter.toLowerCase().split(/\s+/).filter(Boolean);
   const heroes = catalog.heroes.filter((h) => words.every((w) => h.name.toLowerCase().includes(w)));
   return (
-    <div className="overflow-y-auto">
-      <div className="mx-auto max-w-6xl px-10 py-12">
-        <div className="flex items-end justify-between gap-6">
-          <div>
-            <h1 className="text-3xl font-semibold tracking-tight">Heroes</h1>
-            <p className="mt-2 text-ink-400">Pick a hero: every model, persona, item, sound, effect and picture of it in one place.</p>
-          </div>
-          <label className="flex h-9 w-64 items-center gap-2.5 rounded-lg border border-ink-800 bg-ink-900 px-3 focus-within:border-ink-600">
-            <Search size={14} className="text-ink-400" />
-            <input
-              value={filter}
-              onChange={(e) => setFilter(e.target.value)}
-              placeholder="Filter heroes"
-              className="min-w-0 flex-1 bg-transparent text-sm outline-none placeholder:text-ink-400"
+    <div className="min-h-0 flex-1 overflow-y-auto">
+      <div className="anim-page">
+        <PageHead title="Every file of Dota 2" sub="Pick a hero to get its 3D model, items, sounds, effects and pictures, or search all of them at once.">
+          <SearchField value={filter} onChange={setFilter} icon={Search} placeholder={`Find one of ${catalog.heroes.length} heroes`} />
+        </PageHead>
+        <div className="mx-auto grid max-w-[100rem] grid-cols-[repeat(auto-fill,minmax(14rem,1fr))] gap-5 px-8 pb-20">
+          {heroes.map((hero, i) => (
+            <Card
+              key={hero.id}
+              href={link(`/hero/${hero.id.slice("npc_dota_hero_".length)}`)}
+              ratio="aspect-[16/9]"
+              className="anim-card"
+              style={{ animationDelay: `${Math.min(i, 30) * 18}ms` }}
+              title={hero.name}
+              meta={`${hero.items.length} items${hero.personas.length ? `, ${hero.personas.length} persona${hero.personas.length > 1 ? "s" : ""}` : ""}`}
+              picture={<img src={heroPortrait(hero)} loading="lazy" alt="" className="h-full w-full object-cover transition-transform duration-500 ease-out group-hover:scale-[1.04]" />}
             />
-          </label>
-        </div>
-        <div className="mt-8 grid grid-cols-[repeat(auto-fill,minmax(150px,1fr))] gap-3">
-          {heroes.map((hero) => (
-            <a key={hero.id} href={link(`/hero/${hero.key}`)} className="group overflow-hidden rounded-lg border border-ink-800 bg-ink-900 transition hover:border-ink-600">
-              <div className="aspect-[16/9] overflow-hidden bg-ink-850">
-                <img src={heroPortrait(hero)} loading="lazy" alt="" className="h-full w-full object-cover transition duration-300 group-hover:scale-105" />
-              </div>
-              <div className="flex items-center justify-between px-3 py-2">
-                <span className="truncate text-sm">{hero.name}</span>
-                <span className="text-[11px] text-ink-400 tabular-nums">{hero.items.length}</span>
-              </div>
-            </a>
           ))}
         </div>
+        {heroes.length === 0 && <p className="pb-20 text-center text-ink-400">No hero has that name.</p>}
+        <p className="mx-auto max-w-[100rem] px-8 pb-10 text-[0.8rem] text-ink-600">
+          Dota 2 content and materials are trademarks and copyrights of Valve. Not affiliated with Valve. Non-commercial.
+        </p>
       </div>
     </div>
   );

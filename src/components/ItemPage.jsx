@@ -1,20 +1,21 @@
 import { lazy, Suspense, useMemo } from "react";
-import { Package } from "lucide-react";
-import { DATASETS, datasetById, fileUrl } from "../datasets.js";
+import { ChevronLeft, LoaderCircle, Package } from "lucide-react";
+import { DATASETS } from "../datasets.js";
 import { filesOfRefs, imageUrl, prefabTitle } from "../lib/catalog.js";
 import FileTable from "./FileTable.jsx";
 import ItemCard from "./ItemCard.jsx";
-import { DownloadButtons, Loading } from "./HeroPage.jsx";
+import { DownloadButtons } from "./HeroPage.jsx";
 import { link } from "../lib/route.js";
+import { Spinner } from "./ui.jsx";
 
-const ModelPreview = lazy(() => import("./ModelPreview.jsx"));
+const HeroViewer = lazy(() => import("./HeroViewer.jsx"));
 
 export default function ItemPage({ itemId, catalog, indexes, withCopies, route }) {
   const item = catalog?.items[itemId];
   const files = useMemo(() => (item ? [...filesOfRefs(item.refs, indexes, withCopies).values()] : []), [item, indexes, withCopies]);
   const ready = item && Object.keys(item.refs).every((ds) => indexes[ds]);
-  if (!catalog) return <Loading text="Loading the catalog…" />;
-  if (!item) return <div className="p-10 text-sm text-ink-400">No item {itemId}.</div>;
+  if (!catalog) return <Spinner text="Loading the catalog" />;
+  if (!item) return <div className="p-16 text-center text-ink-400">There is no item {itemId}.</div>;
 
   const rarity = catalog.rarities[item.rarity || "common"];
   const heroes = item.heroes.map((id) => catalog.heroById.get(id)).filter(Boolean);
@@ -22,70 +23,92 @@ export default function ItemPage({ itemId, catalog, indexes, withCopies, route }
   const model = files.find((e) => e.ext === "glb");
   const order = Object.fromEntries(DATASETS.map((d, i) => [d.id, i]));
   const sorted = [...files].sort((a, b) => order[a.ds] - order[b.ds] || a.path.localeCompare(b.path));
+  const back = heroes[0] ? [link(`/hero/${heroes[0].key}`), heroes[0].name] : [link(`/cosmetics/${item.prefab}`), prefabTitle(item.prefab)];
+  const others = set ? set.items.filter((id) => id !== item.id && catalog.items[id]) : [];
 
   return (
     <div className="min-h-0 flex-1 overflow-y-auto">
-      <div className="mx-auto max-w-6xl px-8 py-8">
-        <div className="text-xs text-ink-400">
-          {heroes.length ? (
-            heroes.map((h) => (
-              <a key={h.id} href={link(`/hero/${h.key}`)} className="mr-3 hover:text-ink-100">
-                {h.name}
-              </a>
-            ))
-          ) : (
-            <a href={link(`/cosmetics/${item.prefab}`)} className="hover:text-ink-100">
-              {prefabTitle(item.prefab)}
-            </a>
-          )}
-        </div>
-        <div className="mt-4 grid grid-cols-[minmax(0,1fr)_minmax(0,1.3fr)] gap-6">
-          <div className="flex aspect-[4/3] items-center justify-center overflow-hidden rounded-xl border border-ink-800 bg-ink-900">
+      <div key={itemId} className="anim-page mx-auto max-w-[100rem] px-8 pt-6 pb-20">
+        <a href={back[0]} className="inline-flex items-center gap-1 text-[0.88rem] text-ink-400 transition-colors hover:text-ink-100">
+          <ChevronLeft size={16} /> {back[1]}
+        </a>
+
+        <div className="mt-4 grid grid-cols-[minmax(0,1fr)_24rem] gap-4">
+          <div className="relative flex h-[min(62vh,40rem)] items-center justify-center overflow-hidden rounded-2xl border border-white/[0.06] bg-[radial-gradient(circle_at_50%_42%,#3a3a3f_0%,#232326_45%,#161618_100%)]">
             {model ? (
               <Suspense fallback={null}>
-                <ModelPreview url={fileUrl(datasetById("models"), model.hasGz ? `${model.path}.gz` : model.path)} gz={model.hasGz} />
+                <HeroViewer models={[model]} bare />
               </Suspense>
             ) : item.icon ? (
-              <img src={imageUrl(item.icon)} alt="" className="max-h-full max-w-full object-contain" />
+              <img src={imageUrl(item.icon)} alt="" className="max-h-[70%] max-w-[70%] rounded-xl object-contain" />
             ) : (
-              <Package size={40} strokeWidth={1} className="text-ink-600" />
+              <Package size={44} strokeWidth={1} className="text-ink-600" />
             )}
           </div>
-          <div className="flex flex-col">
-            <div className="flex items-start gap-4">
-              {item.icon && <img src={imageUrl(item.icon)} alt="" className="h-16 w-auto rounded-md border border-ink-800" />}
-              <div>
-                <h1 className="text-2xl font-semibold tracking-tight">{item.name}</h1>
-                <div className="mt-1.5 flex flex-wrap gap-x-3 text-sm text-ink-400">
-                  {rarity && <span style={{ color: rarity.color || undefined }}>{rarity.name}</span>}
-                  {item.slot && <span>{item.slot}</span>}
-                  <span>{item.type || prefabTitle(item.prefab)}</span>
-                  <span>#{item.id}</span>
-                </div>
-              </div>
+
+          <aside className="flex flex-col rounded-2xl border border-white/[0.06] bg-ink-900 p-6">
+            {item.icon && <img src={imageUrl(item.icon)} alt="" className="h-20 w-fit rounded-lg" />}
+            <h1 className="mt-4 text-[1.9rem] leading-[1.1] font-semibold tracking-[-0.03em]">{item.name}</h1>
+            <div className="mt-4 flex flex-wrap gap-1.5">
+              {rarity && (
+                <span className="rounded-full bg-ink-800 px-3 py-1 text-[0.8rem]" style={{ color: rarity.color || undefined }}>
+                  {rarity.name}
+                </span>
+              )}
+              {[item.slot, item.type || prefabTitle(item.prefab)].filter(Boolean).map((t) => (
+                <span key={t} className="rounded-full bg-ink-800 px-3 py-1 text-[0.8rem] text-ink-300">
+                  {t}
+                </span>
+              ))}
             </div>
-            <div className="mt-6">{ready ? <DownloadButtons entries={files} title={item.name.replace(/[\\/:*?"<>|]/g, "")} /> : <span className="text-sm text-ink-400">Gathering files…</span>}</div>
-            {set && (
-              <div className="mt-8">
-                <div className="text-[11px] tracking-wider text-ink-400 uppercase">Set · {set.name}</div>
-                <div className="mt-3 grid grid-cols-4 gap-2">
-                  {set.items
-                    .filter((id) => id !== item.id && catalog.items[id])
-                    .slice(0, 8)
-                    .map((id) => (
-                      <ItemCard key={id} item={catalog.items[id]} rarities={catalog.rarities} />
-                    ))}
-                </div>
-              </div>
+            {heroes.length > 0 && (
+              <p className="mt-4 text-[0.9rem] text-ink-400">
+                For{" "}
+                {heroes.map((h, i) => (
+                  <span key={h.id}>
+                    {i > 0 && ", "}
+                    <a href={link(`/hero/${h.key}`)} className="text-ink-100 hover:underline">
+                      {h.name}
+                    </a>
+                  </span>
+                ))}
+              </p>
             )}
+            <div className="flex-1" />
+            <div className="mt-6 border-t border-white/[0.06] pt-5">
+              {ready ? (
+                <DownloadButtons entries={files} title={item.name.replace(/[\\/:*?"<>|]/g, "")} />
+              ) : (
+                <span className="flex items-center gap-2 text-[0.88rem] text-ink-400">
+                  <LoaderCircle size={14} className="animate-spin" /> Gathering its files
+                </span>
+              )}
+              <p className="mt-3 text-[0.8rem] text-ink-400">
+                {files.length} files: model, textures, icon{item.refs.particles ? ", effects" : ""}
+                {item.refs.sounds ? ", sounds" : ""}
+              </p>
+            </div>
+          </aside>
+        </div>
+
+        {others.length > 0 && (
+          <section className="mt-12">
+            <h2 className="text-[1.25rem] font-semibold tracking-[-0.02em]">{set.name}</h2>
+            <p className="mt-1 text-[0.88rem] text-ink-400">The rest of its set</p>
+            <div className="mt-5 grid grid-cols-[repeat(auto-fill,minmax(12.5rem,1fr))] gap-4">
+              {others.map((id, i) => (
+                <ItemCard key={id} item={catalog.items[id]} rarities={catalog.rarities} delay={i * 25} />
+              ))}
+            </div>
+          </section>
+        )}
+
+        <section className="mt-12">
+          <h2 className="text-[1.25rem] font-semibold tracking-[-0.02em]">Files</h2>
+          <div className="mt-4 overflow-hidden rounded-2xl border border-white/[0.06] bg-ink-900 p-2">
+            <FileTable entries={sorted} route={route} height={`${Math.min(32, Math.max(1, sorted.length) * 2.75 + 0.5)}rem`} />
           </div>
-        </div>
-        <h2 className="mt-10 mb-3 text-sm font-medium">
-          Files <span className="ml-1 text-ink-400 tabular-nums">{files.length}</span>
-        </h2>
-        <div className="rounded-xl border border-ink-800 p-1">
-          <FileTable entries={sorted} route={route} height={Math.min(560, Math.max(1, sorted.length) * 44 + 4)} />
-        </div>
+        </section>
       </div>
     </div>
   );

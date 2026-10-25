@@ -11,7 +11,7 @@ export default function Tray() {
         const share = job.total ? Math.min(1, job.bytes / job.total) : 0;
         const running = job.status === "running";
         return (
-          <div key={job.id} className="rounded-xl border border-ink-700 bg-ink-850/95 p-3.5 shadow-2xl shadow-black/50 backdrop-blur">
+          <div key={job.id} className="anim-open rounded-2xl border border-white/[0.08] bg-ink-900 p-4 shadow-2xl shadow-black/60">
             <div className="flex items-center gap-2.5">
               {running ? (
                 <LoaderCircle size={15} className="animate-spin text-ink-300" />

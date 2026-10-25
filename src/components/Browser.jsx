@@ -12,6 +12,7 @@ import { canSaveToFolder } from "../lib/download.js";
 import { heroPortrait, imageUrl } from "../lib/catalog.js";
 import { useRem } from "../lib/scale.js";
 import { Check, EntryIcon } from "./icons.jsx";
+import { Button, Chip } from "./ui.jsx";
 import CopyButton from "./CopyButton.jsx";
 
 // In rem (lib/scale.js)
@@ -126,7 +127,7 @@ export default function Browser({ ds, route, index, error, indexes, catalog, wit
 
   return (
     <>
-      <div className="flex shrink-0 flex-col gap-4 border-b border-ink-800 px-6 pt-5 pb-4">
+      <div className="anim-page relative z-10 flex shrink-0 flex-col gap-4 border-b border-white/[0.06] px-8 pt-6 pb-4">
         <div className="flex min-h-8 items-center gap-1 text-sm">
           {searching ? (
             <span className="text-ink-300">
@@ -211,7 +212,7 @@ export default function Browser({ ds, route, index, error, indexes, catalog, wit
       </div>
 
       {view === "list" && rows.length > 0 && (
-        <div className="grid shrink-0 grid-cols-[44px_1fr_110px_90px_44px] items-center border-b border-ink-800 px-3 text-[11px] font-medium tracking-wider text-ink-400 uppercase">
+        <div className="grid shrink-0 grid-cols-[44px_1fr_110px_90px_44px] items-center border-b border-white/[0.06] px-5 text-[0.8rem] text-ink-400">
           <span />
           <SortHead sort={sort} setSort={setSort} k="name">
             Name
@@ -286,24 +287,10 @@ function Crumbs({ ds, dir, kind }) {
 
 function Action({ icon: Icon, children, ...props }) {
   return (
-    <button
-      {...props}
-      className="inline-flex h-8 items-center gap-2 rounded-md border border-ink-700 bg-ink-850 px-2.5 text-xs text-ink-300 transition hover:border-ink-600 hover:text-ink-100"
-    >
-      <Icon size={14} />
+    <Button {...props} className="h-9 px-3">
+      <Icon size={15} />
       {children}
-    </button>
-  );
-}
-
-function Chip({ active, children, ...props }) {
-  return (
-    <button
-      {...props}
-      className={`h-7 rounded-full px-3 text-xs transition ${active ? "bg-ink-100 text-ink-950" : "text-ink-400 hover:bg-ink-850 hover:text-ink-100"}`}
-    >
-      {children}
-    </button>
+    </Button>
   );
 }
 
@@ -313,7 +300,7 @@ function SortHead({ sort, setSort, k, right, children }) {
   return (
     <button
       onClick={() => setSort({ key: k, desc: on ? !sort.desc : k === "size" })}
-      className={`flex items-center gap-1 py-2 uppercase hover:text-ink-100 ${right ? "justify-end" : ""} ${on ? "text-ink-300" : ""}`}
+      className={`flex items-center gap-1 py-2 hover:text-ink-100 ${right ? "justify-end" : ""} ${on ? "text-ink-300" : ""}`}
     >
       {children}
       {on && <Arrow size={11} />}
@@ -329,7 +316,7 @@ function ListRow({ row, ds, searching, allMode, picked, active, onPick, onOpen }
     <div
       onClick={onOpen}
       style={{ height: `${ROW}rem` }}
-      className={`group grid cursor-pointer grid-cols-[44px_1fr_110px_90px_44px] items-center px-3 text-sm ${active ? "bg-ink-850" : "hover:bg-ink-900"}`}
+      className={`group grid cursor-pointer grid-cols-[44px_1fr_110px_90px_44px] items-center px-5 text-[0.9rem] transition-colors ${active ? "bg-ink-800" : "hover:bg-ink-850"}`}
     >
       <Check picked={picked} onClick={onPick} />
       <div className="flex min-w-0 items-center gap-3">
@@ -367,7 +354,7 @@ function GridCell({ row, picked, active, onPick, onOpen }) {
     <div
       onClick={onOpen}
       style={{ height: `${CELL}rem` }}
-      className={`group relative flex cursor-pointer flex-col overflow-hidden rounded-lg border transition ${active ? "border-ink-400 bg-ink-850" : "border-ink-800 bg-ink-900 hover:border-ink-600"}`}
+      className={`group relative flex cursor-pointer flex-col overflow-hidden rounded-xl border transition-colors ${active ? "border-white/30 bg-ink-850" : "border-white/[0.06] bg-ink-850 hover:border-white/[0.14]"}`}
     >
       <div className={`flex min-h-0 flex-1 items-center justify-center ${thumb ? "checker" : ""}`}>
         {thumb ? (

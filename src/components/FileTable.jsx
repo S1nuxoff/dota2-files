@@ -64,7 +64,7 @@ function Row({ e, active, onOpen }) {
     <div
       onClick={onOpen}
       style={{ height: `${ROW}rem` }}
-      className={`group flex cursor-pointer items-center gap-3 rounded-md px-3 text-sm ${active ? "bg-ink-850" : "hover:bg-ink-900"}`}
+      className={`group flex cursor-pointer items-center gap-3 rounded-lg px-3 text-[0.9rem] transition-colors ${active ? "bg-ink-800" : "hover:bg-ink-850"}`}
     >
       <EntryIcon entry={e} />
       <div className="min-w-0 flex-1 leading-tight">
@@ -98,7 +98,7 @@ function Cell({ e, active, onOpen }) {
     <div
       onClick={onOpen}
       style={{ height: `${CELL}rem` }}
-      className={`flex cursor-pointer flex-col overflow-hidden rounded-lg border transition ${active ? "border-ink-400" : "border-ink-800 hover:border-ink-600"}`}
+      className={`flex cursor-pointer flex-col overflow-hidden rounded-xl border transition-colors ${active ? "border-white/30" : "border-white/[0.06] hover:border-white/[0.14]"}`}
     >
       <div className="checker flex min-h-0 flex-1 items-center justify-center">
         {e.kind === "image" ? (
@@ -107,7 +107,7 @@ function Cell({ e, active, onOpen }) {
           <EntryIcon entry={e} size={28} />
         )}
       </div>
-      <div className="shrink-0 border-t border-ink-800 bg-ink-900 px-2.5 py-1.5 leading-tight">
+      <div className="shrink-0 border-t border-white/[0.06] bg-ink-850 px-2.5 py-1.5 leading-tight">
         <div className="truncate text-xs">{e.title || e.name}</div>
         <div className="truncate text-[11px] text-ink-400">{formatSize(e.size)}</div>
       </div>

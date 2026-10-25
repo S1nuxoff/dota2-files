@@ -17,7 +17,7 @@ export default function SelectionBar({ selection, clear, resolve, route }) {
   };
   return (
     <div className="pointer-events-none fixed inset-x-0 bottom-5 flex justify-center">
-      <div className="pointer-events-auto flex items-center gap-4 rounded-xl border border-ink-700 bg-ink-850/95 py-2 pr-2 pl-4 shadow-2xl shadow-black/50 backdrop-blur">
+      <div className="pointer-events-auto flex items-center gap-4 anim-open rounded-2xl border border-white/[0.08] bg-ink-900 py-2 pr-2 pl-5 shadow-2xl shadow-black/60">
         <span className="text-sm">
           <span className="tabular-nums">{formatCount(files.length)}</span> files
           <span className="ml-2 text-ink-400 tabular-nums">{formatSize(bytes)}</span>

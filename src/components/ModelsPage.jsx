@@ -6,12 +6,12 @@ import { SIZES, loadModels, sizeOf } from "../lib/catalog.js";
 import { formatCount } from "../lib/format.js";
 import { useRem } from "../lib/scale.js";
 import ModelPanel from "./ModelPanel.jsx";
+import { Button, Card, Chip, PageHead, SearchField, Spinner } from "./ui.jsx";
 import ImageSearch from "./ImageSearch.jsx";
 import { searchByWords } from "../lib/visual.js";
 
-// In rem (lib/scale.js)
-const CARD_W = 14;
-const CARD_H = 16.5;
+// The narrowest a card gets, in rem (lib/scale.js)
+const CARD_W = 15;
 
 const TYPES = [
   ["", "All"],
@@ -169,17 +169,21 @@ export default function ModelsPage({ catalog, indexes }) {
     return () => ro.disconnect();
   }, [ready]);
   const rem = useRem();
-  const columns = Math.max(1, Math.floor(width / (CARD_W * rem)));
+  const gap = 1.25 * rem;
+  const columns = Math.max(1, Math.floor((width + gap) / (CARD_W * rem + gap)));
+  const cardWidth = (width - gap * (columns - 1)) / columns;
+  // A card: its picture (4 : 3.4) and the two lines under it
+  const rowHeight = cardWidth * (3.4 / 4) + 4.1 * rem + gap;
   const virtual = useVirtualizer({
     count: Math.ceil(shown.length / columns),
     getScrollElement: () => scroller.current,
-    estimateSize: () => (CARD_H + 1.25) * rem,
+    estimateSize: () => rowHeight,
     overscan: 3,
     scrollMargin: top,
   });
   useEffect(() => {
     virtual.measure();
-  }, [columns]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [columns, rowHeight]); // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => {
     scroller.current?.scrollTo(0, 0);
   }, [type, group, theme, heroKey, size, animated, filter, sort, similar]);
@@ -216,13 +220,7 @@ export default function ModelsPage({ catalog, indexes }) {
     animated && ["Animated", () => setAnimated(false)],
   ].filter(Boolean);
 
-  if (!ready) {
-    return (
-      <div className="flex flex-1 items-center justify-center gap-3 text-ink-400">
-        {error ? `The list of models could not be loaded: ${error}` : <><LoaderCircle size={18} className="animate-spin" /> Loading models</>}
-      </div>
-    );
-  }
+  if (!ready) return error ? <div className="p-16 text-center text-ink-400">The list of models could not be loaded: {error}</div> : <Spinner text="Loading models" />;
 
   // The opened card's neighbours in the list, for the arrows
   const at = open ? shown.findIndex((c) => c.key === open.key) : -1;
@@ -231,109 +229,103 @@ export default function ModelsPage({ catalog, indexes }) {
   return (
     <div className="relative flex min-h-0 flex-1 flex-col">
       <div ref={scroller} className="min-h-0 flex-1 overflow-y-auto">
-        <header className="mx-auto max-w-[110rem] px-12 pt-8 pb-5">
-          <div className="flex items-end justify-between gap-8">
-            <div>
-              <h1 className="text-[2rem] leading-none font-semibold tracking-[-0.03em]">3D models</h1>
-              <p className="mt-3 text-ink-400">
-                {formatCount(shown.length)} of {formatCount(cards.length)}, each a glb with its textures and animations
-              </p>
-            </div>
-            <div className="flex items-center gap-2">
-              <label className="glass flex h-10 w-[22rem] items-center gap-3 rounded-full pr-1.5 pl-4">
-                {meaning ? <Sparkles size={16} className="shrink-0 text-accent" /> : <Search size={16} className="shrink-0 text-ink-400" />}
-                <input
-                  value={filter}
-                  onChange={(e) => setFilter(e.target.value)}
-                  onKeyDown={(e) => e.key === "Enter" && meaning && findByMeaning()}
-                  placeholder={meaning ? "Say how it looks, then Enter" : "Name or path: rock, pine, courier"}
-                  className="min-w-0 flex-1 bg-transparent text-[0.95rem] outline-none placeholder:text-ink-400"
-                />
-                <button
-                  onClick={() => setMeaning(!meaning)}
-                  title="Search by how it looks, not by its name"
-                  className={`h-7 shrink-0 rounded-full px-2.5 text-[0.8rem] font-medium transition ${meaning ? "bg-accent text-ink-950" : "glass-inset text-ink-300 hover:text-ink-100"}`}
-                >
-                  By look
-                </button>
-              </label>
-              <button onClick={() => setPicking(true)} className="glass flex h-10 items-center gap-2 rounded-full px-5 text-[0.95rem] text-ink-100 transition hover:bg-white/10">
-                <ScanSearch size={17} /> Find by picture
-              </button>
-            </div>
-          </div>
-          {thinking && (
-            <div className="mt-3 flex items-center justify-end gap-2 text-sm text-ink-400">
-              <LoaderCircle size={14} className="animate-spin" /> {thinking}
-            </div>
-          )}
-
-          <div className="mt-6 flex items-center gap-2.5">
-            <div className="glass flex rounded-full p-1">
+        {/* Above the grid, so the filters' panel opens over the cards */}
+        <div className="anim-page relative z-20">
+          <PageHead title="3D models" sub={`${formatCount(cards.length)} models of Dota 2, each a glb with its textures and animations.`}>
+            <SearchField
+              value={filter}
+              onChange={setFilter}
+              onEnter={() => meaning && findByMeaning()}
+              icon={meaning ? Sparkles : Search}
+              placeholder={meaning ? "Say how it looks, then press Enter" : "Search by name or path"}
+              right={
+                <div className="flex items-center gap-1">
+                  <button
+                    onClick={() => setMeaning(!meaning)}
+                    title="Search by how it looks, not by its name"
+                    className={`h-8 rounded-lg px-3 text-[0.82rem] transition-colors ${meaning ? "bg-ink-100 text-ink-950" : "text-ink-400 hover:bg-ink-800 hover:text-ink-100"}`}
+                  >
+                    By look
+                  </button>
+                  <button
+                    onClick={() => setPicking(true)}
+                    title="Find by a screenshot"
+                    className="flex h-8 items-center gap-1.5 rounded-lg px-3 text-[0.82rem] text-ink-400 transition-colors hover:bg-ink-800 hover:text-ink-100"
+                  >
+                    <ScanSearch size={15} /> Picture
+                  </button>
+                </div>
+              }
+            />
+            {thinking && (
+              <div className="flex items-center gap-2 text-sm text-ink-400">
+                <LoaderCircle size={14} className="animate-spin" /> {thinking}
+              </div>
+            )}
+            <div className="flex flex-wrap justify-center gap-2">
               {TYPES.map(([t, title]) => {
-                const n = t ? cards.filter((c) => c.type === t).length : cards.filter((c) => c.type !== "technical").length;
+                const n = t ? cards.filter((c) => c.type === t).length : 0;
                 if (t && !n) return null;
                 return (
-                  <button
-                    key={t}
-                    onClick={() => pickType(t)}
-                    className={`rounded-full px-3.5 py-1.5 text-[0.88rem] transition ${type === t ? "bg-white/90 font-medium text-ink-950" : "text-ink-300 hover:text-ink-100"}`}
-                  >
+                  <Chip key={t} active={type === t} onClick={() => pickType(t)}>
                     {title}
-                  </button>
+                  </Chip>
                 );
               })}
             </div>
-            <div className="relative">
-              <button
-                onClick={() => setFiltersOpen(!filtersOpen)}
-                className={`glass flex h-10 items-center gap-2 rounded-full px-5 text-[0.9rem] transition ${filtersOpen || active.length ? "text-ink-100" : "text-ink-300 hover:text-ink-100"}`}
-              >
-                <SlidersHorizontal size={16} /> Filters
-                {active.length > 0 && <span className="rounded-full bg-accent px-1.5 text-[0.7rem] font-semibold text-ink-950">{active.length}</span>}
-              </button>
-              {filtersOpen && (
-                <Filters
-                  onClose={() => setFiltersOpen(false)}
-                  {...{ size, setSize, animated, setAnimated, heroKey, setHeroKey, heroes, catalog, group, setGroup, groups, theme, setTheme, themes }}
-                />
-              )}
-            </div>
-            <Select value={sort} onChange={setSort} options={SORTS} />
-            <div className="flex flex-1 flex-wrap items-center gap-2">
+          </PageHead>
+
+          <div className="mx-auto max-w-[100rem] px-8">
+            <div className="flex items-center gap-2 pb-5">
+              <div className="relative">
+                <Button onClick={() => setFiltersOpen(!filtersOpen)}>
+                  <SlidersHorizontal size={16} /> Filters
+                  {active.length > 0 && <span className="rounded bg-ink-100 px-1.5 text-[0.7rem] font-semibold text-ink-950">{active.length}</span>}
+                </Button>
+                {filtersOpen && (
+                  <Filters
+                    onClose={() => setFiltersOpen(false)}
+                    {...{ size, setSize, animated, setAnimated, heroKey, setHeroKey, heroes, catalog, group, setGroup, groups, theme, setTheme, themes }}
+                  />
+                )}
+              </div>
               {active.map(([label, clear]) => (
-                <button key={label} onClick={clear} className="glass-inset flex h-9 items-center gap-1.5 rounded-full pr-2.5 pl-3.5 text-[0.85rem] text-ink-100 capitalize hover:bg-white/12">
+                <button key={label} onClick={clear} className="anim-fade flex h-10 items-center gap-1.5 rounded-lg bg-ink-800 pr-2.5 pl-3.5 text-[0.86rem] capitalize transition-colors hover:bg-ink-700">
                   {label} <X size={14} className="text-ink-400" />
                 </button>
               ))}
+              <div className="flex-1 pl-2 text-[0.88rem] text-ink-400">
+                {similar ? (
+                  <span className="anim-fade inline-flex items-center gap-3">
+                    {similar.picture && <img src={similar.picture} alt="" className="h-9 max-w-16 rounded-md object-contain" />}
+                    Most like {similar.label} first
+                    <button onClick={() => setSimilar(null)} className="text-ink-100 hover:underline">
+                      Show all
+                    </button>
+                  </span>
+                ) : (
+                  `${formatCount(shown.length)} shown`
+                )}
+              </div>
+              <Select value={sort} onChange={setSort} options={SORTS} />
             </div>
           </div>
-
-          {similar && (
-            <div className="glass mt-5 flex items-center gap-4 rounded-3xl p-2.5 pr-4">
-              {similar.picture && <img src={similar.picture} alt="" className="h-14 max-w-28 rounded-xl object-contain" />}
-              <div className="flex-1 text-[0.95rem]">Most like {similar.label} first</div>
-              <button onClick={() => setSimilar(null)} className="flex items-center gap-1.5 text-[0.9rem] text-ink-400 hover:text-ink-100">
-                <X size={15} /> Show all
-              </button>
-            </div>
-          )}
-        </header>
+        </div>
 
         {shown.length === 0 && <div className="p-16 text-center text-ink-400">No model fits these filters. Clear one to see more.</div>}
-        <div className="mx-auto max-w-[110rem] px-12 pb-16">
+        <div className="mx-auto max-w-[100rem] px-8 pb-16">
           <div ref={grid} style={{ height: virtual.getTotalSize(), position: "relative" }}>
-          {virtual.getVirtualItems().map((line) => (
-            <div
-              key={line.key}
-              className="grid gap-x-4"
-              style={{ position: "absolute", top: 0, left: 0, right: 0, transform: `translateY(${line.start - top}px)`, gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))` }}
-            >
-              {shown.slice(line.index * columns, line.index * columns + columns).map((c) => (
-                <Card key={c.key} c={c} onOpen={() => setOpen(c)} />
-              ))}
-            </div>
-          ))}
+            {virtual.getVirtualItems().map((line) => (
+              <div
+                key={line.key}
+                className="grid"
+                style={{ position: "absolute", top: 0, left: 0, right: 0, columnGap: gap, transform: `translateY(${line.start - top}px)`, gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))` }}
+              >
+                {shown.slice(line.index * columns, line.index * columns + columns).map((c, i) => (
+                  <ModelCard key={c.key} c={c} delay={i * 45} onOpen={() => setOpen(c)} />
+                ))}
+              </div>
+            ))}
           </div>
         </div>
       </div>
@@ -355,7 +347,7 @@ export default function ModelsPage({ catalog, indexes }) {
 
 function Select({ value, onChange, options }) {
   return (
-    <label className="glass relative flex h-10 items-center rounded-full pr-9 pl-5 text-[0.9rem] text-ink-300">
+    <label className="relative flex h-10 items-center rounded-lg border border-white/[0.08] bg-ink-850 pr-9 pl-3.5 text-[0.88rem] text-ink-100 transition-colors focus-within:border-white/25 hover:bg-ink-800">
       <select value={value} onChange={(e) => onChange(e.target.value)} className="appearance-none bg-transparent outline-none">
         {options.map(([v, t]) => (
           <option key={v} value={v} className="bg-ink-900">
@@ -363,12 +355,12 @@ function Select({ value, onChange, options }) {
           </option>
         ))}
       </select>
-      <ChevronDown size={15} className="pointer-events-none absolute right-3.5 text-ink-400" />
+      <ChevronDown size={15} className="pointer-events-none absolute right-3 text-ink-400" />
     </label>
   );
 }
 
-// The filters, in a glass panel under their button
+// The filters, in a panel under their button
 function Filters({ onClose, size, setSize, animated, setAnimated, heroKey, setHeroKey, heroes, catalog, group, setGroup, groups, theme, setTheme, themes }) {
   const panel = useRef(null);
   useEffect(() => {
@@ -381,26 +373,25 @@ function Filters({ onClose, size, setSize, animated, setAnimated, heroKey, setHe
       window.removeEventListener("keydown", onKey);
     };
   }, [onClose]);
-  const chip = (on) => `rounded-full px-3.5 py-1.5 text-[0.85rem] capitalize transition ${on ? "bg-white/90 text-ink-950" : "glass-inset text-ink-300 hover:text-ink-100"}`;
   return (
-    <div ref={panel} className="glass absolute top-full left-0 z-20 mt-3 w-[34rem] space-y-6 rounded-3xl p-6">
+    <div ref={panel} className="anim-open absolute top-full left-0 z-20 mt-2 w-[32rem] space-y-6 rounded-2xl border border-white/[0.08] bg-ink-900 p-5 shadow-2xl shadow-black/50">
       <section>
-        <h3 className="mb-2.5 text-[0.85rem] text-ink-400">Size</h3>
+        <h3 className="mb-2.5 text-[0.84rem] text-ink-400">Size</h3>
         <div className="flex flex-wrap gap-1.5">
           {SIZES.map(([id, title]) => (
-            <button key={id} onClick={() => setSize(size === id ? "" : id)} className={chip(size === id)}>
+            <Chip key={id} active={size === id} onClick={() => setSize(size === id ? "" : id)}>
               {title}
-            </button>
+            </Chip>
           ))}
-          <button onClick={() => setAnimated(!animated)} className={`${chip(animated)} flex items-center gap-1.5`}>
+          <Chip active={animated} onClick={() => setAnimated(!animated)} className="flex items-center gap-1.5">
             {animated && <Check size={13} />} Animated
-          </button>
+          </Chip>
         </div>
       </section>
       {heroes.length > 1 && (
         <section>
-          <h3 className="mb-2.5 text-[0.85rem] text-ink-400">Hero</h3>
-          <select value={heroKey} onChange={(e) => setHeroKey(e.target.value)} className="glass-inset h-10 w-full rounded-xl px-3 text-[0.9rem] text-ink-100 outline-none">
+          <h3 className="mb-2.5 text-[0.84rem] text-ink-400">Hero</h3>
+          <select value={heroKey} onChange={(e) => setHeroKey(e.target.value)} className="h-10 w-full rounded-lg border border-white/[0.08] bg-ink-850 px-3 text-[0.9rem] text-ink-100 outline-none focus:border-white/25">
             <option value="" className="bg-ink-900">
               Any hero
             </option>
@@ -415,23 +406,23 @@ function Filters({ onClose, size, setSize, animated, setAnimated, heroKey, setHe
           </select>
         </section>
       )}
-      {groups.length > 1 && <Chips title="Kind" items={groups} value={group} onPick={setGroup} chip={chip} />}
-      {themes.length > 0 && <Chips title="Theme" items={themes} value={theme} onPick={setTheme} chip={chip} />}
+      {groups.length > 1 && <Chips title="Kind" items={groups} value={group} onPick={setGroup} />}
+      {themes.length > 0 && <Chips title="Theme" items={themes} value={theme} onPick={setTheme} />}
     </div>
   );
 }
 
-function Chips({ title, items, value, onPick, chip }) {
+function Chips({ title, items, value, onPick }) {
   const [all, setAll] = useState(false);
   const shown = all ? items : items.slice(0, 14);
   return (
     <section>
-      <h3 className="mb-2.5 text-[0.85rem] text-ink-400">{title}</h3>
+      <h3 className="mb-2.5 text-[0.84rem] text-ink-400">{title}</h3>
       <div className="flex max-h-56 flex-wrap gap-1.5 overflow-y-auto">
         {shown.map(([k, n]) => (
-          <button key={k} onClick={() => onPick(value === k ? "" : k)} className={chip(value === k)}>
+          <Chip key={k} active={value === k} onClick={() => onPick(value === k ? "" : k)} className="capitalize">
             {k} <span className="opacity-50">{formatCount(n)}</span>
-          </button>
+          </Chip>
         ))}
         {items.length > 14 && (
           <button onClick={() => setAll(!all)} className="px-2 text-[0.85rem] text-ink-400 hover:text-ink-100">
@@ -443,39 +434,41 @@ function Chips({ title, items, value, onPick, chip }) {
   );
 }
 
-// A model standing in its own light: no frame, the picture large, the name under it
-function Card({ c, onOpen }) {
+function ModelCard({ c, delay, onOpen }) {
   const [broken, setBroken] = useState(false);
   return (
-    <div onClick={onOpen} style={{ height: `${CARD_H}rem` }} className="group flex cursor-pointer flex-col">
-      <div className="relative flex min-h-0 flex-1 items-center justify-center overflow-hidden rounded-3xl bg-[radial-gradient(ellipse_70%_55%_at_50%_58%,#1b2433_0%,#0d1118_60%,transparent_100%)] transition duration-300 group-hover:bg-[radial-gradient(ellipse_75%_60%_at_50%_55%,#26334a_0%,#111722_62%,transparent_100%)]">
-        <span className="absolute bottom-[14%] h-[6%] w-[46%] rounded-[50%] bg-black/50 blur-md" />
-        {c.preview && !broken ? (
-          <img
-            src={previewUrl(c.first)}
-            loading="lazy"
-            decoding="async"
-            alt=""
-            onError={() => setBroken(true)}
-            className="relative h-full w-full object-contain p-5 transition duration-500 ease-out group-hover:scale-[1.06]"
-          />
-        ) : (
-          <Box size={34} strokeWidth={1} className="relative text-ink-600" />
-        )}
-        {c.models.length > 1 && <span className="glass absolute top-3 left-3 rounded-full px-2.5 py-1 text-[0.72rem] text-ink-100">{c.models.length} variants</span>}
-        <a
-          href={fileUrl(datasetById(c.first.ds), c.first.path, true)}
-          onClick={(ev) => ev.stopPropagation()}
-          title="Download the glb"
-          className="glass absolute top-3 right-3 flex h-9 w-9 items-center justify-center rounded-full text-ink-100 opacity-0 transition group-hover:opacity-100"
-        >
-          <Download size={16} />
-        </a>
-      </div>
-      <div className="shrink-0 px-1 pt-3 leading-tight">
-        <div className="truncate text-[0.98rem] font-medium capitalize">{c.name}</div>
-        <div className="mt-1 truncate text-[0.82rem] text-ink-400 capitalize">{c.heroName || c.group || c.type}</div>
-      </div>
+    <div className="anim-card" style={{ animationDelay: `${delay}ms` }}>
+      <Card
+        onClick={onOpen}
+        title={<span className="capitalize">{c.name}</span>}
+        meta={<span className="capitalize">{[c.heroName || c.group || c.type, c.models.length > 1 && `${c.models.length} variants`].filter(Boolean).join("   ")}</span>}
+        action={
+          <a
+            href={fileUrl(datasetById(c.first.ds), c.first.path, true)}
+            onClick={(ev) => ev.stopPropagation()}
+            title="Download the glb"
+            className="flex h-9 w-9 items-center justify-center rounded-lg bg-black/55 text-ink-100 backdrop-blur hover:bg-black/75"
+          >
+            <Download size={16} />
+          </a>
+        }
+        picture={
+          c.preview && !broken ? (
+            <img
+              src={previewUrl(c.first)}
+              loading="lazy"
+              decoding="async"
+              alt=""
+              onError={() => setBroken(true)}
+              className="h-full w-full object-contain p-6 transition-transform duration-500 ease-out group-hover:scale-[1.05]"
+            />
+          ) : (
+            <div className="flex h-full items-center justify-center">
+              <Box size={34} strokeWidth={1} className="text-ink-600" />
+            </div>
+          )
+        }
+      />
     </div>
   );
 }
