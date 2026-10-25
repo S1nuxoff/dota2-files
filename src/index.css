@@ -186,3 +186,18 @@ model-viewer {
 }
 
 
+
+/* Front page: rows of hero icons sliding past, paused under the pointer */
+@keyframes slide {
+  to {
+    transform: translateX(-50%);
+  }
+}
+@utility anim-slide {
+  animation: slide var(--slide, 90s) linear infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .anim-slide {
+    animation-duration: var(--slide, 90s) !important;
+  }
+}

@@ -182,6 +182,7 @@ export default function HomePage({ catalog, indexes }) {
               ))}
             </nav>
           </div>
+          {catalog && <HeroBelt heroes={catalog.heroes} />}
         </section>
 
         {/* Every way in */}
@@ -287,6 +288,30 @@ export default function HomePage({ catalog, indexes }) {
           </div>
         </footer>
       </div>
+    </div>
+  );
+}
+
+// Every hero's icon on two rows sliding past at the foot of the opening, one each way, fading out at
+// the sides; a row stops under the pointer, an icon leads to its hero
+function HeroBelt({ heroes }) {
+  const half = Math.ceil(heroes.length / 2);
+  const rows = [heroes.slice(0, half), heroes.slice(half)];
+  return (
+    <div className="relative z-10 mx-auto mb-10 w-full max-w-[90rem] space-y-3 overflow-hidden [mask-image:linear-gradient(to_right,transparent,black_12%,black_88%,transparent)]">
+      {rows.map((row, r) => (
+        <div
+          key={r}
+          style={{ "--slide": `${row.length * 1.6}s`, animationDirection: r ? "reverse" : "normal" }}
+          className="anim-slide flex w-max gap-3 hover:[animation-play-state:paused]"
+        >
+          {[...row, ...row].map((h, i) => (
+            <a key={`${h.id}${i}`} href={link(`/hero/${h.key}`)} title={h.name} className="shrink-0 opacity-60 transition-opacity hover:opacity-100">
+              <img src={heroIcon(h)} alt={h.name} loading="lazy" className="h-10 w-10" />
+            </a>
+          ))}
+        </div>
+      ))}
     </div>
   );
 }
