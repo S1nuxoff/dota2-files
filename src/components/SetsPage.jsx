@@ -43,20 +43,23 @@ export default function SetsPage({ catalog }) {
 
   return (
     <Page>
-      <PageHead eyebrow={`${formatCount(all.length)} sets`} title="Sets" sub="Every set of the game on its hero, with every file of its items to download at once.">
+      <PageHead eyebrow={`${formatCount(all.length)} sets`} title="Sets" sub="Every set of the game on its hero, with every file of its items to download at once."
+        search={
+          <SearchField
+            big
+            value={filter}
+            onChange={(v) => {
+              setFilter(v);
+              reset();
+            }}
+            placeholder="Search by set or hero"
+          />
+        }
+      >
         <CosmeticsTabs current="/sets" />
       </PageHead>
 
       <Toolbar>
-        <SearchField
-          value={filter}
-          onChange={(v) => {
-            setFilter(v);
-            reset();
-          }}
-          placeholder="Search by set or hero"
-          className="w-full sm:w-72"
-        />
         <Segmented
           label="Layout"
           value={grouped ? "hero" : "all"}

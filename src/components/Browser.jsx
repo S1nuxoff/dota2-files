@@ -191,6 +191,11 @@ export default function Browser({ ds, route, index, error, indexes, catalog, wit
             </div>
           )}
         </div>
+        {!allMode && (
+          <div className="mt-7 w-full max-w-2xl [&>label]:h-14 [&>label]:rounded-2xl [&>label]:pl-5">
+            <SearchField big value={text} onChange={setText} placeholder={`Search in ${route.dir ? dir?.name || ds.title : ds.title}`} />
+          </div>
+        )}
       </header>
 
       <Toolbar
@@ -213,7 +218,6 @@ export default function Browser({ ds, route, index, error, indexes, catalog, wit
           )
         }
       >
-        {!allMode && <SearchField value={text} onChange={setText} placeholder={`Search in ${route.dir ? dir?.name || ds.title : ds.title}`} className="w-full sm:w-72" />}
         <Segmented
           label="Kind of file"
           value={kind || ""}

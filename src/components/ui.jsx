@@ -38,7 +38,7 @@ export function Crumbs({ items, className = "" }) {
 
 // A page's head, in the middle: where it sits, a small label, the title, a line under it, then what
 // to do with the whole of it (a search, tabs) under them
-export function PageHead({ crumbs, eyebrow, title, sub, actions, children, className = "" }) {
+export function PageHead({ crumbs, eyebrow, title, sub, search, actions, children, className = "" }) {
   return (
     <header className={`page-x flex flex-col items-center pt-8 pb-6 text-center sm:pt-14 sm:pb-8 ${className}`}>
       {crumbs && <Crumbs items={crumbs} className="mb-6 [&>ol]:justify-center" />}
@@ -50,6 +50,7 @@ export function PageHead({ crumbs, eyebrow, title, sub, actions, children, class
       )}
       <h1 className="max-w-4xl text-[clamp(2.1rem,4.6vw,3.6rem)] leading-[1.02] font-semibold tracking-[-0.045em] text-balance">{title}</h1>
       {sub && <p className="mt-4 max-w-2xl text-[1rem] leading-relaxed text-balance text-ink-400">{sub}</p>}
+      {search && <div className="mt-8 w-full max-w-2xl [&>label]:h-14 [&>label]:rounded-2xl [&>label]:pl-5 [&>label]:shadow-[0_24px_60px_-28px_rgb(0_0_0/0.9)]">{search}</div>}
       {actions && <div className="mt-6 flex flex-wrap justify-center gap-2">{actions}</div>}
       {children}
     </header>
@@ -93,7 +94,7 @@ export function Toolbar({ children, className = "", below }) {
 export function SearchField({ value, onChange, placeholder, icon: Icon = Search, right, onEnter, onFocus, big = false, className = "", inputRef }) {
   return (
     <label
-      className={`group flex min-w-0 items-center gap-2.5 rounded-xl border border-white/[0.08] bg-ink-900 pr-1.5 pl-3.5 transition-colors focus-within:border-white/20 focus-within:bg-ink-850 hover:border-white/[0.12] ${
+      className={`group flex w-full min-w-0 items-center gap-2.5 rounded-xl border border-white/[0.08] bg-ink-900 pr-1.5 pl-3.5 transition-colors focus-within:border-white/20 focus-within:bg-ink-850 hover:border-white/[0.12] ${
         big ? "h-12" : "h-10"
       } ${className}`}
     >

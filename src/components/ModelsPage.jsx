@@ -239,37 +239,34 @@ export default function ModelsPage({ catalog, indexes }) {
         eyebrow={`${formatCount(cards.length)} models`}
         title="3D Models"
         sub="Every model of Dota 2 as glb with its textures and animations. Find one by name, by how it looks, or by a screenshot from the game."
-      />
-      <Toolbar
-        below={
-          <div className="page-x pb-3">
-            <Segmented label="Type" value={type} onChange={pickType} items={typeItems} />
-          </div>
+        search={
+          <SearchField
+            value={filter}
+            onChange={setFilter}
+            onEnter={() => meaning && findByMeaning()}
+            icon={meaning ? Sparkles : Search}
+            placeholder={meaning ? "Say how it looks, then press Enter" : "Search by name or path"}
+            big
+            right={
+              <div className="flex items-center gap-1">
+                <button
+                  onClick={() => setMeaning(!meaning)}
+                  title="Search by how it looks, not by its name"
+                  aria-pressed={meaning}
+                  className={`h-7 rounded-lg px-2.5 text-[0.8rem] transition-colors ${meaning ? "bg-ink-100 text-ink-950" : "text-ink-400 hover:bg-ink-800 hover:text-ink-100"}`}
+                >
+                  By look
+                </button>
+                <button onClick={() => setPicking(true)} title="Find by a screenshot" className="flex h-7 items-center gap-1.5 rounded-lg px-2.5 text-[0.8rem] text-ink-400 transition-colors hover:bg-ink-800 hover:text-ink-100">
+                  <ScanSearch size={15} /> <span className="max-xs:hidden">Picture</span>
+                </button>
+              </div>
+            }
+          />
         }
-      >
-        <SearchField
-          value={filter}
-          onChange={setFilter}
-          onEnter={() => meaning && findByMeaning()}
-          icon={meaning ? Sparkles : Search}
-          placeholder={meaning ? "Say how it looks, then press Enter" : "Search by name or path"}
-          className="w-full md:w-[28rem]"
-          right={
-            <div className="flex items-center gap-1">
-              <button
-                onClick={() => setMeaning(!meaning)}
-                title="Search by how it looks, not by its name"
-                aria-pressed={meaning}
-                className={`h-7 rounded-lg px-2.5 text-[0.8rem] transition-colors ${meaning ? "bg-ink-100 text-ink-950" : "text-ink-400 hover:bg-ink-800 hover:text-ink-100"}`}
-              >
-                By look
-              </button>
-              <button onClick={() => setPicking(true)} title="Find by a screenshot" className="flex h-7 items-center gap-1.5 rounded-lg px-2.5 text-[0.8rem] text-ink-400 transition-colors hover:bg-ink-800 hover:text-ink-100">
-                <ScanSearch size={15} /> <span className="max-xs:hidden">Picture</span>
-              </button>
-            </div>
-          }
-        />
+      />
+      <Toolbar>
+        <Segmented label="Type" value={type} onChange={pickType} items={typeItems} className="max-w-full" />
         <div className="flex items-center gap-2 max-md:w-full">
           <Button onClick={() => setFiltersOpen(true)} className="max-md:flex-1">
             <SlidersHorizontal size={16} /> Filters

@@ -38,9 +38,9 @@ export default function HeroesPage({ catalog, error }) {
         eyebrow={`${catalog.heroes.length} heroes`}
         title="Heroes"
         sub="Each with its 3D model and personas, every item by set, its abilities, voice lines, effects and pictures."
+        search={<SearchField big value={filter} onChange={setFilter} placeholder={`Find one of ${catalog.heroes.length} heroes`} />}
       />
       <Toolbar>
-        <SearchField value={filter} onChange={setFilter} placeholder="Find a hero" className="w-full sm:w-72" />
         <Segmented
           label="Attribute"
           value={attribute}

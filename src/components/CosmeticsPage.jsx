@@ -202,20 +202,23 @@ function Kinds({ catalog }) {
   const anchor = (title) => title.toLowerCase().replace(/[^a-z]+/g, "-");
   return (
     <Page>
-      <PageHead eyebrow={`${formatCount(Object.keys(catalog.items).length)} items`} title="Cosmetics" sub="Everything a player can own, by kind: hero items, sets and bundles, treasures, couriers, wards, screens, music and effects.">
+      <PageHead eyebrow={`${formatCount(Object.keys(catalog.items).length)} items`} title="Cosmetics" sub="Everything a player can own, by kind: hero items, sets and bundles, treasures, couriers, wards, screens, music and effects."
+        search={
+          <SearchField
+            big
+            value={query}
+            onChange={(v) => {
+              setQuery(v);
+              setMore(1);
+            }}
+            placeholder="Search every item by name, hero, kind or event"
+          />
+        }
+      >
         <CosmeticsTabs current="/cosmetics" />
       </PageHead>
-      <Toolbar>
-        <SearchField
-          value={query}
-          onChange={(v) => {
-            setQuery(v);
-            setMore(1);
-          }}
-          placeholder="Search every item by name, hero, kind or event"
-          className="w-full md:w-[30rem]"
-        />
-        {!found && (
+      {!found && (
+        <Toolbar>
           <div className="no-bar -mx-1 flex max-w-full gap-1 overflow-x-auto px-1">
             {all.map(([title]) => (
               <a key={title} href={`#${anchor(title)}`} className="shrink-0 rounded-lg px-2.5 py-1.5 text-[0.84rem] whitespace-nowrap text-ink-400 transition-colors hover:bg-white/[0.05] hover:text-ink-100">
@@ -223,8 +226,8 @@ function Kinds({ catalog }) {
               </a>
             ))}
           </div>
-        )}
-      </Toolbar>
+        </Toolbar>
+      )}
       <div className="page-x space-y-14 pt-6">
         {found && (
           <Section title={found.length === 1 ? "1 item" : `${formatCount(found.length)} items`} sub={`For “${query}”`}>
@@ -345,20 +348,22 @@ export function Kind({ prefab, catalog, title, sub, tab }) {
         eyebrow={tab ? `${formatCount(all.length)} items` : null}
         title={name}
         sub={sub || `${formatCount(all.length)} of them, each with its model, textures and icon.`}
+        search={
+          <SearchField
+            big
+            value={filter}
+            onChange={(v) => {
+              setFilter(v);
+              reset();
+            }}
+            placeholder={heroes.length ? `Search ${formatCount(all.length)} by name or hero` : `Search ${formatCount(all.length)} by name`}
+          />
+        }
       >
         {tab && <CosmeticsTabs current={tab} />}
       </PageHead>
 
       <Toolbar>
-        <SearchField
-          value={filter}
-          onChange={(v) => {
-            setFilter(v);
-            reset();
-          }}
-          placeholder={heroes.length ? "Search by name or hero" : "Search by name"}
-          className="w-full sm:w-72"
-        />
         <div className="grid grid-cols-2 gap-2 max-sm:w-full sm:flex sm:flex-wrap sm:items-center">
           {rarities.length > 1 && (
             <Dropdown
