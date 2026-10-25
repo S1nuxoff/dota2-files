@@ -184,3 +184,23 @@ model-viewer {
     padding-top: 3.5rem;
   }
 }
+
+/* Front page: a model render rising and falling a little, slowly */
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
+}
+@utility anim-float {
+  animation: float 5.4s ease-in-out infinite;
+}
+/* slow enough to keep when the system asks for less motion */
+@media (prefers-reduced-motion: reduce) {
+  .anim-float {
+    animation-duration: 5.4s !important;
+  }
+}

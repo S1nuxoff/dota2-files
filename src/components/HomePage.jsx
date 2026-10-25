@@ -18,8 +18,8 @@ import {
 } from "lucide-react";
 import { DATASETS, DOTADEX, datasetById, fileUrl } from "../datasets.js";
 import { formatCount, formatSize } from "../lib/format.js";
-import { link, navigate } from "../lib/route.js";
-import { eventKind, picturesOf } from "./CosmeticsPage.jsx";
+import { link, navigate, openItem } from "../lib/route.js";
+import { eventKind, picturesOf, previewOf } from "./CosmeticsPage.jsx";
 import { heroIcon } from "./HeroPicker.jsx";
 import ItemCard from "./ItemCard.jsx";
 import { heroCard, imageUrl } from "../lib/catalog.js";
@@ -122,23 +122,17 @@ export default function HomePage({ catalog, indexes }) {
         .map((i) => imageUrl(i.icon)),
     };
   }, [catalog, latestEvent]);
-  // The newest things a player can wear or own with a model, as they came out
-  const latest = useMemo(() => {
-    if (!catalog) return [];
-    const kinds = new Set(["wearable", "courier", "ward", "taunt", "bundle"]);
-    return Object.values(catalog.items)
-      .filter((i) => kinds.has(i.prefab) && i.icon && i.date)
-      .sort((a, b) => b.date.localeCompare(a.date) || Number(b.id) - Number(a.id))
-      .slice(0, 12);
-  }, [catalog]);
 
   const n = (v) => (stats ? formatCount(v) : "…");
 
   return (
-    <div className="min-h-0 flex-1 overflow-y-auto pt-0">
+    <div
+      className="min-h-0 flex-1 overflow-y-auto pt-0"
+      onScroll={(e) => e.currentTarget.style.setProperty("--p", String(Math.min(1, e.currentTarget.scrollTop / 520)))}
+    >
       <div ref={page}>
         {/* The opening reaches up under the top bar, so its light shows through the bar's blur */}
-        <section className="relative flex min-h-[100dvh] flex-col pt-14">
+        <section className="relative flex flex-col pt-14">
           {/* Light as in the game's menu: the deep red of the Dota mark from above, embers rising from below */}
           <div aria-hidden="true" className="anim-fade pointer-events-none absolute inset-0 overflow-hidden [mask-image:linear-gradient(to_bottom,black_65%,transparent)]">
             <div className="absolute inset-x-0 top-0 h-[46rem] bg-[radial-gradient(55%_55%_at_50%_0%,rgba(178,34,24,0.28),rgba(120,20,14,0.10)_45%,transparent_75%)]" />
@@ -147,7 +141,7 @@ export default function HomePage({ catalog, indexes }) {
             {/* a grain over the light, like worn stone */}
             <div className="absolute inset-0 opacity-[0.04] mix-blend-overlay" style={{ backgroundImage: GRAIN, backgroundSize: "220px 220px" }} />
           </div>
-          <div className="relative z-10 mx-auto flex w-full max-w-5xl flex-1 flex-col items-center justify-center px-8 py-16 text-center">
+          <div className="relative z-10 mx-auto flex w-full max-w-5xl flex-col items-center px-8 pt-[min(16vh,9rem)] text-center">
             <h1 className="anim-card text-[clamp(2.6rem,5.2vw,5.2rem)] leading-[1.02] font-semibold tracking-[-0.05em] text-balance whitespace-nowrap max-sm:whitespace-normal">
               The Dota 2 file archive
             </h1>
@@ -185,6 +179,7 @@ export default function HomePage({ catalog, indexes }) {
               ))}
             </nav>
           </div>
+          {catalog && <Showcase catalog={catalog} />}
         </section>
 
         {/* Every way in */}
@@ -223,23 +218,6 @@ export default function HomePage({ catalog, indexes }) {
             <Door href="/files" icon={Database} title="Files" count={stats?.files} text="The raw datasets, folder by folder, with search across all of them and downloads of whole folders." className="md:col-span-3" />
           </div>
         </section>
-
-        {latest.length > 0 && (
-          <section data-reveal className="mx-auto mt-20 max-w-[80rem] px-8">
-            <div className="flex items-baseline gap-4">
-              <h2 className="text-[1.25rem] font-semibold tracking-[-0.02em]">New in the game</h2>
-              <span className="text-[0.9rem] text-ink-400">{latest[0].date}</span>
-              <a href={link("/cosmetics")} className="ml-auto inline-flex items-center gap-1.5 text-[0.9rem] text-ink-300 hover:text-ink-100">
-                All cosmetics <ArrowRight size={14} />
-              </a>
-            </div>
-            <div className="mt-5 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
-              {latest.map((item, i) => (
-                <ItemCard key={item.id} item={item} rarities={catalog.rarities} delay={i * 20} list={latest.map((x) => x.id)} />
-              ))}
-            </div>
-          </section>
-        )}
 
         {catalog && (
           <section data-reveal className="mx-auto mt-20 max-w-[80rem] px-8">
@@ -306,6 +284,68 @@ export default function HomePage({ catalog, indexes }) {
             </a>
           </div>
         </footer>
+      </div>
+    </div>
+  );
+}
+
+// A window of the site under the opening: the latest models of the game as cards, each its render
+// gently rising and falling. It starts tilted back and stands up as the page scrolls (--p, 0 to 1)
+function Showcase({ catalog }) {
+  const cards = useMemo(() => {
+    const kinds = new Set(["wearable", "courier", "ward", "bundle"]);
+    const out = [];
+    const seen = new Set();
+    const items = Object.values(catalog.items)
+      .filter((i) => kinds.has(i.prefab) && i.date)
+      .sort((a, b) => b.date.localeCompare(a.date) || Number(b.id) - Number(a.id));
+    for (const item of items) {
+      const url = previewOf(item, catalog);
+      if (!url || seen.has(url)) continue;
+      seen.add(url);
+      out.push([item, url]);
+      if (out.length === 12) break;
+    }
+    return out;
+  }, [catalog]);
+  return (
+    <div className="relative z-10 mx-auto mt-16 w-full max-w-[72rem] px-8 [perspective:1800px]">
+      <div style={{ animationDelay: "320ms" }} className="anim-stand">
+      <div
+        style={{
+          transform: "rotateX(calc((1 - var(--p, 0)) * 26deg)) scale(calc(0.92 + var(--p, 0) * 0.08)) translateY(calc((1 - var(--p, 0)) * -1rem))",
+          transformOrigin: "50% 0%",
+        }}
+        className="rounded-2xl border border-white/[0.08] bg-ink-900/80 p-3 shadow-[0_40px_120px_-30px_rgba(0,0,0,0.9)] backdrop-blur [mask-image:linear-gradient(to_bottom,black_70%,transparent)]"
+      >
+        <div className="flex items-center gap-3 px-2 pt-1 pb-3">
+          <span className="text-[0.88rem] font-medium">New in the game</span>
+          <span className="text-[0.8rem] text-ink-400">{cards[0]?.[0].date}</span>
+          <a href={link("/3d")} className="ml-auto text-[0.8rem] text-ink-400 hover:text-ink-100">
+            All 3D models
+          </a>
+        </div>
+        <div className="grid grid-cols-3 gap-2 sm:grid-cols-4 lg:grid-cols-6">
+          {cards.map(([item, url], i) => (
+            <button
+              key={item.id}
+              onClick={() => openItem(item.id, cards.map(([x]) => x.id))}
+              title={item.name}
+              className="group overflow-hidden rounded-xl border border-white/[0.05] bg-[radial-gradient(circle_at_50%_60%,#29292e_0%,#151517_78%)] text-left transition-colors hover:border-white/[0.16]"
+            >
+              <div className="aspect-square p-3">
+                <img
+                  src={url}
+                  alt=""
+                  style={{ animationDelay: `${(i % 6) * -0.9}s` }}
+                  className="anim-float h-full w-full object-contain transition-transform duration-500 group-hover:scale-[1.06]"
+                />
+              </div>
+              <div className="truncate border-t border-white/[0.05] px-2.5 py-2 text-[0.76rem] text-ink-300">{item.name}</div>
+            </button>
+          ))}
+        </div>
+      </div>
       </div>
     </div>
   );
