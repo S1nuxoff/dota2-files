@@ -178,26 +178,6 @@ model-viewer {
   }
 }
 
-/* Front page: rings of hero icons turning slowly behind the title */
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-@utility anim-spin-slow {
-  animation: spin var(--spin, 120s) linear infinite;
-}
-@utility anim-spin-back {
-  animation: spin var(--spin, 120s) linear infinite reverse;
-}
-/* the turning is slow enough to keep even when the system asks for less motion */
-@media (prefers-reduced-motion: reduce) {
-  .anim-spin-slow,
-  .anim-spin-back {
-    animation-duration: var(--spin, 120s) !important;
-  }
-}
-
 /* Pages start under the top bar and scroll beneath its blur */
 @layer base {
   main > * {

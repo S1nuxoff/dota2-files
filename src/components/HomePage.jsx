@@ -305,48 +305,46 @@ export default function HomePage({ catalog, indexes }) {
   );
 }
 
-// The heroes' icons on three rings turning slowly behind the title, the inner ones fading out so the
-// words stay clear; each icon turns back as its ring turns, to stay upright
-const RINGS = [
-  [17, 20, 90],
-  [27, 30, 130],
-  [37, 40, 180],
-];
+// The heroes' icons going round the title on one tilted ring, like a carousel seen from a little
+// above: those at the back smaller and dimmer, those at the front larger. Placed each frame
+const RING = { count: 36, seconds: 110 };
 function Orbits({ heroes }) {
-  let from = 0;
+  const box = useRef(null);
+  const ring = useMemo(() => {
+    const day = Math.floor(Date.now() / 86400000);
+    return Array.from({ length: RING.count }, (_, i) => heroes[(day * 7 + i * 11) % heroes.length]);
+  }, [heroes]);
+  useEffect(() => {
+    const el = box.current;
+    if (!el) return;
+    const icons = [...el.children];
+    let frame = 0;
+    const start = performance.now();
+    const draw = (now) => {
+      const w = el.clientWidth;
+      const h = el.clientHeight;
+      const rx = Math.min(w * 0.42, 620);
+      const ry = Math.min(h * 0.2, 150);
+      const turn = ((now - start) / 1000 / RING.seconds) * Math.PI * 2;
+      icons.forEach((icon, i) => {
+        const a = turn + (i / icons.length) * Math.PI * 2;
+        const depth = (Math.sin(a) + 1) / 2; // 0 at the back, 1 at the front
+        const x = w / 2 + Math.cos(a) * rx;
+        const y = h / 2 + Math.sin(a) * ry;
+        icon.style.transform = `translate(${x}px, ${y}px) translate(-50%, -50%) scale(${0.55 + depth * 0.6})`;
+        icon.style.opacity = String(0.15 + depth * 0.7);
+        icon.style.zIndex = String(Math.round(depth * 10));
+      });
+      frame = requestAnimationFrame(draw);
+    };
+    frame = requestAnimationFrame(draw);
+    return () => cancelAnimationFrame(frame);
+  }, [ring]);
   return (
-    <div
-      aria-hidden="true"
-      className="pointer-events-none absolute inset-0 overflow-hidden"
-    >
-      <div className="absolute top-1/2 left-1/2 z-10 h-[26rem] w-[64rem] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[radial-gradient(closest-side,#0e0e10_45%,transparent)]" />
-      {RINGS.map(([radius, count, seconds], r) => {
-        const ring = Array.from({ length: count }, (_, i) => heroes[(from + i) % heroes.length]);
-        from += count;
-        return (
-          <div key={r}>
-            <div
-              className="absolute top-1/2 left-1/2 rounded-full border border-white/[0.07] shadow-[0_0_40px_rgba(255,255,255,0.05),inset_0_0_40px_rgba(255,255,255,0.03)]"
-              style={{ width: `${radius * 2}rem`, height: `${radius * 2}rem`, marginLeft: `${-radius}rem`, marginTop: `${-radius}rem` }}
-            />
-          <div
-            style={{ "--spin": `${seconds}s`, animationDirection: r % 2 ? "reverse" : "normal" }}
-            className="anim-spin-slow absolute top-1/2 left-1/2 h-0 w-0"
-          >
-            {ring.map((h, i) => (
-              <div key={`${h.id}${i}`} className="absolute" style={{ transform: `rotate(${(360 / count) * i}deg) translateX(${radius}rem) rotate(${-(360 / count) * i}deg)` }}>
-                <img
-                  src={heroIcon(h)}
-                  alt=""
-                  style={{ "--spin": `${seconds}s`, animationDirection: r % 2 ? "normal" : "reverse" }}
-                  className={`anim-spin-slow -mt-5 -ml-5 block h-10 w-10 max-w-none rounded-lg shadow-[0_0_18px_rgba(255,255,255,0.18)] ${["opacity-35", "opacity-55", "opacity-75"][r]}`}
-                />
-              </div>
-            ))}
-          </div>
-          </div>
-        );
-      })}
+    <div ref={box} aria-hidden="true" className="anim-fade pointer-events-none absolute inset-0 overflow-hidden">
+      {ring.map((h, i) => (
+        <img key={`${h.id}${i}`} src={heroIcon(h)} alt="" className="absolute top-0 left-0 h-11 w-11 max-w-none will-change-transform" />
+      ))}
     </div>
   );
 }
