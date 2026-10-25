@@ -1,22 +1,20 @@
 import { imageUrl } from "../lib/catalog.js";
 import { link } from "../lib/route.js";
-import { Card } from "./ui.jsx";
+import { FigureCard } from "./ui.jsx";
+import { heroIcon } from "./HeroPicker.jsx";
 
-// A set: the hero standing in it as the game's set pages show it, its name, how many items
+// A set: the hero standing in it as the game's set pages show it, its name, its hero and how many items
 export default function SetCard({ set, delay = 0, showHero = false }) {
   return (
-    <Card
+    <FigureCard
       href={link(`/set/${set.key}`)}
-      ratio="aspect-[448/678]"
       className="anim-card"
       style={{ animationDelay: `${delay}ms` }}
+      src={set.icon ? imageUrl(set.icon) : ""}
+      alt={set.name}
       title={set.name}
       meta={`${showHero && set.hero ? `${set.hero.name}, ` : ""}${set.items.length} items`}
-      picture={
-        set.icon ? (
-          <img src={imageUrl(set.icon)} loading="lazy" decoding="async" alt="" className="h-full w-full object-cover object-top transition-transform duration-500 ease-out group-hover:scale-[1.04]" />
-        ) : null
-      }
+      mark={showHero && set.hero && <img src={heroIcon(set.hero)} alt={set.hero.name} className="h-6 w-6 shrink-0 rounded-md" />}
     />
   );
 }

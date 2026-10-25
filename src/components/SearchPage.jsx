@@ -11,7 +11,7 @@ import { Cell, Row, withSizes } from "./FileTable.jsx";
 import ItemCard from "./ItemCard.jsx";
 import SetCard from "./SetCard.jsx";
 import SoundList from "./SoundList.jsx";
-import { Button, Card, Empty, GRID, Page, SearchField, Section, Segmented, Spinner, Toolbar, HeadGlow } from "./ui.jsx";
+import { Button, FigureCard, Empty, GRID, Page, SearchField, Section, Segmented, Spinner, Toolbar, HeadGlow } from "./ui.jsx";
 import { rememberSearch } from "../lib/palette.js";
 
 // How many of a kind show before "Show more"
@@ -121,14 +121,7 @@ export default function SearchPage({ route, catalog, indexes, withCopies }) {
             <Section title="Heroes" count={named.heroes.length}>
               <div className={GRID.tall}>
                 {named.heroes.slice(0, shownOf("heroes")).map((hero) => (
-                  <Card
-                    key={hero.id}
-                    href={link(`/hero/${hero.key}`)}
-                    ratio="aspect-[448/678]"
-                    title={hero.name}
-                    meta={`${hero.items.length} items`}
-                    picture={<img src={heroCard(hero)} onError={(e) => (e.currentTarget.src = heroPortrait(hero))} alt="" loading="lazy" className="h-full w-full object-cover object-top" />}
-                  />
+                  <FigureCard key={hero.id} href={link(`/hero/${hero.key}`)} src={heroCard(hero)} fallback={heroPortrait(hero)} alt={hero.name} title={hero.name} meta={`${hero.items.length} items, ${hero.sets.length} sets`} />
                 ))}
               </div>
               {moreButton("heroes", shownOf("heroes"), named.heroes.length)}

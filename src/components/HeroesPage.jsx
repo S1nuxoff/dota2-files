@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 import { fuzzyMatch } from "../lib/smart.js";
 import { ATTRIBUTES, attributeIcon, heroCard, heroPortrait } from "../lib/catalog.js";
 import { link } from "../lib/route.js";
-import { Card, Dropdown, Empty, GRID, Page, PageHead, SearchField, Segmented, Spinner, Toolbar, Button, LoadingList } from "./ui.jsx";
+import { FigureCard, Dropdown, Empty, GRID, Page, PageHead, SearchField, Segmented, Spinner, Toolbar, Button, LoadingList } from "./ui.jsx";
 
 const ROLES = ["Carry", "Support", "Nuker", "Disabler", "Initiator", "Durable", "Escape", "Pusher"];
 
@@ -28,7 +28,7 @@ export default function HeroesPage({ catalog, error }) {
     return list.sort(sort === "items" ? (a, b) => b.items.length - a.items.length || byName(a, b) : sort === "sets" ? (a, b) => b.sets.length - a.sets.length || byName(a, b) : byName);
   }, [catalog, filter, attribute, attack, role, sort]);
 
-  if (!catalog) return error ? <Empty title="The heroes could not be loaded" text={error} /> : <LoadingList title="Heroes" ratio="aspect-[448/678]" grid={GRID.tall} count={24} />;
+  if (!catalog) return error ? <Empty title="The heroes could not be loaded" text={error} /> : <LoadingList title="Heroes" ratio="aspect-[1/1.02]" grid={GRID.tall} count={24} />;
   const count = (a) => catalog.heroes.filter((h) => h.about?.attribute === a).length;
   const clear = () => (setFilter(""), setAttribute(""), setAttack(""), setRole(""));
 
@@ -58,26 +58,17 @@ export default function HeroesPage({ catalog, error }) {
         ) : (
           <div className={GRID.tall}>
             {heroes.map((hero, i) => (
-              <Card
+              <FigureCard
                 key={hero.id}
                 href={link(`/hero/${hero.key}`)}
-                ratio="aspect-[448/678]"
                 className="anim-card"
                 style={{ animationDelay: `${Math.min(i, 24) * 16}ms` }}
+                src={heroCard(hero)}
+                fallback={heroPortrait(hero)}
+                alt={hero.name}
                 title={hero.name}
                 meta={`${hero.items.length} items, ${hero.sets.length} sets`}
-                badge={hero.about?.attribute && <img src={attributeIcon(hero.about.attribute)} alt={hero.about.attribute} title={hero.about.attribute} className="-m-0.5 h-4 w-4" />}
-                picture={
-                  <img
-                    src={heroCard(hero)}
-                    loading="lazy"
-                    decoding="async"
-                    alt={hero.name}
-                    // A hero new to the game may come before its set picture: its portrait meanwhile
-                    onError={(e) => e.currentTarget.src !== heroPortrait(hero) && ((e.currentTarget.src = heroPortrait(hero)), e.currentTarget.classList.replace("object-top", "object-center"))}
-                    className="h-full w-full object-cover object-top transition-transform duration-700 ease-[var(--ease-out-soft)] group-hover:scale-[1.04]"
-                  />
-                }
+                mark={hero.about?.attribute && <img src={attributeIcon(hero.about.attribute)} alt={hero.about.attribute} title={hero.about.attribute} className="h-6 w-6 shrink-0" />}
               />
             ))}
           </div>

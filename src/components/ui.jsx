@@ -183,9 +183,44 @@ export function Card({ href, onClick, picture, ratio = "aspect-[4/3.4]", badge, 
   );
 }
 
+// A hero or a set standing whole (the game's set pictures: a figure on a transparent 448 x 678, empty
+// above and below, its sides cut by the render's frame): rows 55 to 565 of it fill the stage so the
+// figure stands large, head to feet, the cut sides fading out, a warm light on the floor under it that grows under the pointer,
+// where the figure rises a little. Under it the name with a small mark (an attribute, a hero) and a line
+export function FigureCard({ href, src, fallback, alt = "", title, meta, mark, className = "", style }) {
+  return (
+    <a
+      href={href}
+      style={style}
+      className={`group flex flex-col overflow-hidden rounded-2xl border border-white/[0.06] bg-ink-900 transition-[border-color,box-shadow] duration-500 hover:border-white/[0.14] hover:shadow-[0_22px_44px_-30px_rgb(0_0_0/0.95)] ${className}`}
+    >
+      <div className="relative aspect-[1/1.02] overflow-hidden bg-[radial-gradient(80%_70%_at_50%_30%,#26262b_0%,#18181b_55%,#121214_100%)]">
+        <div aria-hidden="true" className="absolute inset-x-[12%] bottom-[6%] h-[22%] rounded-[50%] bg-[radial-gradient(closest-side,rgba(229,70,46,0.22),transparent)] opacity-60 blur-md transition-opacity duration-500 group-hover:opacity-100" />
+        {src && (
+          <img
+            src={src}
+            alt={alt}
+            loading="lazy"
+            decoding="async"
+            onError={fallback && ((e) => e.currentTarget.src !== fallback && (e.currentTarget.src = fallback))}
+            className="absolute top-[-10.8%] left-[5%] h-auto w-[90%] max-w-none transition-transform duration-700 ease-[var(--ease-out-soft)] [mask-image:linear-gradient(to_right,transparent,black_10%,black_90%,transparent)] group-hover:-translate-y-[2.5%]"
+          />
+        )}
+      </div>
+      <div className="flex items-center gap-2.5 border-t border-white/[0.04] px-3.5 py-3 sm:px-4">
+        {mark}
+        <div className="min-w-0 leading-tight">
+          <div className="truncate text-[0.95rem] font-medium">{title}</div>
+          {meta && <div className="mt-1 truncate text-[0.8rem] text-ink-400">{meta}</div>}
+        </div>
+      </div>
+    </a>
+  );
+}
+
 // The grid cards stand in: as many columns as fit, two at the least on a phone
 export const GRID = {
-  tall: "grid grid-cols-2 gap-3 sm:grid-cols-[repeat(auto-fill,minmax(11rem,1fr))] sm:gap-4",
+  tall: "grid grid-cols-2 gap-3 sm:grid-cols-[repeat(auto-fill,minmax(13.5rem,1fr))] sm:gap-4",
   item: "grid grid-cols-2 gap-3 sm:grid-cols-[repeat(auto-fill,minmax(12rem,1fr))] sm:gap-4",
   tile: "grid grid-cols-1 gap-3 xs:grid-cols-2 sm:grid-cols-[repeat(auto-fill,minmax(16rem,1fr))] sm:gap-4",
   small: "grid grid-cols-3 gap-2 sm:grid-cols-[repeat(auto-fill,minmax(9.5rem,1fr))]",
