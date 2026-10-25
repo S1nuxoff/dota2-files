@@ -9,6 +9,7 @@ import ItemCard from "./ItemCard.jsx";
 import { link } from "../lib/route.js";
 import { Spinner } from "./ui.jsx";
 import EmbedButton from "./EmbedButton.jsx";
+import GameStage, { LookSwitch, useLook } from "./GameStage.jsx";
 
 const HeroViewer = lazy(() => import("./HeroViewer.jsx"));
 
@@ -29,6 +30,7 @@ export default function ItemPage({ itemId, catalog, indexes, withCopies, route }
   const files = useMemo(() => (item ? [...filesOfRefs(item.refs, indexes, withCopies).values()] : []), [item, indexes, withCopies]);
   const ready = item && Object.keys(item.refs).every((ds) => indexes[ds]);
   const [style, setStyle] = useState(0);
+  const [shown, setShown] = useLook();
   if (!catalog) return <Spinner text="Loading the catalog" />;
   if (!item) return <div className="p-16 text-center text-ink-400">There is no item {itemId}.</div>;
 
@@ -55,7 +57,9 @@ export default function ItemPage({ itemId, catalog, indexes, withCopies, route }
         </a>
 
         <div className="relative mt-4 h-[min(70vh,46rem)] overflow-hidden rounded-3xl border border-white/[0.06] bg-[radial-gradient(circle_at_50%_45%,#3a3a3f_0%,#232326_45%,#141416_100%)]">
-          {model ? (
+          {shown === "game" && models.length > 0 ? (
+            <GameStage path={`item/${item.id}`} title={item.name} />
+          ) : model ? (
             <Suspense fallback={null}>
               <HeroViewer key={model.path} models={[model]} bare />
             </Suspense>
@@ -89,7 +93,8 @@ export default function ItemPage({ itemId, catalog, indexes, withCopies, route }
             </div>
           </div>
 
-          {models.length > 1 && (
+          {models.length > 0 && <LookSwitch look={shown} setLook={setShown} className="absolute top-8 right-8" />}
+          {shown === "simple" && models.length > 1 && (
             <div className="absolute bottom-6 left-6 flex gap-1 rounded-full bg-black/40 p-1 backdrop-blur-md">
               {models.map((m, i) => (
                 <button

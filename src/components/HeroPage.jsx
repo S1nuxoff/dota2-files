@@ -10,6 +10,7 @@ import ItemCard from "./ItemCard.jsx";
 import { link, navigate } from "../lib/route.js";
 import { Button, Chip, Spinner } from "./ui.jsx";
 import EmbedButton from "./EmbedButton.jsx";
+import GameStage, { LookSwitch, useLook } from "./GameStage.jsx";
 
 const HeroViewer = lazy(() => import("./HeroViewer.jsx"));
 
@@ -51,6 +52,7 @@ export default function HeroPage({ heroKey, catalog, indexes, withCopies, route 
   // The hero and each persona, each with its body and the models it wears by default
   const looks = hero ? [{ id: hero.id, name: hero.name, model: hero.model, look: hero.look || [] }, ...hero.personas.filter((p) => p.model)] : [];
   const [lookId, setLook] = useState("");
+  const [lookMode, setLookMode] = useLook();
   const look = looks.find((l) => l.id === lookId) || looks[0];
   const lookEntries = useMemo(() => {
     if (!look?.model || !indexes.models) return [];
@@ -77,7 +79,9 @@ export default function HeroPage({ heroKey, catalog, indexes, withCopies, route 
         </a>
 
         <div className="relative mt-4 h-[min(74vh,50rem)] overflow-hidden rounded-3xl border border-white/[0.06] bg-[radial-gradient(circle_at_50%_45%,#3a3a3f_0%,#232326_45%,#141416_100%)]">
-          {modelEntry ? (
+          {lookMode === "game" ? (
+            <GameStage path={`hero/${hero.key}${looks.indexOf(look) > 0 ? `?persona=${looks.indexOf(look)}` : ""}`} title={look.name} />
+          ) : modelEntry ? (
             <Suspense fallback={null}>
               <HeroViewer models={lookEntries} bare />
             </Suspense>
@@ -92,8 +96,10 @@ export default function HeroPage({ heroKey, catalog, indexes, withCopies, route 
             </p>
           </div>
 
+          <div className="absolute top-8 right-8 flex flex-col items-end gap-2">
+          <LookSwitch look={lookMode} setLook={setLookMode} />
           {looks.length > 1 && (
-            <div className="absolute top-8 right-8 flex gap-1 rounded-full bg-black/35 p-1 backdrop-blur-md">
+            <div className="flex gap-1 rounded-full bg-black/35 p-1 backdrop-blur-md">
               {looks.map((l) => (
                 <button
                   key={l.id}
@@ -105,6 +111,7 @@ export default function HeroPage({ heroKey, catalog, indexes, withCopies, route 
               ))}
             </div>
           )}
+          </div>
 
           <div className="absolute right-6 bottom-6 flex items-center gap-1.5 rounded-2xl bg-black/40 p-1.5 backdrop-blur-md">
             <a
