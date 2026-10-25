@@ -278,3 +278,9 @@ export const SIZES = [
   ["huge", "Huge", Infinity],
 ];
 export const sizeOf = (dims) => (dims ? SIZES.find(([, , max]) => Math.max(...dims) < max)[0] : "");
+
+// The game's icon of a hero's primary attribute (Strength, Agility, Intelligence, Universal)
+const ATTRIBUTE_FILES = { Strength: "strength", Agility: "agility", Intelligence: "intelligence", Universal: "all" };
+export const ATTRIBUTES = Object.keys(ATTRIBUTE_FILES);
+export const attributeIcon = (attribute) =>
+  ATTRIBUTE_FILES[attribute] ? fileUrl(datasetById("images"), `panorama/images/primary_attribute_icons/primary_attribute_icon_${ATTRIBUTE_FILES[attribute]}_psd.png`) : "";

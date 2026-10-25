@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { FileArchive } from "lucide-react";
 import { DATASETS } from "../datasets.js";
 import { heroCard, heroPortrait } from "../lib/catalog.js";
@@ -11,13 +11,14 @@ import { Cell, Row, withSizes } from "./FileTable.jsx";
 import ItemCard from "./ItemCard.jsx";
 import SetCard from "./SetCard.jsx";
 import SoundList from "./SoundList.jsx";
-import { Card, Chip, Spinner } from "./ui.jsx";
+import { Button, Card, Empty, GRID, Page, SearchField, Section, Segmented, Spinner, Toolbar } from "./ui.jsx";
+import { rememberSearch } from "../lib/palette.js";
 
 // How many of a kind show before "Show more"
 const FIRST = 12;
 const PAGE = 120;
 // The datasets whose files are pictures, shown as a grid of them
-const GRID = new Set(["images", "textures", "models", "videos", "maps"]);
+const PICTURES = new Set(["images", "textures", "models", "videos", "maps"]);
 
 // What a search found across the site: heroes, sets and items by name first, then the files of every
 // dataset, each dataset as its files are best seen (pictures in a grid, sounds to play, the rest listed)
@@ -26,6 +27,19 @@ export default function SearchPage({ route, catalog, indexes, withCopies }) {
   const [tab, setTab] = useState("all");
   const [more, setMore] = useState({});
   const words = q.toLowerCase().split(/\s+/).filter(Boolean);
+  // The page's own field: typing searches again, the history keeping one entry per search
+  const [text, setText] = useState(q);
+  useEffect(() => {
+    if (text.trim() === q || !text.trim()) return;
+    const t = setTimeout(() => (rememberSearch(text), navigate({ ds: "all", q: text.trim() }, true)), 350);
+    return () => clearTimeout(t);
+  }, [text]); // eslint-disable-line react-hooks/exhaustive-deps
+  // A new search (from here or from the search window) starts on All
+  useEffect(() => {
+    setTab("all");
+    setMore({});
+    setText((t) => (t.trim() === q ? t : q));
+  }, [q]);
 
   // Names forgive typos and take beginnings (lib/smart.js), best first
   const named = useMemo(() => (catalog && words.length ? searchNames(catalog, q) : { heroes: [], sets: [], items: [] }), [catalog, q]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -50,7 +64,7 @@ export default function SearchPage({ route, catalog, indexes, withCopies }) {
     return fix.changed ? { files: find(fix.query), corrected: fix.query } : { files: typed, corrected: "" };
   }, [indexes, q, withCopies]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  if (!words.length) return <div className="p-16 text-center text-ink-400">Type in the search above.</div>;
+  if (!words.length) return <Page><Empty title="Search for anything" text="A hero, an item, a set, or a file's name." /></Page>;
   const loading = Object.keys(indexes).length < DATASETS.length;
   const totalFiles = files.reduce((n, f) => n + f.total, 0);
   const shownOf = (key, all) => (tab === "all" ? FIRST : (more[key] || 1) * PAGE);
@@ -63,26 +77,21 @@ export default function SearchPage({ route, catalog, indexes, withCopies }) {
     ...files.map((f) => [f.ds.id, f.ds.title, f.total]),
   ];
   const on = (key) => tab === "all" || tab === key;
-  const head = (key, title, count, extra) => (
-    <div className="mb-4 flex items-baseline gap-3">
-      <h2 className="text-[1.2rem] font-semibold tracking-[-0.02em]">{title}</h2>
-      <span className="text-[0.9rem] text-ink-400 tabular-nums">{formatCount(count)}</span>
-      <div className="flex-1" />
-      {extra}
-    </div>
-  );
   const moreButton = (key, shown, total) =>
     total > shown && (
-      <button onClick={() => showAll(key)} className="mt-4 rounded-lg px-3 py-1.5 text-[0.88rem] text-ink-300 transition-colors hover:bg-ink-850 hover:text-ink-100">
-        {tab === "all" ? `Show all ${formatCount(total)}` : "Show more"}
-      </button>
+      <div className="mt-5">
+        <Button ghost size="sm" onClick={() => showAll(key)}>
+          {tab === "all" ? `Show all ${formatCount(total)}` : "Show more"}
+        </Button>
+      </div>
     );
 
   return (
-    <div className="min-h-0 flex-1 overflow-y-auto">
-      <div key={q} className="anim-page mx-auto max-w-[128rem] px-8 pt-10 pb-20">
-        <h1 className="text-[2rem] font-semibold tracking-[-0.035em]">“{q}”</h1>
-        <p className="mt-2 text-[0.95rem] text-ink-400">
+    <Page>
+      <header className="page-x pt-6 sm:pt-10">
+        <h1 className="sr-only">Search results for {q}</h1>
+        <SearchField big value={text} onChange={setText} placeholder="Search heroes, items, files" className="w-full max-w-3xl" />
+        <p className="mt-4 text-[0.92rem] text-ink-400">
           {[
             named.heroes.length && `${named.heroes.length} heroes`,
             named.sets.length && `${formatCount(named.sets.length)} sets`,
@@ -99,21 +108,17 @@ export default function SearchPage({ route, catalog, indexes, withCopies }) {
           </p>
         )}
 
-        <div className="mt-6 flex flex-wrap gap-2">
-          {tabs.map(([key, title, count]) => (
-            <Chip key={key} active={tab === key} onClick={() => setTab(key)}>
-              {title} {count != null && <span className="ml-1 opacity-50 tabular-nums">{formatCount(count)}</span>}
-            </Chip>
-          ))}
-        </div>
-
+      </header>
+      <Toolbar className="py-0">
+        <Segmented variant="line" label="Results" value={tab} onChange={setTab} items={tabs} className="w-full border-b-0" />
+      </Toolbar>
+      <div key={q} className="page-x">
         {!catalog && <Spinner text="Loading the catalog" />}
 
-        <div className="mt-10 space-y-14">
+        <div className="mt-8 space-y-14">
           {on("heroes") && named.heroes.length > 0 && (
-            <section>
-              {head("heroes", "Heroes", named.heroes.length)}
-              <div className="grid grid-cols-[repeat(auto-fill,minmax(10rem,1fr))] gap-4">
+            <Section title="Heroes" count={named.heroes.length}>
+              <div className={GRID.tall}>
                 {named.heroes.slice(0, shownOf("heroes")).map((hero) => (
                   <Card
                     key={hero.id}
@@ -126,31 +131,29 @@ export default function SearchPage({ route, catalog, indexes, withCopies }) {
                 ))}
               </div>
               {moreButton("heroes", shownOf("heroes"), named.heroes.length)}
-            </section>
+            </Section>
           )}
 
           {on("sets") && named.sets.length > 0 && (
-            <section>
-              {head("sets", "Sets", named.sets.length)}
-              <div className="grid grid-cols-[repeat(auto-fill,minmax(12rem,1fr))] gap-4">
+            <Section title="Sets" count={named.sets.length}>
+              <div className={GRID.tall}>
                 {named.sets.slice(0, shownOf("sets")).map((set) => (
                   <SetCard key={set.key} set={set} showHero />
                 ))}
               </div>
               {moreButton("sets", shownOf("sets"), named.sets.length)}
-            </section>
+            </Section>
           )}
 
           {on("items") && named.items.length > 0 && (
-            <section>
-              {head("items", "Items", named.items.length)}
-              <div className="grid grid-cols-[repeat(auto-fill,minmax(12rem,1fr))] gap-4">
+            <Section title="Items" count={named.items.length}>
+              <div className={GRID.item}>
                 {named.items.slice(0, shownOf("items")).map((item) => (
                   <ItemCard key={item.id} item={item} rarities={catalog.rarities} list={named.items.slice(0, shownOf("items")).map((i) => i.id)} />
                 ))}
               </div>
               {moreButton("items", shownOf("items"), named.items.length)}
-            </section>
+            </Section>
           )}
 
           {files.map(({ ds, results, total }) => {
@@ -161,23 +164,24 @@ export default function SearchPage({ route, catalog, indexes, withCopies }) {
             const key = (e) => `${e.ds}:${e.path}`;
             const open = (e) => navigate({ ...route, file: key(e) });
             return (
-              <section key={ds.id}>
-                {head(
-                  ds.id,
-                  ds.title,
-                  total,
-                  <button
+              <Section
+                key={ds.id}
+                title={ds.title}
+                count={total}
+                actions={
+                  <Button
+                    size="sm"
                     onClick={() => startJob("zip", results.map((e) => ({ ds: e.ds, path: e.path, size: e.size, name: `${ds.repo}/${e.path}` })), `${ds.repo}-${q}`)}
                     title={total > results.length ? `The first ${formatCount(results.length)}` : undefined}
-                    className="flex h-9 items-center gap-2 rounded-lg border border-white/[0.08] bg-ink-850 px-3 text-[0.86rem] text-ink-100 transition-colors hover:bg-ink-800"
                   >
-                    <FileArchive size={15} /> Download {total > results.length ? `the first ${formatCount(results.length)}` : "these"} <span className="text-ink-400">{formatSize(bytes)}</span>
-                  </button>
-                )}
+                    <FileArchive size={15} /> Download {total > results.length ? `the first ${formatCount(results.length)}` : "these"} <span className="font-normal text-ink-400">{formatSize(bytes)}</span>
+                  </Button>
+                }
+              >
                 {ds.id === "sounds" ? (
                   <SoundList files={list} route={route} />
-                ) : GRID.has(ds.id) ? (
-                  <div className="grid grid-cols-[repeat(auto-fill,minmax(10rem,1fr))] gap-2">
+                ) : PICTURES.has(ds.id) ? (
+                  <div className={GRID.small}>
                     {withSizes(list).map((e) => (
                       <Cell key={key(e)} e={e} active={route.file === key(e)} onOpen={() => open(e)} />
                     ))}
@@ -190,15 +194,15 @@ export default function SearchPage({ route, catalog, indexes, withCopies }) {
                   </div>
                 )}
                 {moreButton(ds.id, shown, total)}
-              </section>
+              </Section>
             );
           })}
 
           {!loading && catalog && totalFiles === 0 && !named.heroes.length && !named.items.length && !named.sets.length && (
-            <p className="py-16 text-center text-ink-400">Nothing is called that. Try fewer or shorter words.</p>
+            <Empty title="Nothing is called that" text="Try fewer or shorter words, or the game's own name of it." />
           )}
         </div>
       </div>
-    </div>
+    </Page>
   );
 }

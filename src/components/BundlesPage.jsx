@@ -11,7 +11,7 @@ export default function BundlesPage({ catalog }) {
     <Kind
       prefab="bundle"
       catalog={catalog}
-      back={false}
+      tab="/bundles"
       title="Bundles"
       sub={`${formatCount(n)} bundles: several items sold or given as one, most often a hero's set. Each opens to its items, worn together.`}
     />

@@ -1,13 +1,13 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { fuzzyMatch } from "../lib/smart.js";
-import { useVirtualizer } from "@tanstack/react-virtual";
+import { useWindowVirtualizer } from "@tanstack/react-virtual";
 import { Box, Check, ChevronDown, Download, LoaderCircle, ScanSearch, Search, SlidersHorizontal, Sparkles, X } from "lucide-react";
 import { datasetById, fileUrl } from "../datasets.js";
 import { SIZES, loadModels, sizeOf } from "../lib/catalog.js";
 import { formatCount } from "../lib/format.js";
 import { useRem } from "../lib/scale.js";
 import ModelPanel from "./ModelPanel.jsx";
-import { Button, Card, Chip, PageHead, SearchField, Spinner, Dropdown } from "./ui.jsx";
+import { Button, Card, Chip, Empty, Page, PageHead, SearchField, Segmented, Sheet, Spinner, Dropdown, Toolbar } from "./ui.jsx";
 import ImageSearch from "./ImageSearch.jsx";
 import HeroPicker from "./HeroPicker.jsx";
 import { searchByWords } from "../lib/visual.js";
@@ -156,30 +156,30 @@ export default function ModelsPage({ catalog, indexes }) {
 
   // The grid sits under the header in the same scroll: its width sets the columns, its top the
   // virtual list's margin
-  const scroller = useRef(null);
   const grid = useRef(null);
   const [width, setWidth] = useState(1000);
   const [top, setTop] = useState(0);
-  useEffect(() => {
+  useLayoutEffect(() => {
     const el = grid.current;
     if (!el) return;
-    const ro = new ResizeObserver(() => {
+    const update = () => {
       setWidth(el.clientWidth);
-      setTop(el.offsetTop);
-    });
+      setTop(el.getBoundingClientRect().top + window.scrollY);
+    };
+    update();
+    const ro = new ResizeObserver(update);
     ro.observe(el);
-    ro.observe(scroller.current.firstElementChild);
+    ro.observe(document.body);
     return () => ro.disconnect();
   }, [ready]);
   const rem = useRem();
-  const gap = 1.25 * rem;
-  const columns = Math.max(1, Math.floor((width + gap) / (CARD_W * rem + gap)));
+  const gap = (width < 640 ? 0.75 : 1) * rem;
+  const columns = Math.max(2, Math.floor((width + gap) / (CARD_W * rem + gap)));
   const cardWidth = (width - gap * (columns - 1)) / columns;
   // A card: its picture (4 : 3.4) and the two lines under it
-  const rowHeight = cardWidth * (3.4 / 4) + 4.1 * rem + gap;
-  const virtual = useVirtualizer({
+  const rowHeight = cardWidth * (3.4 / 4) + 4 * rem + gap;
+  const virtual = useWindowVirtualizer({
     count: Math.ceil(shown.length / columns),
-    getScrollElement: () => scroller.current,
     estimateSize: () => rowHeight,
     overscan: 3,
     scrollMargin: top,
@@ -187,9 +187,12 @@ export default function ModelsPage({ catalog, indexes }) {
   useEffect(() => {
     virtual.measure();
   }, [columns, rowHeight]); // eslint-disable-line react-hooks/exhaustive-deps
+  // A new filter shows its list from the top (the filters staying in view, stuck under the bar)
+  const first = useRef(true);
   useEffect(() => {
-    scroller.current?.scrollTo(0, 0);
-  }, [type, group, theme, heroKey, size, animated, filter, sort, similar]);
+    if (first.current) return void (first.current = false);
+    if (window.scrollY > top - 130) window.scrollTo({ top: Math.max(0, top - 130) });
+  }, [type, group, theme, heroKey, size, animated, filter, sort, similar]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const findByMeaning = async () => {
     const words = filter.trim();
@@ -223,116 +226,108 @@ export default function ModelsPage({ catalog, indexes }) {
     animated && ["Animated", () => setAnimated(false)],
   ].filter(Boolean);
 
-  if (!ready) return error ? <div className="p-16 text-center text-ink-400">The list of models could not be loaded: {error}</div> : <Spinner text="Loading models" />;
+  if (!ready) return <Page>{error ? <Empty title="The list of models could not be loaded" text={error} /> : <Spinner text="Loading models" />}</Page>;
 
   // The opened card's neighbours in the list, for the arrows
   const at = open ? shown.findIndex((c) => c.key === open.key) : -1;
   const step = (d) => at >= 0 && shown.length && setOpen(shown[(at + d + shown.length) % shown.length]);
 
+  const typeItems = TYPES.filter(([t]) => !t || cards.some((c) => c.type === t)).map(([t, title]) => [t, title]);
   return (
-    <div className="relative flex min-h-0 flex-1 flex-col">
-      <div ref={scroller} className="min-h-0 flex-1 overflow-y-auto">
-        {/* Above the grid, so the filters' panel opens over the cards */}
-        <div className="anim-page relative z-20">
-          <PageHead title="3D models" sub={`${formatCount(cards.length)} models of Dota 2, each a glb with its textures and animations.`}>
-            <SearchField
-              value={filter}
-              onChange={setFilter}
-              onEnter={() => meaning && findByMeaning()}
-              icon={meaning ? Sparkles : Search}
-              placeholder={meaning ? "Say how it looks, then press Enter" : "Search by name or path"}
-              right={
-                <div className="flex items-center gap-1">
-                  <button
-                    onClick={() => setMeaning(!meaning)}
-                    title="Search by how it looks, not by its name"
-                    className={`h-8 rounded-lg px-3 text-[0.82rem] transition-colors ${meaning ? "bg-ink-100 text-ink-950" : "text-ink-400 hover:bg-ink-800 hover:text-ink-100"}`}
-                  >
-                    By look
-                  </button>
-                  <button
-                    onClick={() => setPicking(true)}
-                    title="Find by a screenshot"
-                    className="flex h-8 items-center gap-1.5 rounded-lg px-3 text-[0.82rem] text-ink-400 transition-colors hover:bg-ink-800 hover:text-ink-100"
-                  >
-                    <ScanSearch size={15} /> Picture
-                  </button>
-                </div>
-              }
-            />
-            {thinking && (
-              <div className="flex items-center gap-2 text-sm text-ink-400">
-                <LoaderCircle size={14} className="animate-spin" /> {thinking}
-              </div>
-            )}
-            <div className="flex flex-wrap justify-center gap-2">
-              {TYPES.map(([t, title]) => {
-                const n = t ? cards.filter((c) => c.type === t).length : 0;
-                if (t && !n) return null;
-                return (
-                  <Chip key={t} active={type === t} onClick={() => pickType(t)}>
-                    {title}
-                  </Chip>
-                );
-              })}
-            </div>
-          </PageHead>
-
-          <div className="mx-auto max-w-[128rem] px-8">
-            <div className="flex items-center gap-2 pb-5">
-              <div className="relative">
-                <Button onClick={() => setFiltersOpen(!filtersOpen)}>
-                  <SlidersHorizontal size={16} /> Filters
-                  {active.length > 0 && <span className="rounded bg-ink-100 px-1.5 text-[0.7rem] font-semibold text-ink-950">{active.length}</span>}
-                </Button>
-                {filtersOpen && (
-                  <Filters
-                    onClose={() => setFiltersOpen(false)}
-                    {...{ size, setSize, animated, setAnimated, heroKey, setHeroKey, heroes, catalog, group, setGroup, groups, theme, setTheme, themes }}
-                  />
-                )}
-              </div>
-              {active.map(([label, clear]) => (
-                <button key={label} onClick={clear} className="anim-fade flex h-10 items-center gap-1.5 rounded-lg bg-ink-800 pr-2.5 pl-3.5 text-[0.86rem] capitalize transition-colors hover:bg-ink-700">
-                  {label} <X size={14} className="text-ink-400" />
-                </button>
-              ))}
-              <div className="flex-1 pl-2 text-[0.88rem] text-ink-400">
-                {similar ? (
-                  <span className="anim-fade inline-flex items-center gap-3">
-                    {similar.picture && <img src={similar.picture} alt="" className="h-9 max-w-16 rounded-md object-contain" />}
-                    Most like {similar.label} first
-                    <button onClick={() => setSimilar(null)} className="text-ink-100 hover:underline">
-                      Show all
-                    </button>
-                  </span>
-                ) : (
-                  `${formatCount(shown.length)} shown`
-                )}
-              </div>
-              <Select value={sort} onChange={setSort} options={SORTS} />
-            </div>
+    <Page>
+      <PageHead
+        eyebrow={`${formatCount(cards.length)} models`}
+        title="3D Models"
+        sub="Every model of Dota 2 as glb with its textures and animations. Find one by name, by how it looks, or by a screenshot from the game."
+      />
+      <Toolbar
+        below={
+          <div className="page-x pb-3">
+            <Segmented label="Type" value={type} onChange={pickType} items={typeItems} />
           </div>
-        </div>
-
-        {shown.length === 0 && <div className="p-16 text-center text-ink-400">No model fits these filters. Clear one to see more.</div>}
-        <div className="mx-auto max-w-[128rem] px-8 pb-16">
-          <div ref={grid} style={{ height: virtual.getTotalSize(), position: "relative" }}>
-            {virtual.getVirtualItems().map((line) => (
-              <div
-                key={line.key}
-                className="grid"
-                style={{ position: "absolute", top: 0, left: 0, right: 0, columnGap: gap, transform: `translateY(${line.start - top}px)`, gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))` }}
+        }
+      >
+        <SearchField
+          value={filter}
+          onChange={setFilter}
+          onEnter={() => meaning && findByMeaning()}
+          icon={meaning ? Sparkles : Search}
+          placeholder={meaning ? "Say how it looks, then press Enter" : "Search by name or path"}
+          className="w-full md:w-[28rem]"
+          right={
+            <div className="flex items-center gap-1">
+              <button
+                onClick={() => setMeaning(!meaning)}
+                title="Search by how it looks, not by its name"
+                aria-pressed={meaning}
+                className={`h-7 rounded-lg px-2.5 text-[0.8rem] transition-colors ${meaning ? "bg-ink-100 text-ink-950" : "text-ink-400 hover:bg-ink-800 hover:text-ink-100"}`}
               >
-                {shown.slice(line.index * columns, line.index * columns + columns).map((c, i) => (
-                  <ModelCard key={c.key} c={c} delay={i * 45} onOpen={() => setOpen(c)} />
-                ))}
-              </div>
+                By look
+              </button>
+              <button onClick={() => setPicking(true)} title="Find by a screenshot" className="flex h-7 items-center gap-1.5 rounded-lg px-2.5 text-[0.8rem] text-ink-400 transition-colors hover:bg-ink-800 hover:text-ink-100">
+                <ScanSearch size={15} /> <span className="max-xs:hidden">Picture</span>
+              </button>
+            </div>
+          }
+        />
+        <div className="flex flex-1 items-center gap-2 max-md:w-full md:justify-end">
+          <Button onClick={() => setFiltersOpen(true)} className="max-md:flex-1">
+            <SlidersHorizontal size={16} /> Filters
+            {active.length > 0 && <span className="rounded-md bg-ink-100 px-1.5 text-[0.7rem] font-semibold text-ink-950">{active.length}</span>}
+          </Button>
+          <Dropdown value={sort} onChange={setSort} options={SORTS} label="Sort" className="max-md:flex-1" />
+        </div>
+      </Toolbar>
+
+      <div className="page-x pt-4">
+        {(thinking || active.length > 0 || similar) && (
+          <div className="mb-5 flex flex-wrap items-center gap-2 text-[0.86rem] text-ink-400">
+            {thinking && (
+              <span className="flex items-center gap-2">
+                <LoaderCircle size={14} className="animate-spin" /> {thinking}
+              </span>
+            )}
+            {active.map(([label, clear]) => (
+              <button key={label} onClick={clear} className="anim-fade flex h-8 items-center gap-1.5 rounded-lg border border-white/[0.07] bg-ink-850 pr-2 pl-3 text-[0.84rem] text-ink-200 capitalize transition-colors hover:border-white/[0.16]">
+                {label} <X size={13} className="text-ink-400" />
+              </button>
             ))}
+            {similar && (
+              <span className="anim-fade inline-flex items-center gap-3">
+                {similar.picture && <img src={similar.picture} alt="" className="h-9 max-w-16 rounded-md object-contain" />}
+                Most like {similar.label} first
+                <button onClick={() => setSimilar(null)} className="text-ink-100 hover:underline">
+                  Show all
+                </button>
+              </span>
+            )}
+            <span className="ml-auto tabular-nums">{formatCount(shown.length)} shown</span>
           </div>
+        )}
+        {shown.length === 0 && <Empty title="No model fits these filters" text="Clear one to see more." />}
+        <div ref={grid} style={{ height: virtual.getTotalSize(), position: "relative" }}>
+          {virtual.getVirtualItems().map((line) => (
+            <div
+              key={line.key}
+              className="grid"
+              style={{ position: "absolute", top: 0, left: 0, right: 0, columnGap: gap, transform: `translateY(${line.start - top}px)`, gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))` }}
+            >
+              {shown.slice(line.index * columns, line.index * columns + columns).map((c, i) => (
+                <ModelCard key={c.key} c={c} delay={i * 45} onOpen={() => setOpen(c)} />
+              ))}
+            </div>
+          ))}
         </div>
       </div>
 
+      {filtersOpen && (
+        <Filters
+          onClose={() => setFiltersOpen(false)}
+          count={shown.length}
+          clearAll={() => (setGroup(""), setTheme(""), setHeroKey(""), setSize(""), setAnimated(false))}
+          {...{ size, setSize, animated, setAnimated, heroKey, setHeroKey, heroes, catalog, group, setGroup, groups, theme, setTheme, themes }}
+        />
+      )}
       {picking && (
         <ImageSearch
           onClose={() => setPicking(false)}
@@ -344,7 +339,7 @@ export default function ModelsPage({ catalog, indexes }) {
         />
       )}
       {open && <ModelPanel key={open.key} card={open} entries={entries} onClose={() => setOpen(null)} onPrev={() => step(-1)} onNext={() => step(1)} />}
-    </div>
+    </Page>
   );
 }
 
@@ -352,51 +347,55 @@ function Select({ value, onChange, options }) {
   return <Dropdown value={value} onChange={onChange} options={options} />;
 }
 
-// The filters, in a panel under their button
-function Filters({ onClose, size, setSize, animated, setAnimated, heroKey, setHeroKey, heroes, catalog, group, setGroup, groups, theme, setTheme, themes }) {
-  const panel = useRef(null);
-  useEffect(() => {
-    const onDown = (e) => !panel.current?.contains(e.target) && !e.target.closest("button")?.textContent.includes("Filters") && onClose();
-    const onKey = (e) => e.key === "Escape" && onClose();
-    window.addEventListener("pointerdown", onDown);
-    window.addEventListener("keydown", onKey);
-    return () => {
-      window.removeEventListener("pointerdown", onDown);
-      window.removeEventListener("keydown", onKey);
-    };
-  }, [onClose]);
+// The filters, in a sheet: from the right on a large screen, from the bottom on a phone
+function Filters({ onClose, count, clearAll, size, setSize, animated, setAnimated, heroKey, setHeroKey, heroes, catalog, group, setGroup, groups, theme, setTheme, themes }) {
   return (
-    <div ref={panel} className="anim-open absolute top-full left-0 z-20 mt-2 w-[32rem] space-y-6 rounded-2xl border border-white/[0.08] bg-ink-900 p-5 shadow-2xl shadow-black/50">
-      <section>
-        <h3 className="mb-2.5 text-[0.84rem] text-ink-400">Size</h3>
-        <div className="flex flex-wrap gap-1.5">
-          {SIZES.map(([id, title]) => (
-            <Chip key={id} active={size === id} onClick={() => setSize(size === id ? "" : id)}>
-              {title}
-            </Chip>
-          ))}
-          <Chip active={animated} onClick={() => setAnimated(!animated)} className="flex items-center gap-1.5">
-            {animated && <Check size={13} />} Animated
-          </Chip>
+    <Sheet
+      title="Filters"
+      onClose={onClose}
+      footer={
+        <div className="flex gap-2">
+          <Button onClick={clearAll} className="flex-1">
+            Clear all
+          </Button>
+          <Button primary onClick={onClose} className="flex-1">
+            Show {formatCount(count)}
+          </Button>
         </div>
-      </section>
-      {heroes.length > 1 && (
+      }
+    >
+      <div className="space-y-7">
         <section>
-          <h3 className="mb-2.5 text-[0.84rem] text-ink-400">Hero</h3>
-          <HeroPicker
-            heroes={heroes
-              .map(([k, n]) => ({ hero: catalog.heroByKey.get(k), count: n }))
-              .filter((h) => h.hero)
-              .sort((a, b) => a.hero.name.localeCompare(b.hero.name))}
-            value={heroKey}
-            onChange={setHeroKey}
-            className="[&>button]:w-full"
-          />
+          <h3 className="mb-2.5 text-[0.82rem] font-medium text-ink-400">Size</h3>
+          <div className="flex flex-wrap gap-1.5">
+            {SIZES.map(([id, title]) => (
+              <Chip key={id} active={size === id} onClick={() => setSize(size === id ? "" : id)}>
+                {title}
+              </Chip>
+            ))}
+            <Chip active={animated} onClick={() => setAnimated(!animated)} className="gap-1.5">
+              {animated && <Check size={13} />} Animated
+            </Chip>
+          </div>
         </section>
-      )}
-      {groups.length > 1 && <Chips title="Kind" items={groups} value={group} onPick={setGroup} />}
-      {themes.length > 0 && <Chips title="Theme" items={themes} value={theme} onPick={setTheme} />}
-    </div>
+        {heroes.length > 1 && (
+          <section>
+            <h3 className="mb-2.5 text-[0.82rem] font-medium text-ink-400">Hero</h3>
+            <HeroPicker
+              heroes={heroes
+                .map(([k, n]) => ({ hero: catalog.heroByKey.get(k), count: n }))
+                .filter((h) => h.hero)
+                .sort((a, b) => a.hero.name.localeCompare(b.hero.name))}
+              value={heroKey}
+              onChange={setHeroKey}
+              className="[&>button]:w-full [&>div]:left-0 [&>div]:w-full"
+            />
+          </section>
+        )}
+        {groups.length > 1 && <Chips title="Kind" items={groups} value={group} onPick={setGroup} />}
+        {themes.length > 0 && <Chips title="Theme" items={themes} value={theme} onPick={setTheme} />}
+      </div>
+    </Sheet>
   );
 }
 
@@ -405,8 +404,8 @@ function Chips({ title, items, value, onPick }) {
   const shown = all ? items : items.slice(0, 14);
   return (
     <section>
-      <h3 className="mb-2.5 text-[0.84rem] text-ink-400">{title}</h3>
-      <div className="flex max-h-56 flex-wrap gap-1.5 overflow-y-auto">
+      <h3 className="mb-2.5 text-[0.82rem] font-medium text-ink-400">{title}</h3>
+      <div className="flex flex-wrap gap-1.5">
         {shown.map(([k, n]) => (
           <Chip key={k} active={value === k} onClick={() => onPick(value === k ? "" : k)} className="capitalize">
             {k} <span className="opacity-50">{formatCount(n)}</span>

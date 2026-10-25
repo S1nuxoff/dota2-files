@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { fuzzyMatch } from "../lib/smart.js";
-import { ChevronLeft, Music, CreditCard, Flag, Gem, Image as ImageIcon, KeyRound, Map as MapIcon, Mic, Monitor, MousePointer2, Package, Search, Shield, Smile, Sticker, Swords } from "lucide-react";
+import { Music, CreditCard, Flag, Gem, Image as ImageIcon, KeyRound, Map as MapIcon, Mic, Monitor, MousePointer2, Package, Shield, Smile, Sticker, Swords } from "lucide-react";
 import { datasetById, fileUrl } from "../datasets.js";
 import { imageUrl, prefabTitle } from "../lib/catalog.js";
 import { formatCount } from "../lib/format.js";
@@ -8,7 +8,7 @@ import { searchNames } from "../lib/smart.js";
 import ItemCard from "./ItemCard.jsx";
 import HeroPicker from "./HeroPicker.jsx";
 import { link } from "../lib/route.js";
-import { Chip, Dropdown, PageHead, SearchField, Spinner } from "./ui.jsx";
+import { Button, Dropdown, Empty, GRID, Page, PageHead, SearchField, Section, Segmented, Spinner, Toolbar, useMore } from "./ui.jsx";
 
 const PAGE = 240;
 
@@ -78,11 +78,19 @@ const SORTS = [
 export default function CosmeticsPage({ prefab, catalog }) {
   if (!catalog) return <Spinner text="Loading the catalog" />;
   if (prefab) return <Kind key={prefab} prefab={prefab} catalog={catalog} />;
-  return (
-    <div className="min-h-0 flex-1 overflow-y-auto">
-      <Kinds catalog={catalog} />
-    </div>
-  );
+  return <Kinds catalog={catalog} />;
+}
+
+// The parts of cosmetics a player looks for most, as tabs over each of their pages
+const HUB = [
+  ["/cosmetics", "Overview"],
+  ["/sets", "Sets"],
+  ["/bundles", "Bundles"],
+  ["/cosmetics/treasures", "Treasures"],
+  ["/music", "Music"],
+];
+export function CosmeticsTabs({ current, className = "mt-7" }) {
+  return <Segmented label="Cosmetics" value={current} items={HUB.map(([path, title]) => [path, title, null, link(path)])} variant="line" className={className} />;
 }
 
 // A kind pictured by the site's own renders of its latest models (previews/<model>.webp, one look
@@ -163,9 +171,9 @@ function Kinds({ catalog }) {
         key={href}
         href={link(href)}
         style={{ animationDelay: `${Math.min(i, 30) * 18}ms` }}
-        className="anim-card group overflow-hidden rounded-2xl border border-white/[0.06] bg-ink-900 transition-colors hover:border-white/[0.16]"
+        className="anim-card group relative overflow-hidden rounded-2xl border border-white/[0.06] bg-ink-900 transition-[border-color,transform] duration-300 hover:-translate-y-0.5 hover:border-white/[0.15]"
       >
-        <div className="flex aspect-[16/9] items-center justify-center bg-[radial-gradient(circle_at_50%_60%,#2c2c31_0%,#18181b_70%)] px-4">
+        <div className="stage flex aspect-[16/9] items-center justify-center px-4">
           {pictures.length ? (
             pictures.map((url, n) => (
               <img
@@ -174,81 +182,89 @@ function Kinds({ catalog }) {
                 alt=""
                 loading="lazy"
                 onError={(e) => (e.currentTarget.style.display = "none")}
-                className={`h-[78%] min-w-0 flex-1 object-contain transition-transform duration-500 group-hover:scale-[1.06] ${pictures.length > 1 && n !== 1 ? "opacity-80" : ""}`}
+                className={`h-[78%] min-w-0 flex-1 object-contain transition-transform duration-700 ease-[var(--ease-out-soft)] group-hover:scale-[1.07] ${pictures.length > 1 && n !== 1 ? "opacity-75" : ""}`}
               />
             ))
           ) : (
-            <Sign size={40} strokeWidth={1.25} className="text-ink-400 transition-colors group-hover:text-ink-200" />
+            <Sign size={38} strokeWidth={1.2} className="text-ink-500 transition-colors group-hover:text-ink-300" />
           )}
         </div>
         <div className="flex items-baseline justify-between gap-3 px-4 py-3">
-          <span className="truncate text-[0.95rem] font-medium">{title}</span>
-          <span className="shrink-0 text-[0.82rem] text-ink-400 tabular-nums">{formatCount(n)}</span>
+          <span className="truncate text-[0.94rem] font-medium">{title}</span>
+          <span className="shrink-0 text-[0.8rem] text-ink-400 tabular-nums">{formatCount(n)}</span>
         </div>
       </a>
     );
   };
 
   let i = 0;
+  const all = [...sections.map(([title, kinds]) => [title, kinds]), ...(events.length ? [["Events and battle passes", null]] : [])];
+  const anchor = (title) => title.toLowerCase().replace(/[^a-z]+/g, "-");
   return (
-    <div className="anim-page">
-      <PageHead title="Cosmetics" sub="Everything a player can own, by kind: the heroes' items, couriers, wards, loading screens, music, effects.">
+    <Page>
+      <PageHead eyebrow={`${formatCount(Object.keys(catalog.items).length)} items`} title="Cosmetics" sub="Everything a player can own, by kind: hero items, sets and bundles, treasures, couriers, wards, screens, music and effects.">
+        <CosmeticsTabs current="/cosmetics" />
+      </PageHead>
+      <Toolbar>
         <SearchField
           value={query}
           onChange={(v) => {
             setQuery(v);
             setMore(1);
           }}
-          icon={Search}
           placeholder="Search every item by name, hero, kind or event"
+          className="w-full md:w-[30rem]"
         />
-      </PageHead>
-      <div className="mx-auto max-w-[128rem] space-y-10 px-8 pb-20">
+        {!found && (
+          <div className="no-bar -mx-1 flex flex-1 gap-1 overflow-x-auto px-1 max-md:w-full md:justify-end">
+            {all.map(([title]) => (
+              <a key={title} href={`#${anchor(title)}`} className="shrink-0 rounded-lg px-2.5 py-1.5 text-[0.84rem] whitespace-nowrap text-ink-400 transition-colors hover:bg-white/[0.05] hover:text-ink-100">
+                {title.replace(" and battle passes", "")}
+              </a>
+            ))}
+          </div>
+        )}
+      </Toolbar>
+      <div className="page-x space-y-14 pt-6">
         {found && (
-          <section>
-            <h2 className="text-[1.15rem] font-semibold tracking-[-0.02em]">
-              {formatCount(found.length)} {found.length === 1 ? "item" : "items"}
-            </h2>
-            {found.length === 0 && <p className="py-12 text-center text-ink-400">Nothing of that name.</p>}
-            <div className="mt-4 grid grid-cols-[repeat(auto-fill,minmax(12.5rem,1fr))] gap-4">
+          <Section title={found.length === 1 ? "1 item" : `${formatCount(found.length)} items`} sub={`For “${query}”`}>
+            {found.length === 0 && <Empty title="Nothing of that name" text="Try a shorter word, a hero's name or a kind like courier." />}
+            <div className={GRID.item}>
               {found.slice(0, more * 120).map((item, n) => (
                 <ItemCard key={item.id} item={item} rarities={catalog.rarities} delay={Math.min(n, 30) * 15} list={found.slice(0, more * 120).map((x) => x.id)} />
               ))}
             </div>
             {found.length > more * 120 && (
-              <button onClick={() => setMore(more + 1)} className="mt-6 rounded-lg px-4 py-2 text-[0.9rem] text-ink-300 transition-colors hover:bg-ink-850 hover:text-ink-100">
-                Show more of {formatCount(found.length)}
-              </button>
+              <div className="mt-8 flex justify-center">
+                <Button onClick={() => setMore(more + 1)}>Show more of {formatCount(found.length)}</Button>
+              </div>
             )}
-          </section>
+          </Section>
         )}
-        {!found && sections.map(([title, kinds]) => (
-          <section key={title}>
-            <h2 className="text-[1.15rem] font-semibold tracking-[-0.02em]">{title}</h2>
-            <div className="mt-4 grid grid-cols-[repeat(auto-fill,minmax(16rem,1fr))] gap-4">
-              {title === "Hero items" && tile("/sets", "Sets", catalog.setByKey.size, setCovers, i++)}
-              {title === "Hero items" && tile("/bundles", "Bundles", count.bundle || 0, covers.bundle || [], i++)}
-              {title === "Music and voices" && tile("/music", "Music Packs", count.music || 0, [], i++, Music)}
-              {kinds.map((k) => tile(`/cosmetics/${k}`, titleOf(k), count[k], covers[k] || [], i++, SIGNS[k]))}
-            </div>
-          </section>
-        ))}
+        {!found &&
+          sections.map(([title, kinds]) => (
+            <Section key={title} id={anchor(title)} title={title}>
+              <div className={GRID.tile}>
+                {title === "Hero items" && tile("/sets", "Sets", catalog.setByKey.size, setCovers, i++)}
+                {title === "Hero items" && tile("/bundles", "Bundles", count.bundle || 0, covers.bundle || [], i++)}
+                {title === "Music and voices" && tile("/music", "Music Packs", count.music || 0, [], i++, Music)}
+                {kinds.map((k) => tile(`/cosmetics/${k}`, titleOf(k), count[k], covers[k] || [], i++, SIGNS[k]))}
+              </div>
+            </Section>
+          ))}
         {!found && events.length > 0 && (
-          <section>
-            <h2 className="text-[1.15rem] font-semibold tracking-[-0.02em]">Events and battle passes</h2>
-            <div className="mt-4 grid grid-cols-[repeat(auto-fill,minmax(16rem,1fr))] gap-4">
-              {events.map((e) => tile(`/cosmetics/${eventKind(e.id)}`, catalog.events?.[e.id] || e.id, e.n, e.icons, i++))}
-            </div>
-          </section>
+          <Section id={anchor("Events and battle passes")} title="Events and battle passes" count={events.length} sub="Every battle pass, The International and seasonal event, the latest first, with all it brought">
+            <div className={GRID.tile}>{events.map((e) => tile(`/cosmetics/${eventKind(e.id)}`, catalog.events?.[e.id] || e.id, e.n, e.icons, i++))}</div>
+          </Section>
         )}
       </div>
-    </div>
+    </Page>
   );
 }
 
 // One kind's items: searched, filtered to a hero and a rarity, sorted, and in sections by hero,
 // rarity, type or slot where the kind has more than one of them
-export function Kind({ prefab, catalog, title, sub, back = true }) {
+export function Kind({ prefab, catalog, title, sub, tab }) {
   const all = useMemo(() => Object.values(catalog.items).filter(inKind(prefab)), [catalog, prefab]);
   const heroOf = (item) => catalog.heroById.get(item.heroes.find((h) => h.startsWith("npc_dota_hero_")));
 
@@ -315,86 +331,87 @@ export function Kind({ prefab, catalog, title, sub, back = true }) {
   }, [shown, group, catalog]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const ids = useMemo(() => sections.flatMap(([, l]) => l.map((i) => i.id)), [sections]);
+  const more = useMore(() => setLimit((l) => l + PAGE), limit < shown.length);
   let left = limit;
   const none = { hero: "Without a hero", slot: "Without a slot", type: "Without a type", rarity: "Without a rarity", year: "Without a date", prefab: "Other", event: "Without an event" }[group];
+  if (prefab === "treasures") tab = "/cosmetics/treasures";
+  const name = title || (eventOf(prefab) ? catalog.events?.[eventOf(prefab)] || eventOf(prefab) : titleOf(prefab));
+  const filtered = filter || heroKey || rarity;
 
   return (
-    <div
-      className="anim-page min-h-0 flex-1 overflow-y-auto"
-      onScroll={(e) => {
-        const el = e.currentTarget;
-        if (el.scrollTop + el.clientHeight > el.scrollHeight - 800 && limit < shown.length) setLimit(limit + PAGE);
-      }}
-    >
-      {back && (
-        <div className="mx-auto max-w-[128rem] px-8 pt-6">
-          <a href={link("/cosmetics")} className="inline-flex items-center gap-1 text-[0.88rem] text-ink-400 transition-colors hover:text-ink-100">
-            <ChevronLeft size={16} /> Cosmetics
-          </a>
-        </div>
-      )}
+    <Page>
       <PageHead
-        title={title || (eventOf(prefab) ? catalog.events?.[eventOf(prefab)] || eventOf(prefab) : titleOf(prefab))}
+        crumbs={tab ? null : [["/cosmetics", "Cosmetics"], ["", name]]}
+        eyebrow={tab ? `${formatCount(all.length)} items` : null}
+        title={name}
         sub={sub || `${formatCount(all.length)} of them, each with its model, textures and icon.`}
       >
+        {tab && <CosmeticsTabs current={tab} />}
+      </PageHead>
+
+      <Toolbar>
         <SearchField
           value={filter}
           onChange={(v) => {
             setFilter(v);
             reset();
           }}
-          icon={Search}
           placeholder={heroes.length ? "Search by name or hero" : "Search by name"}
+          className="w-full sm:w-72"
         />
-      </PageHead>
-
-      <div className="mx-auto max-w-[128rem] px-8 pb-20">
-        <div className="flex flex-wrap items-center gap-2 pb-6">
+        <div className="grid flex-1 grid-cols-2 gap-2 sm:flex sm:flex-wrap sm:items-center sm:justify-end">
           {rarities.length > 1 && (
-            <>
-              <Chip active={!rarity} onClick={() => (setRarity(""), reset())}>
-                Any rarity
-              </Chip>
-              {rarities.map(([key, n]) => (
-                <Chip key={key} active={rarity === key} onClick={() => (setRarity(rarity === key ? "" : key), reset())}>
-                  <span className="mr-1.5 inline-block h-2 w-2 rounded-full" style={{ background: catalog.rarities[key]?.color || "#888" }} />
-                  {catalog.rarities[key]?.name || key}
-                  <span className="ml-1.5 text-ink-400 tabular-nums">{formatCount(n)}</span>
-                </Chip>
-              ))}
-            </>
+            <Dropdown
+              value={rarity}
+              onChange={(v) => (setRarity(v), reset())}
+              label="Rarity"
+              options={[
+                ["", "Any rarity"],
+                ...rarities.map(([key, n]) => [
+                  key,
+                  <span key={key} className="flex items-center gap-2">
+                    <span className="h-2 w-2 rounded-full" style={{ background: catalog.rarities[key]?.color || "#888" }} />
+                    {catalog.rarities[key]?.name || key}
+                    <span className="text-ink-500 tabular-nums">{formatCount(n)}</span>
+                  </span>,
+                ]),
+              ]}
+            />
           )}
-          <div className="flex-1 pl-3 text-[0.88rem] text-ink-400">{formatCount(shown.length)} shown</div>
-          {heroes.length > 1 && <HeroPicker heroes={heroes} value={heroKey} onChange={(v) => (setHeroKey(v), reset())} />}
-          {groupings.length > 1 && <Dropdown value={group} onChange={(v) => (setGroup(v), reset())} options={groupings} />}
-          <Dropdown value={sort} onChange={(v) => (setSort(v), reset())} options={SORTS} />
+          {heroes.length > 1 && <HeroPicker heroes={heroes} value={heroKey} onChange={(v) => (setHeroKey(v), reset())} className="[&>button]:w-full [&>button]:min-w-0 sm:[&>button]:min-w-[13rem]" />}
+          {groupings.length > 1 && <Dropdown value={group} onChange={(v) => (setGroup(v), reset())} options={groupings} label="Group" />}
+          <Dropdown value={sort} onChange={(v) => (setSort(v), reset())} options={SORTS} label="Sort" />
         </div>
+      </Toolbar>
 
-        {shown.length === 0 && <p className="py-16 text-center text-ink-400">Nothing of that name.</p>}
+      <div className="page-x pt-4">
+        {filtered && <p className="mb-5 text-[0.86rem] text-ink-400 tabular-nums">{formatCount(shown.length)} of {formatCount(all.length)}</p>}
+        {shown.length === 0 && <Empty title="Nothing fits" text="Clear the search or a filter to see more." />}
 
-        <div className="space-y-10">
+        <div className="space-y-12">
           {sections.map(([title, list]) => {
             if (left <= 0) return null;
             const part = list.slice(0, left);
             left -= part.length;
-            return (
-              <section key={title || "all"}>
-                {group !== "none" && (
-                  <h2 className="mb-4 flex items-baseline gap-3 text-[1.15rem] font-semibold tracking-[-0.02em]">
-                    {title || none}
-                    <span className="text-[0.88rem] font-normal text-ink-400 tabular-nums">{formatCount(list.length)}</span>
-                  </h2>
-                )}
-                <div className="grid grid-cols-[repeat(auto-fill,minmax(12.5rem,1fr))] gap-4">
+            return group !== "none" ? (
+              <Section key={title || "all"} title={title || none} count={list.length}>
+                <div className={GRID.item}>
                   {part.map((item, i) => (
                     <ItemCard key={item.id} item={item} rarities={catalog.rarities} delay={Math.min(i, 30) * 15} list={ids} />
                   ))}
                 </div>
-              </section>
+              </Section>
+            ) : (
+              <div key="all" className={GRID.item}>
+                {part.map((item, i) => (
+                  <ItemCard key={item.id} item={item} rarities={catalog.rarities} delay={Math.min(i, 30) * 15} list={ids} />
+                ))}
+              </div>
             );
           })}
         </div>
+        <div ref={more} />
       </div>
-    </div>
+    </Page>
   );
 }

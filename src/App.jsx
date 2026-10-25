@@ -3,7 +3,10 @@ import { DATASETS, datasetById } from "./datasets.js";
 import { loadIndex, findDir, filesUnder } from "./lib/lists.js";
 import { useCatalog, prefabTitle } from "./lib/catalog.js";
 import { navigate, useRoute } from "./lib/route.js";
-import TopBar from "./components/TopBar.jsx";
+import TopBar, { MobileNav } from "./components/TopBar.jsx";
+import Footer from "./components/Footer.jsx";
+import CommandPalette from "./components/CommandPalette.jsx";
+import { useReveal } from "./components/ui.jsx";
 import Home from "./components/Home.jsx";
 import Browser from "./components/Browser.jsx";
 import HeroesPage from "./components/HeroesPage.jsx";
@@ -34,6 +37,7 @@ export default function App() {
   const [withCopies, setWithCopies] = useState(false);
   // Picked files and folders: key -> { ds, path, dir }
   const [selection, setSelection] = useState(new Map());
+  useReveal();
 
   // Every list loads at the start (about 4 MB): a hero's page and search need them all
   useEffect(() => {
@@ -60,13 +64,21 @@ export default function App() {
             ? "Music"
             : route.ds === "heroes"
             ? "Heroes"
+            : route.ds === "sets"
+            ? "Sets"
+            : route.ds === "set"
+            ? catalog?.setByKey.get(route.dir)?.name || ""
             : route.ds === "bundles"
             ? "Bundles"
-            : route.ds === "cosmetics" && route.dir
-            ? prefabTitle(route.dir)
+            : route.ds === "files"
+            ? "Files"
+            : route.ds === "all" && route.q
+            ? `Search: ${route.q}`
+            : route.ds === "cosmetics"
+            ? route.dir ? (route.dir === "treasures" ? "Treasures" : prefabTitle(route.dir)) : "Cosmetics"
             : "";
     document.title = page ? `${page} - Dotadex Files` : "Dotadex Files";
-  }, [ds, route.ds, route.dir, hero, item]);
+  }, [ds, route.ds, route.dir, route.q, hero, item, catalog]);
 
   const toggle = useCallback((picked) => {
     setSelection((current) => {
@@ -109,7 +121,7 @@ export default function App() {
 
   const common = { route, catalog, indexes, withCopies };
   let page;
-  if (route.ds === "all" && route.q) page = <SearchPage key={route.q} {...common} />;
+  if (route.ds === "all" && route.q) page = <SearchPage {...common} />;
   else if (ds || route.ds === "all") {
     page = (
       <Browser
@@ -136,18 +148,24 @@ export default function App() {
   else if (route.ds === "heroes") page = <HeroesPage catalog={catalog} error={catalogError} />;
   else page = <HomePage catalog={catalog} indexes={indexes} />;
 
+  // The files browser runs to the foot of the window: no footer under it
+  const bare = !!ds || (route.ds === "all" && !route.q);
   return (
-    <div className="flex h-full flex-col">
+    <div className="flex min-h-dvh flex-col">
+      <a href="#main" className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-50 focus:rounded-lg focus:bg-ink-100 focus:px-3 focus:py-2 focus:text-ink-950">
+        Skip to content
+      </a>
       <TopBar route={route} />
-      <div className="flex min-h-0 flex-1">
-        <main className="flex min-w-0 flex-1 flex-col">
-          <ErrorBoundary page={`${route.ds}/${route.dir}`}>{page}</ErrorBoundary>
-        </main>
-        {previewEntry && <Preview entry={previewEntry} ds={datasetById(previewEntry.ds)} onClose={() => navigate({ ...route, file: "" })} />}
-      </div>
+      <main id="main" className="flex min-w-0 flex-1 flex-col pb-nav">
+        <ErrorBoundary page={`${route.ds}/${route.dir}`}>{page}</ErrorBoundary>
+        {!bare && <Footer />}
+      </main>
+      <MobileNav route={route} />
+      {previewEntry && <Preview entry={previewEntry} ds={datasetById(previewEntry.ds)} onClose={() => navigate({ ...route, file: "" })} />}
       {route.item && <ItemModal itemId={route.item} catalog={catalog} indexes={indexes} withCopies={withCopies} />}
       <SelectionBar selection={selection} clear={() => setSelection(new Map())} resolve={resolve} route={route} />
       <Tray />
+      <CommandPalette catalog={catalog} />
     </div>
   );
 }

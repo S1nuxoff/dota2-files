@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { flushSync } from "react-dom";
 
 // The page lives in the path: <base>/<dataset or page>/<folder>?file=<path>&q=<query>&kind=<kind>,
 // <base> being where the site is served from (vite's base: /dota2-files/ on GitHub Pages)
@@ -43,11 +44,21 @@ export function href({ ds = "", dir = "", file = "", q = "", kind = "" }) {
 
 const changed = () => window.dispatchEvent(new Event("locationchange"));
 
+// A move to another page cross-fades where the browser can (view transitions), the bars staying put;
+// a change within the page (a filter, a tab, an item over it) is instant
+const calm = () => window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+
 function go(url, replace, state = null) {
-  if (replace) history.replaceState(state, "", url);
-  else history.pushState(state, "", url);
-  changed();
-  if (!replace && !state) window.scrollTo(0, 0);
+  const apply = () => {
+    if (replace) history.replaceState(state, "", url);
+    else history.pushState(state, "", url);
+    changed();
+    if (!replace && !state) window.scrollTo(0, 0);
+  };
+  const page = (u) => new URL(u, location.href).pathname;
+  if (!replace && !state && !history.state?.over && document.startViewTransition && !calm() && page(url) !== location.pathname) {
+    document.startViewTransition(() => flushSync(apply));
+  } else apply();
 }
 
 export function navigate(route, replace = false) {
