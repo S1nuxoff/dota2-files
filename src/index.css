@@ -70,18 +70,13 @@ textarea:focus {
   outline: none;
 }
 
-/* The page's width: wide grids, a gutter that grows with the screen */
+/* The page's width: the screen's, with a gutter that grows with it (16px on a phone, about 56px at
+   1920); only a very wide screen gets a limit. Text keeps its own measure inside */
 @utility page-x {
   margin-inline: auto;
   width: 100%;
-  max-width: 100rem;
-  padding-inline: 1rem;
-  @variant sm {
-    padding-inline: 1.5rem;
-  }
-  @variant lg {
-    padding-inline: 2.5rem;
-  }
+  max-width: 140rem;
+  padding-inline: clamp(1rem, 2.9vw, 4rem);
 }
 
 /* A surface: one step above the page, with a hairline edge and a faint light on its top edge */

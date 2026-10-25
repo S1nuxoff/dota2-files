@@ -1,7 +1,7 @@
 import { lazy, Suspense, useMemo, useState } from "react";
-import { ChevronLeft, Download, ExternalLink, FileArchive, FolderDown, LoaderCircle } from "lucide-react";
+import { Download, ExternalLink, FileArchive, FolderDown, LoaderCircle } from "lucide-react";
 import { DATASETS, DOTADEX, datasetById, fileUrl } from "../datasets.js";
-import { heroFiles, heroPortrait, prefabTitle } from "../lib/catalog.js";
+import { attributeIcon, heroFiles, heroPortrait, prefabTitle } from "../lib/catalog.js";
 import { formatCount, formatSize } from "../lib/format.js";
 import { startJob } from "../lib/jobs.js";
 import { canSaveToFolder } from "../lib/download.js";
@@ -11,11 +11,12 @@ import ModelGrid from "./ModelGrid.jsx";
 import SoundList from "./SoundList.jsx";
 import ImageGroups from "./ImageGroups.jsx";
 import GroupedFiles from "./GroupedFiles.jsx";
-import HeroAbout, { HeroTags } from "./HeroAbout.jsx";
+import HeroAbout from "./HeroAbout.jsx";
 import { link, navigate } from "../lib/route.js";
-import { Button, Chip, Spinner } from "./ui.jsx";
+import { Button, Chip, Empty, GRID, Page, Section, Segmented, Spinner, Toolbar, buttonClass } from "./ui.jsx";
 import EmbedButton from "./EmbedButton.jsx";
 import GameStage, { LookSwitch, useLook } from "./GameStage.jsx";
+import { DetailHead, Stage, StageBar, StageSwitch, Tag } from "./Detail.jsx";
 
 const HeroViewer = lazy(() => import("./HeroViewer.jsx"));
 
@@ -26,18 +27,20 @@ export function DownloadButtons({ entries, title }) {
   const bytes = entries.reduce((s, e) => s + e.size, 0);
   return (
     <div className="flex items-center gap-2">
-      <Button primary onClick={() => startJob("zip", asDownload(entries), title)}>
-        <FileArchive size={16} /> Download all <span className="font-normal opacity-55">{formatSize(bytes)}</span>
+      <Button primary size="sm" onClick={() => startJob("zip", asDownload(entries), title)}>
+        <FileArchive size={15} /> Download all <span className="font-normal opacity-55">{formatSize(bytes)}</span>
       </Button>
       {canSaveToFolder() && (
-        <Button onClick={() => startJob("folder", asDownload(entries), title)} title="Save every file into a folder on your disk">
-          <FolderDown size={16} /> To a folder
+        <Button size="sm" onClick={() => startJob("folder", asDownload(entries), title)} title="Save every file into a folder on your disk">
+          <FolderDown size={15} /> <span className="max-sm:hidden">To a folder</span>
         </Button>
       )}
     </div>
   );
 }
 
+// A hero: its model on the stage (each persona, the game's look or this site's), its name and
+// downloads under it, then its items, its story and abilities, and every file of it by dataset
 export default function HeroPage({ heroKey, catalog, indexes, withCopies, route }) {
   const hero = catalog?.heroByKey.get(heroKey);
   const loaded = DATASETS.filter((d) => indexes[d.id]).length;
@@ -71,7 +74,7 @@ export default function HeroPage({ heroKey, catalog, indexes, withCopies, route 
   const setTab = (t) => navigate({ ds: "hero", dir: heroKey, kind: t === "items" ? "" : t }, true);
 
   if (!catalog) return <Spinner text="Loading the catalog" />;
-  if (!hero) return <div className="p-16 text-center text-ink-400">There is no hero called {heroKey}.</div>;
+  if (!hero) return <Page><Empty title={`There is no hero called ${heroKey}`} action={<Button as="a" href={link("/heroes")}>All heroes</Button>} /></Page>;
 
   const shown = slot ? items.filter((i) => (i.slot || i.prefab) === slot) : items;
   // The hero's items that no set of it holds
@@ -79,17 +82,55 @@ export default function HeroPage({ heroKey, catalog, indexes, withCopies, route 
   const loose = items.filter((i) => !inSets.has(i.id));
   const tabs = [["items", "Items", items.length], ...(hero.about ? [["about", "About", null]] : []), ...DATASETS.filter((d) => byDataset[d.id]).map((d) => [d.id, d.title, byDataset[d.id].length])];
   const bytes = (list) => formatSize(list.reduce((n, e) => n + e.size, 0));
+  const persona = looks.indexOf(look) > 0 ? `?persona=${looks.indexOf(look)}` : "";
+  const about = hero.about;
 
   return (
-    <div className="min-h-0 flex-1 overflow-y-auto">
-      <div key={heroKey} className="anim-page mx-auto max-w-[128rem] px-8 pt-6 pb-20">
-        <a href={link("/heroes")} className="inline-flex items-center gap-1 text-[0.88rem] text-ink-400 transition-colors hover:text-ink-100">
-          <ChevronLeft size={16} /> Heroes
-        </a>
-
-        <div className="relative mt-4 h-[min(74vh,50rem)] overflow-hidden rounded-3xl border border-white/[0.06] bg-[radial-gradient(circle_at_50%_45%,#3a3a3f_0%,#232326_45%,#141416_100%)]">
+    <Page>
+      <DetailHead
+        crumbs={[["/heroes", "Heroes"], ["", hero.name]]}
+        title={hero.name}
+        icon={about?.attribute && <img src={attributeIcon(about.attribute)} alt={about.attribute} title={about.attribute} className="mt-1.5 h-8 w-8 shrink-0 sm:mt-2.5 sm:h-9 sm:w-9" />}
+        line={
+          <>
+            {formatCount(items.length)} items, {hero.sets.length} sets{ready ? `, ${formatCount(files.length)} files` : ""}
+          </>
+        }
+        tags={about && [about.attribute, about.attack, ...about.roles.map(([r]) => r)].filter(Boolean).map((t) => <Tag key={t}>{t}</Tag>)}
+        actions={
+          <>
+            {ready ? (
+              <Button primary onClick={() => startJob("zip", asDownload(files), hero.key)} title="Models, items, sounds, effects, pictures">
+                <FileArchive size={16} /> Download everything <span className="font-normal opacity-55">{bytes(files)}</span>
+              </Button>
+            ) : (
+              <span className="flex h-10 items-center justify-center gap-2 px-4 text-[0.86rem] text-ink-400">
+                <LoaderCircle size={14} className="animate-spin" /> Gathering its files
+              </span>
+            )}
+            {lookEntries.length > 1 && (
+              <Button
+                onClick={() => startJob("zip", lookEntries.map((e) => ({ ds: e.ds, path: e.path, size: e.size, name: e.name })), `${look.id.replace("npc_dota_hero_", "")}-look`)}
+                title={`${lookEntries.length} models as you see them`}
+              >
+                <Download size={16} /> Default look <span className="font-normal text-ink-400 max-sm:hidden">{bytes(lookEntries)}</span>
+              </Button>
+            )}
+            {modelEntry && (
+              <Button as="a" href={fileUrl(datasetById("models"), modelEntry.path, true)} title={`${modelEntry.name}, ${formatSize(modelEntry.size)}`}>
+                <Download size={16} /> Body <span className="font-normal text-ink-400 max-sm:hidden">{formatSize(modelEntry.size)}</span>
+              </Button>
+            )}
+            <Button as="a" ghost href={`${DOTADEX}/hero/${hero.key}${persona}`} target="_blank" rel="noreferrer" title="See the hero in Dotadex, as the game shows it">
+              <ExternalLink size={16} /> Dotadex
+            </Button>
+            <EmbedButton path={`hero/${hero.key}${persona}`} title={look.name} className={`${buttonClass({ ghost: true })} w-full`} />
+          </>
+        }
+      >
+        <Stage>
           {lookMode === "game" ? (
-            <GameStage path={`hero/${hero.key}${looks.indexOf(look) > 0 ? `?persona=${looks.indexOf(look)}` : ""}`} title={look.name} />
+            <GameStage path={`hero/${hero.key}${persona}`} title={look.name} />
           ) : modelEntry ? (
             <Suspense fallback={null}>
               <HeroViewer models={lookEntries} bare />
@@ -97,141 +138,68 @@ export default function HeroPage({ heroKey, catalog, indexes, withCopies, route 
           ) : (
             <img src={heroPortrait(hero)} alt="" className="h-full w-full object-cover opacity-70" />
           )}
-
-          <div className="pointer-events-none absolute top-0 left-0 p-8">
-            <h1 className="text-[3.4rem] leading-none font-semibold tracking-[-0.04em]">{hero.name}</h1>
-            <p className="mt-3 text-[0.95rem] text-ink-300">
-              {items.length} items{ready && `, ${formatCount(files.length)} files`}
-            </p>
-            <HeroTags about={hero.about} />
-          </div>
-
-          <div className="absolute top-8 right-8 flex flex-col items-end gap-2">
-          <LookSwitch look={lookMode} setLook={setLookMode} />
+          <LookSwitch look={lookMode} setLook={setLookMode} className="absolute top-3 right-3 sm:top-5 sm:right-5" />
           {looks.length > 1 && (
-            <div className="flex gap-1 rounded-full bg-black/35 p-1 backdrop-blur-md">
-              {looks.map((l) => (
-                <button
-                  key={l.id}
-                  onClick={() => setLook(l.id)}
-                  className={`h-8 rounded-full px-3.5 text-[0.85rem] transition-colors ${look.id === l.id ? "bg-ink-100 text-ink-950" : "text-ink-300 hover:text-ink-100"}`}
-                >
-                  {l.name}
-                </button>
-              ))}
-            </div>
+            <StageBar>
+              <StageSwitch items={looks.map((l) => [l.id, l.name])} value={look.id} onChange={setLook} />
+            </StageBar>
           )}
+        </Stage>
+      </DetailHead>
+
+      <Toolbar className="py-0">
+        <Segmented variant="line" label="Parts of the hero" value={tab} onChange={setTab} items={tabs} className="min-w-0 flex-1 border-b-0" />
+        {tab !== "items" && tab !== "about" && byDataset[tab] && (
+          <div className="py-2 max-sm:w-full">
+            <DownloadButtons entries={byDataset[tab]} title={`${hero.key}-${tab}`} />
           </div>
+        )}
+      </Toolbar>
 
-          <div className="absolute right-6 bottom-6 flex items-center gap-1.5 rounded-2xl bg-black/40 p-1.5 backdrop-blur-md">
-            <a
-              href={`${DOTADEX}/hero/${hero.key}${looks.indexOf(look) > 0 ? `?persona=${looks.indexOf(look)}` : ""}`}
-              target="_blank"
-              rel="noreferrer"
-              title="See the hero in Dotadex, as the game shows it"
-              className="flex h-10 items-center gap-2 rounded-xl px-4 text-[0.88rem] text-ink-100 transition-colors hover:bg-white/10"
-            >
-              <ExternalLink size={16} /> Dotadex
-            </a>
-            <EmbedButton
-              path={`hero/${hero.key}${looks.indexOf(look) > 0 ? `?persona=${looks.indexOf(look)}` : ""}`}
-              title={look.name}
-              className="flex h-10 items-center gap-2 rounded-xl px-4 text-[0.88rem] text-ink-100 transition-colors hover:bg-white/10"
-            />
-            {modelEntry && (
-              <a
-                href={fileUrl(datasetById("models"), modelEntry.path, true)}
-                title={`${modelEntry.name}, ${formatSize(modelEntry.size)}`}
-                className="flex h-10 items-center gap-2 rounded-xl px-4 text-[0.88rem] text-ink-100 transition-colors hover:bg-white/10"
-              >
-                <Download size={16} /> Body <span className="text-ink-400">{formatSize(modelEntry.size)}</span>
-              </a>
-            )}
-            {lookEntries.length > 1 && (
-              <button
-                onClick={() => startJob("zip", lookEntries.map((e) => ({ ds: e.ds, path: e.path, size: e.size, name: e.name })), `${look.id.replace("npc_dota_hero_", "")}-look`)}
-                title={`${lookEntries.length} models as you see them`}
-                className="flex h-10 items-center gap-2 rounded-xl px-4 text-[0.88rem] text-ink-100 transition-colors hover:bg-white/10"
-              >
-                <Download size={16} /> Default look <span className="text-ink-400">{bytes(lookEntries)}</span>
-              </button>
-            )}
-            {ready ? (
-              <button
-                onClick={() => startJob("zip", asDownload(files), hero.key)}
-                title="Models, items, sounds, effects, pictures"
-                className="flex h-10 items-center gap-2 rounded-xl bg-ink-100 px-4 text-[0.88rem] font-medium text-ink-950 transition-colors hover:bg-white"
-              >
-                <FileArchive size={16} /> Everything <span className="font-normal opacity-55">{bytes(files)}</span>
-              </button>
-            ) : (
-              <span className="flex h-10 items-center gap-2 px-4 text-[0.85rem] text-ink-400">
-                <LoaderCircle size={14} className="animate-spin" /> Gathering its files
-              </span>
-            )}
-          </div>
-        </div>
-
-        <div className="mt-8 flex flex-wrap items-center gap-2">
-          {tabs.map(([id, title, count]) => (
-            <Chip key={id} active={tab === id} onClick={() => setTab(id)}>
-              {title} {count != null && <span className="ml-1 opacity-50 tabular-nums">{formatCount(count)}</span>}
-            </Chip>
-          ))}
-          <div className="flex-1" />
-          {tab !== "items" && byDataset[tab] && <DownloadButtons entries={byDataset[tab]} title={`${hero.key}-${tab}`} />}
-        </div>
-
+      <div className="page-x pt-6">
         {tab === "items" ? (
-          <div key={`items-${grouping}`} className="anim-page mt-6">
-            <div className="mb-6 flex flex-wrap items-center gap-1.5">
-              <div className="mr-3 flex gap-1 rounded-lg bg-ink-850 p-1">
-                {[
+          <div key={`items-${grouping}`} className="anim-page space-y-12">
+            <div className="flex flex-wrap items-center gap-2">
+              <Segmented
+                label="Group items"
+                value={grouping}
+                onChange={setGrouping}
+                items={[
                   ["sets", "By set"],
                   ["slots", "By slot"],
-                ].map(([id, title]) => (
-                  <button
-                    key={id}
-                    onClick={() => setGrouping(id)}
-                    className={`h-7 rounded-md px-3 text-[0.82rem] transition-colors ${grouping === id ? "bg-ink-100 text-ink-950" : "text-ink-400 hover:text-ink-100"}`}
-                  >
-                    {title}
-                  </button>
-                ))}
-              </div>
-              {grouping === "slots" && <>
-              {["", ...slots].map((s) => (
-                <button
-                  key={s}
-                  onClick={() => setSlot(s)}
-                  className={`h-8 rounded-lg px-3 text-[0.84rem] transition-colors ${slot === s ? "bg-ink-800 text-ink-100" : "text-ink-400 hover:text-ink-100"}`}
-                >
-                  {s ? prefabTitleOr(s) : "All"}
-                </button>
-              ))}
-              </>}
+                ]}
+              />
+              {grouping === "slots" && (
+                <div className="no-bar -mx-1 flex gap-1.5 overflow-x-auto px-1 max-sm:w-full">
+                  {["", ...slots].map((s) => (
+                    <Chip key={s} active={slot === s} onClick={() => setSlot(s)}>
+                      {s ? prefabTitleOr(s) : "All"}
+                    </Chip>
+                  ))}
+                </div>
+              )}
             </div>
             {grouping === "sets" ? (
               <>
-                <h3 className="text-[1.15rem] font-semibold tracking-[-0.02em]">
-                  Sets <span className="ml-1 font-normal text-ink-400">{hero.sets.length}</span>
-                </h3>
-                <div className="mt-4 grid grid-cols-[repeat(auto-fill,minmax(12rem,1fr))] gap-4">
-                  {hero.sets.map((set, i) => (
-                    <SetCard key={set.key} set={set} delay={Math.min(i, 24) * 20} />
-                  ))}
-                </div>
-                <h3 className="mt-12 text-[1.15rem] font-semibold tracking-[-0.02em]">
-                  Not in a set <span className="ml-1 font-normal text-ink-400">{loose.length}</span>
-                </h3>
-                <div className="mt-4 grid grid-cols-[repeat(auto-fill,minmax(12.5rem,1fr))] gap-4">
-                  {loose.map((item, i) => (
-                    <ItemCard key={item.id} item={item} rarities={catalog.rarities} delay={Math.min(i, 24) * 20} list={loose.map((x) => x.id)} />
-                  ))}
-                </div>
+                <Section title="Sets" count={hero.sets.length}>
+                  <div className={GRID.tall}>
+                    {hero.sets.map((set, i) => (
+                      <SetCard key={set.key} set={set} delay={Math.min(i, 24) * 20} />
+                    ))}
+                  </div>
+                </Section>
+                {loose.length > 0 && (
+                  <Section title="Not in a set" count={loose.length}>
+                    <div className={GRID.item}>
+                      {loose.map((item, i) => (
+                        <ItemCard key={item.id} item={item} rarities={catalog.rarities} delay={Math.min(i, 24) * 20} list={loose.map((x) => x.id)} />
+                      ))}
+                    </div>
+                  </Section>
+                )}
               </>
             ) : (
-              <div className="grid grid-cols-[repeat(auto-fill,minmax(12.5rem,1fr))] gap-4">
+              <div className={GRID.item}>
                 {shown.map((item, i) => (
                   <ItemCard key={item.id} item={item} rarities={catalog.rarities} delay={Math.min(i, 24) * 20} list={shown.map((x) => x.id)} />
                 ))}
@@ -239,30 +207,22 @@ export default function HeroPage({ heroKey, catalog, indexes, withCopies, route 
             )}
           </div>
         ) : (
-          tab === "about" ? (
-            <div key={tab} className="anim-page mt-6">
+          <div key={tab} className="anim-page">
+            {tab === "about" ? (
               <HeroAbout about={hero.about} hero={hero} catalog={catalog} sounds={byDataset.sounds || []} particles={byDataset.particles || []} route={route} />
-            </div>
-          ) : tab === "images" ? (
-            <div key={tab} className="anim-page mt-6">
+            ) : tab === "images" ? (
               <ImageGroups files={byDataset.images || []} route={route} />
-            </div>
-          ) : tab === "sounds" ? (
-            <div key={tab} className="anim-page mt-6">
+            ) : tab === "sounds" ? (
               <SoundList files={byDataset.sounds || []} route={route} />
-            </div>
-          ) : tab === "models" ? (
-            <div key={tab} className="anim-page mt-6">
+            ) : tab === "models" ? (
               <ModelGrid files={byDataset.models || []} catalog={catalog} indexes={indexes} heroName={hero.name} route={route} />
-            </div>
-          ) : (
-            <div key={tab} className="anim-page mt-6">
+            ) : (
               <GroupedFiles files={byDataset[tab] || []} hero={hero} catalog={catalog} grid={tab === "textures"} route={route} />
-            </div>
-          )
+            )}
+          </div>
         )}
       </div>
-    </div>
+    </Page>
   );
 }
 

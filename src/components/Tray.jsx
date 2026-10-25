@@ -6,7 +6,7 @@ export default function Tray() {
   const jobs = useJobs();
   if (!jobs.length) return null;
   return (
-    <div className="fixed right-5 bottom-20 flex w-80 flex-col gap-2">
+    <div className="fixed inset-x-3 bottom-[calc(9rem+env(safe-area-inset-bottom))] z-30 flex flex-col gap-2 sm:inset-x-auto sm:right-5 sm:w-80 md:bottom-20">
       {jobs.map((job) => {
         const share = job.total ? Math.min(1, job.bytes / job.total) : 0;
         const running = job.status === "running";

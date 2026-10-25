@@ -74,7 +74,7 @@ function Section({ title, list, grid, route }) {
         {title} <span className="ml-1 font-normal text-ink-400">{formatCount(list.length)}</span>
       </h3>
       {grid ? (
-        <div className="mt-4 grid grid-cols-[repeat(auto-fill,minmax(10rem,1fr))] gap-2">
+        <div className="mt-4 grid grid-cols-3 gap-2 sm:grid-cols-[repeat(auto-fill,minmax(9.5rem,1fr))]">
           {shown.map((e) => (
             <Cell key={keyOf(e)} e={e} active={route.file === keyOf(e)} onOpen={() => open(e)} />
           ))}

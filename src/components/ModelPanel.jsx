@@ -83,9 +83,12 @@ export default function ModelPanel({ card, entries, onClose, onPrev, onNext }) {
 
   return createPortal(
 
-    <div className="anim-fade fixed inset-0 z-40 bg-black/70 backdrop-blur-sm" role="dialog" aria-modal="true" aria-label={card.name} onClick={onClose}>
-      <div className="anim-open absolute inset-5 grid grid-cols-[minmax(0,1fr)_25rem] gap-4" onClick={(e) => e.stopPropagation()}>
-        <div className="relative overflow-hidden rounded-2xl border border-white/[0.06] bg-[radial-gradient(circle_at_50%_42%,#3a3a3f_0%,#232326_45%,#161618_100%)]">
+    <div data-lock className="anim-fade fixed inset-0 z-40 bg-black/70 backdrop-blur-sm" role="dialog" aria-modal="true" aria-label={card.name} onClick={onClose}>
+      <div className="anim-open absolute inset-0 flex flex-col overflow-y-auto overscroll-contain bg-ink-950 md:grid md:gap-4 md:overflow-hidden md:bg-transparent md:inset-5 md:grid-cols-[minmax(0,1fr)_25rem]" onClick={(e) => e.stopPropagation()}>
+        <div className="stage relative h-[52svh] shrink-0 overflow-hidden border-b border-white/[0.06] md:h-auto md:rounded-2xl md:border md:border-white/[0.06]">
+          <button onClick={onClose} aria-label="Close" className="absolute top-3 left-3 z-10 flex h-10 w-10 items-center justify-center rounded-full bg-black/50 text-ink-100 backdrop-blur md:hidden">
+            <X size={19} />
+          </button>
           <div className="absolute inset-0 opacity-60" style={{ background: `radial-gradient(ellipse 45% 50% at 50% 50%, ${light}, transparent 70%)` }} />
           {entry && (
             <Suspense fallback={null}>
@@ -93,7 +96,7 @@ export default function ModelPanel({ card, entries, onClose, onPrev, onNext }) {
             </Suspense>
           )}
 
-          <div className="absolute top-4 left-4 flex gap-1.5">
+          <div className="absolute top-3 left-16 flex gap-1.5 md:top-4 md:left-4">
             <button onClick={onPrev} title="Previous (Left arrow)" aria-label="Previous model" className="flex h-9 w-9 items-center justify-center rounded-lg bg-black/35 text-ink-100 backdrop-blur transition-colors hover:bg-black/55">
               <ChevronLeft size={18} />
             </button>
@@ -102,7 +105,7 @@ export default function ModelPanel({ card, entries, onClose, onPrev, onNext }) {
             </button>
           </div>
 
-          <div className="absolute top-4 right-5 w-52 space-y-1.5 text-[0.86rem]">
+          <div className="absolute top-4 right-5 hidden w-52 space-y-1.5 text-[0.86rem] md:block">
             {model.triangles != null && stat("Triangles", formatCount(model.triangles))}
             {model.dims && stat("Size", model.dims.map((v) => v.toFixed(1)).join(" × "))}
             {model.animations != null && stat("Animations", model.animations || "None")}
@@ -110,7 +113,7 @@ export default function ModelPanel({ card, entries, onClose, onPrev, onNext }) {
 
           {card.models.length > 1 && (
             <div className="absolute inset-x-0 bottom-5 flex justify-center">
-              <div className="flex max-w-[75%] gap-1.5 overflow-x-auto rounded-2xl bg-black/40 p-1.5 backdrop-blur-md">
+              <div className="flex max-w-[92%] gap-1.5 md:max-w-[75%] overflow-x-auto rounded-2xl bg-black/40 p-1.5 backdrop-blur-md">
                 {card.models.map((m, i) => (
                   <button
                     key={m.path}
@@ -126,7 +129,7 @@ export default function ModelPanel({ card, entries, onClose, onPrev, onNext }) {
           )}
         </div>
 
-        <aside className="flex min-h-0 flex-col overflow-hidden rounded-2xl border border-white/[0.06] bg-ink-900">
+        <aside className="flex flex-col bg-ink-900 md:min-h-0 md:overflow-hidden md:rounded-2xl md:border md:border-white/[0.06]">
           <div className="flex items-start gap-3 p-6 pb-0">
             <div className="min-w-0 flex-1">
               <h2 className="text-[1.4rem] leading-tight font-semibold tracking-[-0.025em] capitalize">{card.name}</h2>
@@ -143,7 +146,7 @@ export default function ModelPanel({ card, entries, onClose, onPrev, onNext }) {
                 <Related ds={model.ds} path={model.path} heroKey={model.hero} />
               </div>
             </div>
-            <button onClick={onClose} title="Close (Esc)" aria-label="Close" className="-mt-1 -mr-2 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-ink-400 transition-colors hover:bg-ink-800 hover:text-ink-100">
+            <button onClick={onClose} title="Close (Esc)" aria-label="Close" className="-mt-1 -mr-2 hidden h-9 w-9 shrink-0 md:flex items-center justify-center rounded-lg text-ink-400 transition-colors hover:bg-ink-800 hover:text-ink-100">
               <X size={19} />
             </button>
           </div>
@@ -159,7 +162,7 @@ export default function ModelPanel({ card, entries, onClose, onPrev, onNext }) {
             )}
           </div>
 
-          <div className="min-h-0 flex-1 overflow-y-auto border-t border-white/[0.06] p-6">
+          <div className="md:min-h-0 md:flex-1 md:overflow-y-auto border-t border-white/[0.06] p-5 pb-[calc(1.25rem+env(safe-area-inset-bottom))] md:p-6">
             <div className="flex items-baseline justify-between">
               <h3 className="font-medium">Textures</h3>
               {textureFiles.length > 1 && (

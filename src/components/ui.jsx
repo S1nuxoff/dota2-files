@@ -137,17 +137,18 @@ export function Chip({ active, children, className = "", ...props }) {
 const BUTTON_SIZES = { sm: "h-8 px-3 text-[0.84rem] rounded-lg gap-1.5", md: "h-10 px-4 text-[0.9rem] rounded-xl gap-2", lg: "h-12 px-5 text-[0.95rem] rounded-xl gap-2" };
 
 // primary: the one thing a page is for (white); ghost: a quiet one on a busy place; else a surface
-export function Button({ primary, ghost, size = "md", children, className = "", as: Tag = "button", ...props }) {
+export function buttonClass({ primary, ghost, size = "md" } = {}) {
   const look = primary
     ? "bg-ink-100 text-ink-950 hover:bg-white shadow-[0_1px_0_rgb(255_255_255/0.4)_inset,0_8px_24px_-12px_rgb(255_255_255/0.35)]"
     : ghost
       ? "text-ink-200 hover:bg-white/[0.07] hover:text-ink-100"
       : "border border-white/[0.08] bg-ink-850 text-ink-100 hover:border-white/[0.14] hover:bg-ink-800";
+  return `inline-flex items-center justify-center font-medium whitespace-nowrap transition-[background-color,border-color,color,transform] active:scale-[0.98] disabled:pointer-events-none disabled:opacity-40 ${BUTTON_SIZES[size]} ${look}`;
+}
+
+export function Button({ primary, ghost, size = "md", children, className = "", as: Tag = "button", ...props }) {
   return (
-    <Tag
-      {...props}
-      className={`inline-flex items-center justify-center font-medium whitespace-nowrap transition-[background-color,border-color,color,transform] active:scale-[0.98] disabled:pointer-events-none disabled:opacity-40 ${BUTTON_SIZES[size]} ${look} ${className}`}
-    >
+    <Tag {...props} className={`${buttonClass({ primary, ghost, size })} ${className}`}>
       {children}
     </Tag>
   );

@@ -40,9 +40,12 @@ export default function Preview({ entry: opened, ds, onClose }) {
   const folder = entry.path.slice(0, entry.path.lastIndexOf("/"));
 
   return (
-    <div className="anim-fade fixed inset-0 z-40 bg-black/70 backdrop-blur-sm" role="dialog" aria-modal="true" aria-label={entry.name} onClick={onClose}>
-      <div className="anim-open absolute inset-x-[6%] inset-y-[7%] grid grid-cols-[minmax(0,1fr)_23rem] gap-4" onClick={(e) => e.stopPropagation()}>
-        <div className="relative overflow-hidden rounded-2xl border border-white/[0.06] bg-[radial-gradient(circle_at_50%_42%,#2e2e33_0%,#1d1d20_50%,#141416_100%)]">
+    <div data-lock className="anim-fade fixed inset-0 z-40 bg-black/70 backdrop-blur-sm" role="dialog" aria-modal="true" aria-label={entry.name} onClick={onClose}>
+      <div className="anim-open absolute inset-0 flex flex-col overflow-y-auto overscroll-contain bg-ink-950 md:grid md:gap-4 md:overflow-hidden md:bg-transparent md:inset-5 md:inset-x-[5%] md:inset-y-[6%] md:grid-cols-[minmax(0,1fr)_23rem]" onClick={(e) => e.stopPropagation()}>
+        <div className="stage relative h-[52svh] shrink-0 overflow-hidden border-b border-white/[0.06] md:h-auto md:rounded-2xl md:border md:border-white/[0.06]">
+          <button onClick={onClose} aria-label="Close" className="absolute top-3 left-3 z-10 flex h-10 w-10 items-center justify-center rounded-full bg-black/50 text-ink-100 backdrop-blur md:hidden">
+            <X size={19} />
+          </button>
           <Body key={entry.path} entry={entry} ds={ds} url={url} />
           {sizes.length > 1 && (
             <div className="absolute inset-x-0 bottom-5 flex justify-center">
@@ -61,13 +64,13 @@ export default function Preview({ entry: opened, ds, onClose }) {
           )}
         </div>
 
-        <aside className="flex min-h-0 flex-col rounded-2xl border border-white/[0.06] bg-ink-900 p-6">
+        <aside className="flex flex-col bg-ink-900 md:min-h-0 md:overflow-hidden md:rounded-2xl md:border md:border-white/[0.06] p-5 pb-[calc(1.25rem+env(safe-area-inset-bottom))] md:p-6">
           <div className="flex items-start gap-3">
             <div className="min-w-0 flex-1">
               <h2 className="text-[1.25rem] leading-tight font-semibold tracking-[-0.02em] break-words">{entry.title || entry.name}</h2>
               {entry.title && <p className="mt-1 truncate text-[0.86rem] text-ink-400">{entry.name}</p>}
             </div>
-            <button onClick={onClose} title="Close (Esc)" aria-label="Close" className="-mt-1 -mr-2 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-ink-400 transition-colors hover:bg-ink-800 hover:text-ink-100">
+            <button onClick={onClose} title="Close (Esc)" aria-label="Close" className="-mt-1 -mr-2 hidden h-9 w-9 shrink-0 md:flex items-center justify-center rounded-lg text-ink-400 transition-colors hover:bg-ink-800 hover:text-ink-100">
               <X size={19} />
             </button>
           </div>
@@ -84,7 +87,7 @@ export default function Preview({ entry: opened, ds, onClose }) {
             )}
           </div>
 
-          <div className="mt-7 min-h-0 space-y-4 overflow-y-auto border-t border-white/[0.06] pt-5 text-[0.88rem]">
+          <div className="mt-7 space-y-4 border-t md:min-h-0 md:overflow-y-auto border-white/[0.06] pt-5 text-[0.88rem]">
             <Related ds={ds.id} path={entry.path} />
             <div>
               <div className="text-ink-400">Folder</div>

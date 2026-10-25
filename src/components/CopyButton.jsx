@@ -13,7 +13,7 @@ export default function CopyButton({ text, label, className = "" }) {
     <button
       onClick={copy}
       title={label || "Copy"}
-      className={`inline-flex h-8 items-center gap-2 rounded-md border border-ink-700 bg-ink-850 px-2.5 text-xs text-ink-300 transition hover:border-ink-600 hover:text-ink-100 ${className}`}
+      className={`inline-flex h-8 items-center gap-2 rounded-lg border border-white/[0.08] bg-ink-850 px-2.5 text-[0.8rem] text-ink-300 transition-colors hover:border-white/[0.16] hover:text-ink-100 ${className}`}
     >
       <Icon size={14} className={done ? "text-emerald-400" : ""} />
       {label && <span>{done ? "Copied" : label}</span>}

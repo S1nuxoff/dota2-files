@@ -67,7 +67,7 @@ export default function ModelGrid({ files, catalog, indexes, heroName = "", rout
             <h3 className="text-[1.15rem] font-semibold tracking-[-0.02em]">
               {title} <span className="ml-1 font-normal text-ink-400">{list.length}</span>
             </h3>
-            <div className="mt-4 grid grid-cols-[repeat(auto-fill,minmax(12.5rem,1fr))] gap-4">
+            <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-[repeat(auto-fill,minmax(12rem,1fr))] sm:gap-4">
               {list.map((i, n) => (
                 <div key={cards[i].key} className="anim-card" style={{ animationDelay: `${Math.min(n, 24) * 20}ms` }}>
                   <ModelTile card={cards[i]} onOpen={() => setOpen(i)} />

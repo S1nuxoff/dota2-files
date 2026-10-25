@@ -84,7 +84,7 @@ function Pack({ pack, catalog, indexes, withCopies, route, open, onToggle, delay
           </Button>
           <Button
             primary
-            onClick={() => startJob("zip", tracks.map((e) => ({ ds: e.ds, path: e.path, size: e.size, name: e.path.split("/").pop() })), pack.name.replace(/[\/:*?"<>|]/g, ""))}
+            onClick={() => startJob("zip", tracks.map((e) => ({ ds: e.ds, path: e.path, size: e.size, name: e.path.split("/").pop() })), pack.name.replace(/[\\/:*?"<>|]/g, ""))}
             disabled={!tracks.length}
             className="max-sm:flex-1"
           >

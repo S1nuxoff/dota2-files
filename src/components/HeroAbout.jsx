@@ -114,13 +114,13 @@ export default function HeroAbout({ about, hero, catalog, sounds = [], particles
               // A persona's items fill its own slots (head_persona_1)
               const ids = hero.items.filter((id) => catalog.items[id]?.slotKey?.endsWith(`_persona_${n + 1}`));
               return (
-                <div key={p.id} className="flex gap-6">
-                  <img src={heroPortrait(p)} alt="" loading="lazy" onError={(e) => (e.currentTarget.style.visibility = "hidden")} className="h-28 w-auto shrink-0 rounded-xl" />
+                <div key={p.id} className="flex flex-col gap-4 sm:flex-row sm:gap-6">
+                  <img src={heroPortrait(p)} alt="" loading="lazy" onError={(e) => (e.currentTarget.style.visibility = "hidden")} className="h-24 w-fit shrink-0 rounded-xl sm:h-28" />
                   <div className="min-w-0 flex-1">
                     <h3 className="text-[1.1rem] font-medium">{p.name}</h3>
                     <p className="mt-1 text-[0.86rem] text-ink-400">{ids.length} items of its own</p>
                     {ids.length > 0 && (
-                      <div className="mt-4 grid grid-cols-[repeat(auto-fill,minmax(10rem,1fr))] gap-3">
+                      <div className="mt-4 grid grid-cols-3 gap-2 sm:grid-cols-[repeat(auto-fill,minmax(9.5rem,1fr))]">
                         {ids.map((id, i) => (
                           <ItemCard key={id} item={catalog.items[id]} rarities={catalog.rarities} delay={Math.min(i, 12) * 20} list={ids} />
                         ))}

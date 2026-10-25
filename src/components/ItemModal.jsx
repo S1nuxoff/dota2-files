@@ -70,9 +70,12 @@ export default function ItemModal({ itemId, catalog, indexes, withCopies }) {
   const arrow = "flex h-9 w-9 items-center justify-center rounded-lg bg-black/35 text-ink-100 backdrop-blur transition-colors hover:bg-black/55";
 
   return (
-    <div className="anim-fade fixed inset-0 z-40 bg-black/70 backdrop-blur-sm" role="dialog" aria-modal="true" aria-label={item.name} onClick={closeItem}>
-      <div key={itemId} className="anim-open absolute inset-5 grid grid-cols-[minmax(0,1fr)_25rem] gap-4" onClick={(e) => e.stopPropagation()}>
-        <div className="relative overflow-hidden rounded-2xl border border-white/[0.06] bg-[radial-gradient(circle_at_50%_42%,#3a3a3f_0%,#232326_45%,#161618_100%)]">
+    <div data-lock className="anim-fade fixed inset-0 z-40 bg-black/70 backdrop-blur-sm" role="dialog" aria-modal="true" aria-label={item.name} onClick={closeItem}>
+      <div key={itemId} className="anim-open absolute inset-0 flex flex-col overflow-y-auto overscroll-contain bg-ink-950 md:grid md:gap-4 md:overflow-hidden md:bg-transparent md:inset-5 md:grid-cols-[minmax(0,1fr)_25rem]" onClick={(e) => e.stopPropagation()}>
+        <div className="stage relative h-[52svh] shrink-0 overflow-hidden border-b border-white/[0.06] md:h-auto md:rounded-2xl md:border md:border-white/[0.06]">
+          <button onClick={closeItem} aria-label="Close" className="absolute top-3 left-3 z-10 flex h-10 w-10 items-center justify-center rounded-full bg-black/50 text-ink-100 backdrop-blur md:hidden">
+            <X size={19} />
+          </button>
           {(shown === "game" && models.length > 0) || effectOnly ? (
             <GameStage path={itemDotadexPath(item, catalog)} title={item.name} />
           ) : model ? (
@@ -87,7 +90,7 @@ export default function ItemModal({ itemId, catalog, indexes, withCopies }) {
             </div>
           )}
           {list.length > 1 && (
-            <div className="absolute top-4 left-4 flex gap-1.5">
+            <div className="absolute top-3 left-16 flex gap-1.5 md:top-4 md:left-4">
               <button onClick={() => step(-1)} title="Previous (Left arrow)" aria-label="Previous item" className={arrow}>
                 <ChevronLeft size={18} />
               </button>
@@ -96,7 +99,7 @@ export default function ItemModal({ itemId, catalog, indexes, withCopies }) {
               </button>
             </div>
           )}
-          {models.length > 0 && <LookSwitch look={shown} setLook={setShown} className="absolute top-4 right-4" />}
+          {models.length > 0 && <LookSwitch look={shown} setLook={setShown} className="absolute top-3 right-3 md:top-4 md:right-4" />}
           {shown === "simple" && models.length > 1 && !item.bundle && (
             <div className="absolute inset-x-0 bottom-5 flex justify-center">
               <div className="flex gap-1 rounded-full bg-black/40 p-1 backdrop-blur-md">
@@ -115,8 +118,8 @@ export default function ItemModal({ itemId, catalog, indexes, withCopies }) {
           )}
         </div>
 
-        <aside className="flex min-h-0 flex-col overflow-hidden rounded-2xl border border-white/[0.06] bg-ink-900">
-          <div className="flex items-start gap-4 p-6 pb-0">
+        <aside className="flex flex-col bg-ink-900 md:min-h-0 md:overflow-hidden md:rounded-2xl md:border md:border-white/[0.06]">
+          <div className="flex items-start gap-4 p-5 pb-0 md:p-6 md:pb-0">
             {item.icon && <img src={imageUrl(item.icon)} alt="" className="h-16 w-auto shrink-0 rounded-lg" />}
             <div className="min-w-0 flex-1">
               <h2 className="text-[1.3rem] leading-tight font-semibold tracking-[-0.025em]">{item.name}</h2>
@@ -133,11 +136,11 @@ export default function ItemModal({ itemId, catalog, indexes, withCopies }) {
                 </p>
               )}
             </div>
-            <button onClick={closeItem} title="Close (Esc)" aria-label="Close" className="-mt-1 -mr-2 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-ink-400 transition-colors hover:bg-ink-800 hover:text-ink-100">
+            <button onClick={closeItem} title="Close (Esc)" aria-label="Close" className="-mt-1 -mr-2 hidden h-9 w-9 shrink-0 md:flex items-center justify-center rounded-lg text-ink-400 transition-colors hover:bg-ink-800 hover:text-ink-100">
               <X size={19} />
             </button>
           </div>
-          <div className="mt-4 flex flex-wrap gap-1.5 px-6">
+          <div className="mt-4 flex flex-wrap gap-1.5 px-5 md:px-6">
             {rarity && (
               <span className="rounded-full bg-ink-800 px-3 py-1 text-[0.8rem]" style={{ color: rarity.color || undefined }}>
                 {rarity.name}
@@ -154,9 +157,9 @@ export default function ItemModal({ itemId, catalog, indexes, withCopies }) {
               </a>
             )}
           </div>
-          {item.text && <p className="mt-4 line-clamp-5 px-6 text-[0.86rem] leading-relaxed whitespace-pre-line text-ink-300" title={item.text}>{item.text}</p>}
+          {item.text && <p className="mt-4 line-clamp-5 px-5 text-[0.86rem] md:px-6 leading-relaxed whitespace-pre-line text-ink-300" title={item.text}>{item.text}</p>}
 
-          <div className="flex flex-col gap-2 p-6">
+          <div className="flex flex-col gap-2 p-5 md:p-6">
             <Button primary onClick={() => startJob("zip", asDownload, name)} disabled={!files.length}>
               <FileArchive size={16} /> Download all <span className="font-normal opacity-55">{files.length} files, {formatSize(bytes)}</span>
             </Button>
@@ -176,14 +179,14 @@ export default function ItemModal({ itemId, catalog, indexes, withCopies }) {
             </div>
           </div>
 
-          <div className="min-h-0 flex-1 space-y-7 overflow-y-auto border-t border-white/[0.06] p-6">
+          <div className="md:min-h-0 md:flex-1 md:overflow-y-auto space-y-7 border-t border-white/[0.06] p-5 pb-[calc(1.25rem+env(safe-area-inset-bottom))] md:p-6">
             {others.length > 0 && (
               <section>
                 <a href={link(`/set/${item.set}`)} className="font-medium hover:underline">
                   {set.name}
                 </a>
                 <span className="ml-2 text-[0.8rem] text-ink-400">the whole set</span>
-                <div className="mt-3 grid grid-cols-4 gap-2">
+                <div className="mt-3 grid grid-cols-4 gap-2 sm:grid-cols-6 md:grid-cols-4">
                   {others.map((id) => (
                     <button
                       key={id}
