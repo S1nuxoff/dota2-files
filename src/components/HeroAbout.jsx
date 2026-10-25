@@ -1,4 +1,9 @@
-import { imageUrl } from "../lib/catalog.js";
+import { useEffect, useMemo, useState } from "react";
+import { ChevronRight } from "lucide-react";
+import { imageUrl, loadSounds } from "../lib/catalog.js";
+import { navigate } from "../lib/route.js";
+import { Row } from "./FileTable.jsx";
+import SoundList from "./SoundList.jsx";
 
 const STATS = [
   ["strength", "Strength"],
@@ -24,8 +29,38 @@ export function HeroTags({ about }) {
   );
 }
 
-// What the game tells of a hero: its summary, its story, its numbers at level 1, its abilities
-export default function HeroAbout({ about }) {
+const letters = (s) => s.toLowerCase().replace(/[^a-z]/g, "");
+
+// An ability's sounds and effects among the hero's files: a sound whose event names it
+// (Hero_Axe.Berserkers_Call) or a line the game speaks when it is cast (Ability: Berserker's Call),
+// an effect whose file names it (axe_berserkers_call_cast.vpcf)
+function useAbilityFiles(about, hero, sounds, particles) {
+  const [info, setInfo] = useState(null);
+  useEffect(() => {
+    loadSounds().then(setInfo, () => setInfo(new Map()));
+  }, []);
+  return useMemo(() => {
+    const out = new Map();
+    if (!about) return out;
+    for (const a of about.abilities) {
+      const token = hero.tokens.find((t) => a.id.startsWith(`${t}_`));
+      const key = letters(token ? a.id.slice(token.length + 1) : a.id);
+      if (key.length < 4) continue;
+      const own = sounds.filter((e) => {
+        const rec = info?.get(e.path);
+        return rec && (letters(rec.event).includes(key) || rec.rules.some((r) => r.conditions.includes(`Ability: ${a.name}`)));
+      });
+      const fx = particles.filter((e) => letters(e.name.replace(/\.\w+$/, "")).includes(key));
+      out.set(a.id, { sounds: own, effects: fx });
+    }
+    return out;
+  }, [about, hero, sounds, particles, info]);
+}
+
+// What the game tells of a hero: its summary, its story, its numbers at level 1, its abilities with
+// their sounds and effects
+export default function HeroAbout({ about, hero, sounds = [], particles = [], route }) {
+  const byAbility = useAbilityFiles(about, hero, sounds, particles);
   if (!about) return <p className="py-10 text-center text-ink-400">Nothing written about this hero.</p>;
   return (
     <div className="space-y-12">
@@ -80,11 +115,43 @@ export default function HeroAbout({ about }) {
                   <h3 className="font-medium">{a.name}</h3>
                   {a.text && <p className="mt-1.5 text-[0.9rem] leading-relaxed whitespace-pre-line text-ink-300">{a.text}</p>}
                   {a.lore && <p className="mt-3 text-[0.84rem] leading-relaxed text-ink-400 italic">{a.lore}</p>}
+                  <AbilityFiles files={byAbility.get(a.id)} route={route} />
                 </div>
               </div>
             ))}
           </div>
         </section>
+      )}
+    </div>
+  );
+}
+
+function AbilityFiles({ files, route }) {
+  if (!files || (!files.sounds.length && !files.effects.length)) return null;
+  const head = "flex cursor-pointer list-none items-center gap-2 text-[0.86rem] text-ink-300 select-none hover:text-ink-100";
+  return (
+    <div className="mt-4 space-y-2">
+      {files.sounds.length > 0 && (
+        <details className="group">
+          <summary className={head}>
+            <ChevronRight size={15} className="transition-transform group-open:rotate-90" /> Sounds <span className="text-ink-400">{files.sounds.length}</span>
+          </summary>
+          <div className="mt-3">
+            <SoundList files={files.sounds} route={route} />
+          </div>
+        </details>
+      )}
+      {files.effects.length > 0 && (
+        <details className="group">
+          <summary className={head}>
+            <ChevronRight size={15} className="transition-transform group-open:rotate-90" /> Effects <span className="text-ink-400">{files.effects.length}</span>
+          </summary>
+          <div className="mt-2">
+            {files.effects.map((e) => (
+              <Row key={e.path} e={e} active={route.file === `${e.ds}:${e.path}`} onOpen={() => navigate({ ...route, file: `${e.ds}:${e.path}` })} />
+            ))}
+          </div>
+        </details>
       )}
     </div>
   );
