@@ -112,8 +112,9 @@ export default function HomePage({ catalog, indexes }) {
   return (
     <div className="min-h-0 flex-1 overflow-y-auto">
       <div className="anim-page">
-        <section className="flex min-h-[calc(100dvh-3.5rem)] flex-col">
-          <div className="mx-auto flex w-full max-w-5xl flex-1 flex-col items-center justify-center px-8 pt-16 text-center">
+        <section className="relative flex min-h-[calc(100dvh-3.5rem)] flex-col">
+          <div className="pointer-events-none absolute inset-x-0 top-0 h-[44rem] bg-[radial-gradient(60%_50%_at_50%_0%,rgba(255,255,255,0.07),transparent_70%)]" />
+          <div className="relative mx-auto flex w-full max-w-5xl flex-1 flex-col items-center justify-center px-8 pt-16 text-center">
             <h1 className="text-[clamp(2.8rem,5.6vw,5.4rem)] leading-[1.02] font-semibold tracking-[-0.05em]">
               Every model, sound and picture of Dota 2, ready to download
             </h1>
@@ -133,7 +134,7 @@ export default function HomePage({ catalog, indexes }) {
               />
             </label>
           </div>
-          <div className="mx-auto mt-10 w-full max-w-[96rem] px-8">
+          <div className="relative mx-auto mt-10 w-full max-w-[96rem] px-8">
             <div className="flex items-end justify-center [mask-image:linear-gradient(to_right,transparent,black_12%,black_88%,transparent)]">
               {lineup.map((hero, i) => (
                 <a key={hero.id} href={link(`/hero/${hero.key}`)} title={hero.name} className={`group relative -mx-2 flex-1 ${i === 3 ? "z-10 max-w-[15rem]" : "max-w-[12rem]"}`}>
