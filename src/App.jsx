@@ -13,6 +13,7 @@ import CosmeticsPage from "./components/CosmeticsPage.jsx";
 import ModelsPage from "./components/ModelsPage.jsx";
 import ItemModal from "./components/ItemModal.jsx";
 import SetPage from "./components/SetPage.jsx";
+import BundlesPage from "./components/BundlesPage.jsx";
 import MusicPage from "./components/MusicPage.jsx";
 import SetsPage from "./components/SetsPage.jsx";
 import Preview from "./components/Preview.jsx";
@@ -55,6 +56,8 @@ export default function App() {
             ? "3D models"
             : route.ds === "music"
             ? "Music"
+            : route.ds === "bundles"
+            ? "Bundles"
             : route.ds === "cosmetics" && route.dir
             ? prefabTitle(route.dir)
             : "";
@@ -119,6 +122,7 @@ export default function App() {
   } else if (route.ds === "hero") page = <HeroPage key={route.dir} heroKey={route.dir} {...common} />;
   else if (route.ds === "sets") page = <SetsPage catalog={catalog} />;
   else if (route.ds === "music") page = <MusicPage {...common} />;
+  else if (route.ds === "bundles") page = <BundlesPage catalog={catalog} />;
   else if (route.ds === "set") page = <SetPage key={route.dir} setKey={route.dir} {...common} />;
   else if (route.ds === "item") page = <ItemPage key={route.dir} itemId={route.dir} {...common} />;
   else if (route.ds === "cosmetics") page = <CosmeticsPage key={route.dir} prefab={route.dir} catalog={catalog} />;

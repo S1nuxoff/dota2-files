@@ -182,6 +182,12 @@ for (const [prefab, its] of byPrefab) {
   });
 }
 
+page("/bundles", {
+  title: "Every Dota 2 bundle: the items inside, 3D models and textures",
+  description: `All ${(byPrefab.get("bundle") || []).length} Dota 2 bundles by hero, each with the 3D models, textures and icons of the items inside.`,
+  body: `<h1>Bundles</h1>${list((byPrefab.get("bundle") || []).slice(0, 1000).map(([id, it]) => [`/item/${id}`, it.name]))}`,
+});
+
 page("/sets", {
   title: "Every Dota 2 set: 3D models, textures and icons",
   description: "Every Dota 2 cosmetic set on its hero, with the 3D models, textures and icons of all its items to download at once, by hero or by name.",

@@ -30,7 +30,7 @@ export default function ItemCard({ item, rarities, delay = 0, list }) {
       className="anim-card"
       style={{ animationDelay: `${delay}ms` }}
       title={item.name}
-      meta={item.type || item.slot || prefabTitle(item.prefab)}
+      meta={item.bundle ? `${item.bundle.length} items${item.date ? `, ${item.date.slice(0, 4)}` : ""}` : item.type || item.slot || prefabTitle(item.prefab)}
       picture={
         <>
           {item.icon ? (

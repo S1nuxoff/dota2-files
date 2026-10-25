@@ -1,0 +1,19 @@
+import { formatCount } from "../lib/format.js";
+import { Kind } from "./CosmeticsPage.jsx";
+import { Spinner } from "./ui.jsx";
+
+// Every bundle: what the game sells or gives as one item and opens into several (most often a hero's
+// set), by hero, searched and sorted; one opens to its items' models together
+export default function BundlesPage({ catalog }) {
+  if (!catalog) return <Spinner text="Loading the catalog" />;
+  const n = Object.values(catalog.items).filter((i) => i.prefab === "bundle").length;
+  return (
+    <Kind
+      prefab="bundle"
+      catalog={catalog}
+      back={false}
+      title="Bundles"
+      sub={`${formatCount(n)} bundles: several items sold or given as one, most often a hero's set. Each opens to its items, worn together.`}
+    />
+  );
+}

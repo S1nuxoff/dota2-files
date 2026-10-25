@@ -13,7 +13,7 @@ const PAGE = 240;
 // The kinds of item (items_game's prefabs) in sections a player knows them by; a kind the game adds
 // later lands in Other until it gets a place here
 const SECTIONS = [
-  ["Hero items", ["wearable", "bundle", "taunt", "default_item"]],
+  ["Hero items", ["wearable", "taunt", "default_item"]],
   ["Treasures", ["treasures", "treasure_chest", "retired_treasure_chest", "sticker_capsule", "key"]],
   ["Couriers and wards", ["courier", "courier_wearable", "courier_effect", "ward"]],
   ["Screens and interface", ["loading_screen", "hud_skin", "cursor_pack", "versus_screen", "emblem", "emoticon_tool", "player_card"]],
@@ -126,7 +126,7 @@ function Kinds({ catalog }) {
     const covers = Object.fromEntries(Object.entries(byKind).map(([k, l]) => [k, picturesOf(l, catalog)]));
     return { count, covers };
   }, [catalog]);
-  const known = new Set(["music", ...SECTIONS.flatMap(([, kinds]) => kinds), ...Object.values(MERGED).flat()]);
+  const known = new Set(["music", "bundle", ...SECTIONS.flatMap(([, kinds]) => kinds), ...Object.values(MERGED).flat()]);
   const other = Object.keys(count)
     .filter((k) => !known.has(k))
     .sort((a, b) => count[b] - count[a]);
@@ -192,6 +192,7 @@ function Kinds({ catalog }) {
             <h2 className="text-[1.15rem] font-semibold tracking-[-0.02em]">{title}</h2>
             <div className="mt-4 grid grid-cols-[repeat(auto-fill,minmax(16rem,1fr))] gap-4">
               {title === "Hero items" && tile("/sets", "Sets", catalog.setByKey.size, setCovers, i++)}
+              {title === "Hero items" && tile("/bundles", "Bundles", count.bundle || 0, covers.bundle || [], i++)}
               {title === "Music and voices" && tile("/music", "Music Packs", count.music || 0, [], i++, Music)}
               {kinds.map((k) => tile(`/cosmetics/${k}`, titleOf(k), count[k], covers[k] || [], i++, SIGNS[k]))}
             </div>
@@ -212,7 +213,7 @@ function Kinds({ catalog }) {
 
 // One kind's items: searched, filtered to a hero and a rarity, sorted, and in sections by hero,
 // rarity, type or slot where the kind has more than one of them
-function Kind({ prefab, catalog }) {
+export function Kind({ prefab, catalog, title, sub, back = true }) {
   const all = useMemo(() => Object.values(catalog.items).filter(inKind(prefab)), [catalog, prefab]);
   const heroOf = (item) => catalog.heroById.get(item.heroes.find((h) => h.startsWith("npc_dota_hero_")));
 
@@ -226,6 +227,7 @@ function Kind({ prefab, catalog }) {
     if (distinct((i) => i.rarity) > 1) out.push(["rarity", "By rarity"]);
     if (distinct((i) => i.date?.slice(0, 4)) > 1) out.push(["year", "By year"]);
     if (distinct((i) => i.prefab) > 1) out.push(["prefab", "By kind"]);
+    if (distinct((i) => i.event) > 1) out.push(["event", "By event"]);
     return out;
   }, [all]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -265,7 +267,7 @@ function Kind({ prefab, catalog }) {
   // Sections in the order of their names (heroes, slots, types) or of rarity; items without one last
   const sections = useMemo(() => {
     if (group === "none") return [["", shown]];
-    const keyOf = { hero: (i) => heroOf(i)?.name, slot: (i) => i.slot, type: (i) => i.type, rarity: (i) => catalog.rarities[i.rarity]?.name, year: (i) => i.date?.slice(0, 4), prefab: (i) => titleOf(i.prefab) }[group];
+    const keyOf = { hero: (i) => heroOf(i)?.name, slot: (i) => i.slot, type: (i) => i.type, rarity: (i) => catalog.rarities[i.rarity]?.name, year: (i) => i.date?.slice(0, 4), prefab: (i) => titleOf(i.prefab), event: (i) => catalog.events?.[i.event] }[group];
     const by = new Map();
     for (const i of shown) {
       const k = keyOf(i) || "";
@@ -278,7 +280,7 @@ function Kind({ prefab, catalog }) {
 
   const ids = useMemo(() => sections.flatMap(([, l]) => l.map((i) => i.id)), [sections]);
   let left = limit;
-  const none = { hero: "Without a hero", slot: "Without a slot", type: "Without a type", rarity: "Without a rarity", year: "Without a date", prefab: "Other" }[group];
+  const none = { hero: "Without a hero", slot: "Without a slot", type: "Without a type", rarity: "Without a rarity", year: "Without a date", prefab: "Other", event: "Without an event" }[group];
 
   return (
     <div
@@ -288,12 +290,17 @@ function Kind({ prefab, catalog }) {
         if (el.scrollTop + el.clientHeight > el.scrollHeight - 800 && limit < shown.length) setLimit(limit + PAGE);
       }}
     >
-      <div className="mx-auto max-w-[100rem] px-8 pt-6">
-        <a href={link("/cosmetics")} className="inline-flex items-center gap-1 text-[0.88rem] text-ink-400 transition-colors hover:text-ink-100">
-          <ChevronLeft size={16} /> Cosmetics
-        </a>
-      </div>
-      <PageHead title={eventOf(prefab) ? catalog.events?.[eventOf(prefab)] || eventOf(prefab) : titleOf(prefab)} sub={`${formatCount(all.length)} of them, each with its model, textures and icon.`}>
+      {back && (
+        <div className="mx-auto max-w-[100rem] px-8 pt-6">
+          <a href={link("/cosmetics")} className="inline-flex items-center gap-1 text-[0.88rem] text-ink-400 transition-colors hover:text-ink-100">
+            <ChevronLeft size={16} /> Cosmetics
+          </a>
+        </div>
+      )}
+      <PageHead
+        title={title || (eventOf(prefab) ? catalog.events?.[eventOf(prefab)] || eventOf(prefab) : titleOf(prefab))}
+        sub={sub || `${formatCount(all.length)} of them, each with its model, textures and icon.`}
+      >
         <SearchField
           value={filter}
           onChange={(v) => {
