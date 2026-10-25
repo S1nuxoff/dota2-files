@@ -130,7 +130,7 @@ export default function HomePage({ catalog, indexes }) {
       className="min-h-0 flex-1 overflow-y-auto pt-0"
       onScroll={(e) => {
         const top = e.currentTarget.scrollTop;
-        e.currentTarget.style.setProperty("--p", String(Math.min(1, top / 520)));
+        e.currentTarget.style.setProperty("--p", String(Math.min(1, top / (e.currentTarget.clientHeight * 0.7))));
         e.currentTarget.style.setProperty("--s", String(top));
       }}
     >
@@ -146,7 +146,10 @@ export default function HomePage({ catalog, indexes }) {
             {/* a grain over the light, like worn stone */}
             <div className="absolute inset-0 opacity-[0.04] mix-blend-overlay" style={{ backgroundImage: GRAIN, backgroundSize: "220px 220px" }} />
           </div>
-          <div className="relative z-10 mx-auto flex w-full max-w-5xl flex-1 flex-col items-center justify-center px-8 py-16 text-center">
+          <div
+            style={{ transform: "translateY(calc(var(--p, 0) * -60px)) scale(calc(1 - var(--p, 0) * 0.06))", opacity: "calc(1 - var(--p, 0) * 0.9)" }}
+            className="relative z-10 mx-auto flex w-full max-w-5xl flex-1 flex-col items-center justify-center px-8 py-16 text-center"
+          >
             <h1 className="anim-card text-[clamp(2.6rem,5.2vw,5.2rem)] leading-[1.02] font-semibold tracking-[-0.05em] text-balance whitespace-nowrap max-sm:whitespace-normal">
               The Dota 2 file archive
             </h1>
@@ -322,6 +325,7 @@ function HeroField({ heroes }) {
         dx2: `${(rand() - 0.5) * 280}px`,
         dy2: `${(rand() - 0.5) * 180}px`,
         dr: `${(rand() - 0.5) * 30}deg`,
+        spin: Math.round((rand() - 0.5) * 240),
       });
     }
     return out;
@@ -332,7 +336,12 @@ function HeroField({ heroes }) {
         <div
           key={i}
           className="absolute"
-          style={{ left: `${o.x}%`, top: `${o.y}%`, transform: `translate(-50%, -50%) translateY(calc(var(--s, 0) * ${-0.35 * o.depth}px))` }}
+          style={{
+            left: `${o.x}%`,
+            top: `${o.y}%`,
+            // with the scroll (--p, 0 to 1) it flies out from the middle, turning and growing, the near ones faster
+            transform: `translate(-50%, -50%) translate(calc(var(--p, 0) * ${(((o.x - 50) / 50) * 260 * o.depth).toFixed(0)}px), calc(var(--p, 0) * ${(((o.y - 50) / 50) * 220 * o.depth).toFixed(0)}px - var(--s, 0) * ${(0.5 * o.depth).toFixed(2)}px)) rotate(calc(var(--p, 0) * ${o.spin}deg)) scale(calc(1 + var(--p, 0) * ${(0.5 * o.depth).toFixed(2)}))`,
+          }}
         >
           <img
             src={heroIcon(o.hero)}
