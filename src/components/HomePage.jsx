@@ -2,26 +2,20 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import {
   ArrowRight,
   Box,
-  CalendarDays,
   Check,
   Code2,
   Copy,
   Database,
   Gift,
   Heart,
-  Layers,
-  Music,
-  Package,
   Search,
-  Shirt,
   Users,
 } from "lucide-react";
-import { DATASETS, DOTADEX, datasetById, fileUrl } from "../datasets.js";
-import { formatCount, formatSize } from "../lib/format.js";
-import { link, navigate } from "../lib/route.js";
-import { eventKind, picturesOf } from "./CosmeticsPage.jsx";
+import { DATASETS, DOTADEX } from "../datasets.js";
+import { formatCount } from "../lib/format.js";
+import { link, navigate, openItem } from "../lib/route.js";
+import { previewOf } from "./CosmeticsPage.jsx";
 import { heroIcon } from "./HeroPicker.jsx";
-import ItemCard from "./ItemCard.jsx";
 import { heroCard, imageUrl } from "../lib/catalog.js";
 
 const OWNER_URL = "https://huggingface.co/Sqls1";
@@ -89,39 +83,6 @@ export default function HomePage({ catalog, indexes }) {
     };
   }, [catalog, indexes]);
 
-  // A row of heroes as the site renders them: a different few each day
-  const lineup = useMemo(() => {
-    if (!catalog) return [];
-    const withModel = catalog.heroes.filter((h) => h.model);
-    const day = Math.floor(Date.now() / 86400000);
-    return Array.from({ length: 6 }, (_, i) => withModel[(day * 6 + i * 17) % withModel.length]);
-  }, [catalog]);
-  const latestEvent = useMemo(() => {
-    if (!catalog) return null;
-    let best = null;
-    for (const item of Object.values(catalog.items)) if (item.event && (!best || (item.date || "") > best.date)) best = { id: item.event, date: item.date || "" };
-    return best;
-  }, [catalog]);
-
-  // What each part looks like: the site's renders of its latest models
-  const art = useMemo(() => {
-    if (!catalog) return {};
-    const items = Object.values(catalog.items);
-    const of = (f) => picturesOf(items.filter(f), catalog);
-    return {
-      sets: of((i) => i.set && i.prefab === "wearable"),
-      bundles: of((i) => i.prefab === "bundle"),
-      treasures: of((i) => i.loot && i.prefab !== "sticker_capsule"),
-      models: of((i) => i.prefab === "courier" || i.prefab === "ward"),
-      cosmetics: of((i) => i.prefab === "courier"),
-      events: latestEvent ? of((i) => i.event === latestEvent.id) : [],
-      music: items
-        .filter((i) => i.prefab === "music" && i.icon)
-        .sort((a, b) => (b.date || "").localeCompare(a.date || ""))
-        .slice(0, 3)
-        .map((i) => imageUrl(i.icon)),
-    };
-  }, [catalog, latestEvent]);
 
   const n = (v) => (stats ? formatCount(v) : "…");
 
@@ -190,106 +151,118 @@ export default function HomePage({ catalog, indexes }) {
 
         </section>
 
-        {/* Every way in */}
-        <section data-reveal className="mx-auto mt-20 max-w-[80rem] px-8">
-          <div className="grid gap-4 md:grid-flow-dense md:grid-cols-3">
-            <Door
-              href="/heroes"
-              icon={Users}
-              title="Heroes"
-              count={stats?.heroes}
-              text="A page for each hero: its model in 3D, personas, abilities and story, its items by set, and every sound, effect, texture and picture of it."
-              art={<Renders urls={lineup.slice(2, 5).map(heroCard)} />}
-            />
-            <Door href="/sets" icon={Layers} title="Sets" count={stats?.sets} text="Every set on its hero, worn together, with all of its files at once." art={<Renders urls={art.sets} />} />
-            <Door href="/bundles" icon={Package} title="Bundles" count={stats?.bundles} text="What the store sells as one: open one to see its items on the hero." art={<Renders urls={art.bundles} />} />
-            <Door href="/cosmetics/treasures" icon={Gift} title="Treasures" count={stats?.treasures} text="Every chest and capsule by year, with what it holds and its rare bonus drops." art={<Renders urls={art.treasures} />} />
-            <Door href="/music" icon={Music} title="Music" count={stats?.music} text="Every music pack, its tracks by the moment of the game they play at." art={<Renders urls={art.music} covers />} />
-            <Door
-              href="/3d"
-              icon={Box}
-              title="3D models"
-              count={stats?.models}
-              text="Every model of the game as glb with its textures: heroes, items, couriers, creeps, trees, rocks, buildings. Search by words or by a screenshot."
-              className="md:col-span-2"
-              art={<Renders urls={art.models} />}
-            />
-            <Door href="/cosmetics" icon={Shirt} title="Cosmetics" count={stats?.items} text="Everything a player can own, by kind: couriers, wards, loading screens, HUDs, cursors, effects." art={<Renders urls={art.cosmetics} />} />
-            <Door
-              href={latestEvent ? `/cosmetics/${eventKind(latestEvent.id)}` : "/cosmetics"}
-              icon={CalendarDays}
-              title="Events"
-              count={stats?.events}
-              text={latestEvent ? `Battle passes and events with all they brought. The latest: ${catalog.events?.[latestEvent.id] || latestEvent.id}.` : "Battle passes and events with all they brought."}
-              art={<Renders urls={art.events} />}
-            />
-            <Door href="/files" icon={Database} title="Files" count={stats?.files} text="The raw datasets, folder by folder, with search across all of them and downloads of whole folders." className="md:col-span-3" />
-          </div>
-        </section>
-
         {catalog && (
-          <section data-reveal className="mx-auto mt-20 max-w-[80rem] px-8">
-            <div className="flex items-baseline gap-4">
-              <h2 className="text-[1.25rem] font-semibold tracking-[-0.02em]">All {catalog.heroes.length} heroes</h2>
-              <a href={link("/heroes")} className="ml-auto inline-flex items-center gap-1.5 text-[0.9rem] text-ink-300 hover:text-ink-100">
-                With their pictures <ArrowRight size={14} />
-              </a>
-            </div>
-            <div className="mt-5 grid grid-cols-[repeat(auto-fill,minmax(8.5rem,1fr))] gap-1.5">
-              {catalog.heroes.map((h) => (
-                <a key={h.id} href={link(`/hero/${h.key}`)} className="flex items-center gap-2.5 rounded-lg px-2 py-1.5 text-[0.86rem] text-ink-300 transition-colors hover:bg-ink-850 hover:text-ink-100">
-                  <img src={heroIcon(h)} alt="" loading="lazy" className="h-6 w-6 shrink-0 rounded" />
-                  <span className="truncate">{h.name}</span>
-                </a>
-              ))}
-            </div>
-          </section>
+          <>
+            <Feature
+              icon={Users}
+              label="Heroes"
+              href="/heroes"
+              title="Every hero, down to the last voice line"
+              text={`${catalog.heroes.length} heroes, each on a page of its own: the model in 3D with its animations, its personas and abilities, its items by set, and every sound, effect and picture of it.`}
+              points={[
+                ["In 3D, as in the game", "The body in its default look, every persona, every animation, to turn and to download as glb."],
+                ["Every line it says", "Voice lines grouped by when the game plays them: a kill, a deny, buying a Blink Dagger."],
+                ["Items by set", "Each set worn on the hero, its models, textures and effects in one download."],
+              ]}
+            >
+              <HeroStrip heroes={catalog.heroes} />
+            </Feature>
+
+            <Feature
+              icon={Gift}
+              label="Treasures"
+              href="/cosmetics/treasures"
+              title="Every chest, and what is inside it"
+              text={`${n(stats?.treasures)} treasures and capsules with their contents and rare bonus drops, ${n(stats?.sets)} sets and ${n(stats?.bundles)} bundles, all linked: an item knows the chests it drops from and the bundles it comes in.`}
+              points={[
+                ["Contents and bonus drops", "What a chest gives, and its rare extras with the chance the game shows."],
+                ["Where an item comes from", "The chests it drops from, the bundles it is sold in, the event it came with."],
+                ["By year and event", `Battle passes and events with all they brought, ${n(stats?.events)} of them.`],
+              ]}
+            >
+              <TreasurePanel catalog={catalog} />
+            </Feature>
+
+            <Feature
+              icon={Box}
+              label="3D models"
+              href="/3d"
+              title="Every model in the game"
+              text={`${n(stats?.models)} models as glb with their textures: heroes, items, couriers, creeps, trees, rocks and buildings, sorted by type, theme and size.`}
+              points={[
+                ["Find one by a screenshot", "Drop a picture from the game and get the models that look like it."],
+                ["Textures included", "Each model lists its textures, to download with it as one zip."],
+                ["Rendered for you", "A preview of every model, as it stands and as the game camera sees it."],
+              ]}
+            >
+              <ModelWall catalog={catalog} />
+            </Feature>
+
+            <Feature
+              icon={Database}
+              label="Files"
+              href="/files"
+              title="Take the files anywhere"
+              text={`${n(stats?.files)} files in public datasets on Hugging Face, updated after each patch. Download one file, a folder or all of it, or show any hero and item in 3D on your own site.`}
+            >
+              <div className="grid gap-4 p-4 md:grid-cols-2 md:p-6">
+                <Code title="Download a dataset" href={OWNER_URL} link="Hugging Face" lines={["pip install -U huggingface_hub", "hf download Sqls1/dota2-models --repo-type dataset"]} />
+                <Code
+                  title="Embed a hero in 3D"
+                  href={DOTADEX}
+                  link="Dotadex"
+                  lines={[`<iframe src="${DOTADEX}/embed/hero/pudge"`, '  width="800" height="500"', '  style="border:0;border-radius:12px"></iframe>']}
+                />
+              </div>
+            </Feature>
+          </>
         )}
 
-        <section data-reveal className="mx-auto mt-20 max-w-[80rem] px-8">
-          <h2 className="text-[1.25rem] font-semibold tracking-[-0.02em]">Download and embed</h2>
-          <div className="mt-5 grid gap-4 md:grid-cols-2">
-            <Take icon={Database} title="Open datasets" href={OWNER_URL} link="Hugging Face">
-              Every file sits in public datasets on Hugging Face. Download one file, a folder, or all of it with one command:
-              <CopyLine text="hf download Sqls1/dota2-models --repo-type dataset" />
-            </Take>
-            <Take icon={Code2} title="Embed in your site" href={DOTADEX} link="Dotadex">
-              Any hero, set or item in 3D on your own page. Each one has an Embed button with the code to paste, in the size you want.
-            </Take>
+        {/* The last word: who makes it, and a way to help */}
+        <section data-reveal className="relative mt-24 overflow-hidden px-8 py-32 text-center">
+          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(40%_60%_at_50%_100%,rgba(178,34,24,0.22),transparent_70%)]" />
+          <h2 className="relative text-[clamp(2.2rem,4vw,3.6rem)] leading-[1.05] font-semibold tracking-[-0.045em]">Made by one person</h2>
+          <p className="relative mx-auto mt-5 max-w-xl text-[1.05rem] leading-relaxed text-balance text-ink-400">
+            This site, Dotadex and the datasets behind them are built and kept running by hand. If they saved you time, you can help keep them going.
+          </p>
+          <div className="relative mt-9 flex flex-wrap justify-center gap-3">
+            <a href={SUPPORT_URL} target="_blank" rel="noreferrer" className="flex h-12 items-center gap-2 rounded-xl bg-ink-100 px-6 text-[0.95rem] font-medium text-ink-950 transition-colors hover:bg-white">
+              <Heart size={17} /> Support the author
+            </a>
+            <a href={SOURCE_URL} target="_blank" rel="noreferrer" className="flex h-12 items-center gap-2 rounded-xl border border-white/[0.1] bg-ink-900/80 px-6 text-[0.95rem] text-ink-100 transition-colors hover:border-white/25">
+              <Code2 size={17} /> Source on GitHub
+            </a>
           </div>
         </section>
 
-        <section data-reveal className="mx-auto mt-20 max-w-[80rem] px-8">
-          <div className="flex flex-wrap items-center gap-6 rounded-2xl border border-white/[0.06] bg-ink-900 p-7">
-            <Heart size={22} className="shrink-0 text-ink-200" />
-            <div className="min-w-0 flex-1">
-              <h2 className="text-[1.15rem] font-semibold tracking-[-0.02em]">Support the author</h2>
-              <p className="mt-1.5 max-w-2xl text-[0.95rem] leading-relaxed text-ink-400">
-                This site, Dotadex and the datasets behind them are made by one person, and the exports and hosting are kept running by hand. If they saved you time, you can help keep them going.
-              </p>
+        <footer className="border-t border-white/[0.06]">
+          <div className="mx-auto grid max-w-[80rem] gap-10 px-8 py-14 sm:grid-cols-2 lg:grid-cols-[1.4fr_1fr_1fr_1fr]">
+            <div>
+              <div className="text-[0.95rem] font-medium">Dotadex Files</div>
+              <p className="mt-2 max-w-xs text-[0.86rem] leading-relaxed text-ink-400">Every file of Dota 2, sorted and free. Not affiliated with Valve; Dota 2 belongs to Valve Corporation.</p>
             </div>
-            <a href={SUPPORT_URL} target="_blank" rel="noreferrer" className="flex h-11 items-center gap-2 rounded-xl bg-ink-100 px-5 text-[0.92rem] font-medium text-ink-950 transition-colors hover:bg-white">
-              <Heart size={16} /> Support on Ko-fi
-            </a>
-          </div>
-        </section>
-
-        <footer className="mx-auto mt-20 flex max-w-[80rem] flex-wrap items-center gap-x-8 gap-y-3 border-t border-white/[0.06] px-8 py-10 text-[0.88rem] text-ink-400">
-          <span className="text-ink-300">Dotadex Files</span>
-          <span>Not affiliated with Valve. Dota 2 content belongs to Valve Corporation.</span>
-          <div className="ml-auto flex gap-6">
-            <a href={OWNER_URL} target="_blank" rel="noreferrer" className="hover:text-ink-100">
-              Datasets
-            </a>
-            <a href={SOURCE_URL} target="_blank" rel="noreferrer" className="hover:text-ink-100">
-              Source
-            </a>
-            <a href={DOTADEX} target="_blank" rel="noreferrer" className="hover:text-ink-100">
-              Dotadex
-            </a>
-            <a href={SUPPORT_URL} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1.5 hover:text-ink-100">
-              <Heart size={14} /> Support the author
-            </a>
+            {[
+              ["Browse", [["/heroes", "Heroes"], ["/sets", "Sets"], ["/bundles", "Bundles"], ["/cosmetics/treasures", "Treasures"], ["/music", "Music"]]],
+              ["Files", [["/3d", "3D models"], ["/cosmetics", "Cosmetics"], ["/files", "Datasets"], [OWNER_URL, "Hugging Face"]]],
+              ["Project", [[DOTADEX, "Dotadex"], [SOURCE_URL, "Source"], [SUPPORT_URL, "Support the author"]]],
+            ].map(([head, links]) => (
+              <div key={head}>
+                <div className="text-[0.86rem] text-ink-400">{head}</div>
+                <ul className="mt-3 space-y-2 text-[0.9rem]">
+                  {links.map(([href, label]) => (
+                    <li key={label}>
+                      <a
+                        href={href.startsWith("http") ? href : link(href)}
+                        {...(href.startsWith("http") ? { target: "_blank", rel: "noreferrer" } : {})}
+                        className="text-ink-300 transition-colors hover:text-ink-100"
+                      >
+                        {label}
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
           </div>
         </footer>
       </div>
@@ -366,78 +339,178 @@ function HeroField({ heroes }) {
   );
 }
 
-// A strip of up to three pictures at the foot of a door: model renders standing on a dark floor, or
-// music covers side by side
-function Renders({ urls = [], covers = false }) {
-  if (!urls.length) return null;
+// A part of the site told the way a product page tells a feature: a small label, a heading, a few
+// words, a large picture of the real thing, and under it the points that matter, side by side
+function Feature({ icon: Icon, label, href, title, text, points = [], children }) {
   return (
-    <div className="mt-auto pt-6">
-      <div className={`flex h-32 justify-center gap-2 rounded-xl bg-[radial-gradient(circle_at_50%_80%,#2a2a2f_0%,#161618_75%)] ${covers ? "items-center p-3" : "items-end px-4"}`}>
-        {urls.map((u) => (
-          <img
-            key={u}
-            src={u}
-            alt=""
-            loading="lazy"
-            onError={(e) => (e.currentTarget.style.display = "none")}
-            className={covers ? "h-full min-w-0 flex-1 rounded-lg object-cover" : "h-[92%] min-w-0 flex-1 object-contain transition-transform duration-500 group-hover:-translate-y-1"}
-          />
-        ))}
-      </div>
-    </div>
-  );
-}
-
-// A way into a part of the site
-function Door({ href, icon: Icon, title, count, text, className = "", art }) {
-  return (
-    <a
-      href={link(href)}
-      className={`group relative flex flex-col overflow-hidden rounded-2xl border border-white/[0.06] bg-ink-900 p-6 transition-colors hover:border-white/[0.16] hover:bg-ink-850 ${className}`}
-    >
-      <div className="flex items-center gap-3">
-        <span className="flex h-9 w-9 items-center justify-center rounded-lg border border-white/[0.08] bg-ink-850 text-ink-200">
-          <Icon size={17} />
-        </span>
-        <span className="text-[1.05rem] font-medium">{title}</span>
-        {count != null && <span className="text-[0.88rem] text-ink-400 tabular-nums">{formatCount(count)}</span>}
-        <ArrowRight size={16} className="ml-auto text-ink-400 transition-transform group-hover:translate-x-0.5 group-hover:text-ink-100" />
-      </div>
-      <p className="mt-4 max-w-md text-[0.94rem] leading-relaxed text-ink-400">{text}</p>
-      {art}
-    </a>
-  );
-}
-
-function Take({ icon: Icon, title, href, link: label, children }) {
-  return (
-    <div className="flex flex-col rounded-2xl border border-white/[0.06] bg-ink-900 p-6">
-      <div className="flex items-center gap-3">
-        <Icon size={18} className="text-ink-200" />
-        <h3 className="text-[1.05rem] font-medium">{title}</h3>
-      </div>
-      <div className="mt-3 flex-1 text-[0.94rem] leading-relaxed text-ink-400">{children}</div>
-      <a href={href} target="_blank" rel="noreferrer" className="mt-5 inline-flex items-center gap-1.5 text-[0.9rem] text-ink-200 hover:text-white">
-        {label} <ArrowRight size={14} />
+    <section data-reveal className="mx-auto mt-32 max-w-[80rem] px-8">
+      <a href={link(href)} className="group inline-flex items-center gap-2 text-[0.92rem] text-ink-300 transition-colors hover:text-ink-100">
+        <Icon size={16} /> {label} <ArrowRight size={14} className="transition-transform group-hover:translate-x-0.5" />
       </a>
+      <h2 className="mt-4 max-w-3xl text-[clamp(2rem,3.4vw,3rem)] leading-[1.06] font-semibold tracking-[-0.04em] text-balance">{title}</h2>
+      <p className="mt-4 max-w-2xl text-[1.02rem] leading-relaxed text-ink-400">{text}</p>
+      <div className="relative mt-10 overflow-hidden rounded-3xl border border-white/[0.07] bg-[linear-gradient(180deg,#17171a_0%,#0f0f11_100%)]">
+        <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent" />
+        <div className="pointer-events-none absolute inset-x-0 top-0 h-48 bg-[radial-gradient(50%_100%_at_50%_0%,rgba(255,255,255,0.05),transparent)]" />
+        <div className="relative">{children}</div>
+      </div>
+      {points.length > 0 && (
+        <div className="mt-10 grid gap-8 md:grid-cols-3">
+          {points.map(([head, body]) => (
+            <div key={head} className="border-t border-white/[0.08] pt-5">
+              <h3 className="text-[0.98rem] font-medium">{head}</h3>
+              <p className="mt-2 text-[0.92rem] leading-relaxed text-ink-400">{body}</p>
+            </div>
+          ))}
+        </div>
+      )}
+    </section>
+  );
+}
+
+// A row of heroes standing in their default sets, the middle one in front; a different few each day
+function HeroStrip({ heroes }) {
+  const row = useMemo(() => {
+    const day = Math.floor(Date.now() / 86400000);
+    return Array.from({ length: 7 }, (_, i) => heroes[(day * 7 + i * 19) % heroes.length]);
+  }, [heroes]);
+  return (
+    <div className="flex items-end justify-center gap-3 px-6 pt-10 [mask-image:linear-gradient(to_bottom,black_75%,transparent)]">
+      {row.map((h, i) => {
+        const far = Math.abs(i - 3);
+        return (
+          <a
+            key={h.id}
+            href={link(`/hero/${h.key}`)}
+            title={h.name}
+            style={{ height: `${26 - far * 2.6}rem` }}
+            className="group relative flex min-w-0 flex-1 flex-col items-center justify-end"
+          >
+            <img
+              src={heroCard(h)}
+              alt={h.name}
+              loading="lazy"
+              className={`h-full w-auto max-w-full object-contain object-bottom mix-blend-lighten transition-transform duration-500 group-hover:-translate-y-2 ${far ? "opacity-70 group-hover:opacity-100" : ""}`}
+            />
+            <span className="absolute bottom-6 text-[0.82rem] text-ink-300 opacity-0 transition-opacity group-hover:opacity-100">{h.name}</span>
+          </a>
+        );
+      })}
     </div>
   );
 }
 
-function CopyLine({ text }) {
+// The latest chest that gives several things: its picture and name, and what drops from it, each with
+// its rarity's colour
+function TreasurePanel({ catalog }) {
+  const chest = useMemo(
+    () =>
+      Object.values(catalog.items)
+        .filter((i) => i.loot && i.icon && i.loot.drops.filter((d) => catalog.items[d]?.icon).length >= 6)
+        .sort((a, b) => (b.date || "").localeCompare(a.date || ""))[0],
+    [catalog]
+  );
+  if (!chest) return null;
+  const drops = chest.loot.drops.map((d) => catalog.items[d]).filter((d) => d?.icon).slice(0, 12);
+  const bonus = chest.loot.bonus.map(([d]) => catalog.items[d]).filter((d) => d?.icon).slice(0, 4);
+  const cell = (item) => (
+    <button
+      key={item.id}
+      onClick={() => openItem(item.id, drops.map((d) => d.id))}
+      title={item.name}
+      className="group relative aspect-[4/3] overflow-hidden rounded-xl border border-white/[0.06] bg-ink-850 transition-colors hover:border-white/20"
+    >
+      <img src={imageUrl(item.icon)} alt="" loading="lazy" className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.05]" />
+      <span className="absolute inset-x-0 bottom-0 h-[2px]" style={{ background: catalog.rarities[item.rarity || "common"]?.color || "transparent" }} />
+    </button>
+  );
+  return (
+    <div className="grid gap-8 p-6 md:grid-cols-[18rem_1fr] md:p-10">
+      <button onClick={() => openItem(chest.id)} className="flex flex-col items-center text-center">
+        <img src={imageUrl(chest.icon)} alt="" className="w-full max-w-[16rem] rounded-2xl" />
+        <span className="mt-4 text-[1.02rem] font-medium">{chest.name}</span>
+        <span className="mt-1 text-[0.84rem] text-ink-400">
+          {chest.date?.slice(0, 4)}, {chest.loot.drops.length} items inside
+        </span>
+      </button>
+      <div>
+        <div className="text-[0.86rem] text-ink-400">Contents</div>
+        <div className="mt-3 grid grid-cols-3 gap-2 sm:grid-cols-4 lg:grid-cols-6">{drops.map(cell)}</div>
+        {bonus.length > 0 && (
+          <>
+            <div className="mt-6 text-[0.86rem] text-ink-400">Rare bonus drops</div>
+            <div className="mt-3 grid grid-cols-3 gap-2 sm:grid-cols-4 lg:grid-cols-6">{bonus.map(cell)}</div>
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// The site's renders of the latest models, a wall of them on a dark floor
+function ModelWall({ catalog }) {
+  const cards = useMemo(() => {
+    const kinds = new Set(["wearable", "courier", "ward"]);
+    const out = [];
+    const seen = new Set();
+    const items = Object.values(catalog.items)
+      .filter((i) => kinds.has(i.prefab) && i.date)
+      .sort((a, b) => b.date.localeCompare(a.date) || Number(b.id) - Number(a.id));
+    for (const item of items) {
+      const url = previewOf(item, catalog);
+      if (!url || seen.has(url)) continue;
+      seen.add(url);
+      out.push([item, url]);
+      if (out.length === 12) break;
+    }
+    return out;
+  }, [catalog]);
+  return (
+    <div className="grid grid-cols-3 gap-px bg-white/[0.04] sm:grid-cols-4 lg:grid-cols-6">
+      {cards.map(([item, url]) => (
+        <button
+          key={item.id}
+          onClick={() => openItem(item.id, cards.map(([x]) => x.id))}
+          title={item.name}
+          className="group flex aspect-square items-center justify-center bg-[radial-gradient(circle_at_50%_60%,#1f1f23_0%,#111113_75%)] p-5"
+        >
+          <img src={url} alt="" loading="lazy" onError={(e) => (e.currentTarget.style.visibility = "hidden")} className="h-full w-full object-contain transition-transform duration-500 group-hover:scale-[1.08]" />
+        </button>
+      ))}
+    </div>
+  );
+}
+
+// A few lines of code in a terminal-like panel, copied with a click
+function Code({ title, href, link: label, lines }) {
   const [done, setDone] = useState(false);
   return (
-    <button
-      onClick={async () => {
-        await navigator.clipboard.writeText(text);
-        setDone(true);
-        setTimeout(() => setDone(false), 1400);
-      }}
-      title="Copy"
-      className="mt-3 flex w-full items-center gap-2 rounded-lg bg-ink-950 px-3 py-2 text-left font-mono text-[0.76rem] text-ink-300 transition-colors hover:text-ink-100"
-    >
-      <span className="min-w-0 flex-1 truncate">{text}</span>
-      {done ? <Check size={14} /> : <Copy size={14} />}
-    </button>
+    <div className="flex flex-col overflow-hidden rounded-2xl border border-white/[0.07] bg-ink-950">
+      <div className="flex items-center gap-3 border-b border-white/[0.06] px-4 py-3">
+        <span className="text-[0.88rem] font-medium">{title}</span>
+        <a href={href} target="_blank" rel="noreferrer" className="ml-auto inline-flex items-center gap-1 text-[0.82rem] text-ink-400 hover:text-ink-100">
+          {label} <ArrowRight size={13} />
+        </a>
+        <button
+          onClick={async () => {
+            await navigator.clipboard.writeText(lines.join("\n"));
+            setDone(true);
+            setTimeout(() => setDone(false), 1400);
+          }}
+          title="Copy"
+          className="text-ink-400 hover:text-ink-100"
+        >
+          {done ? <Check size={15} /> : <Copy size={15} />}
+        </button>
+      </div>
+      <pre className="overflow-x-auto p-4 font-mono text-[0.8rem] leading-relaxed text-ink-300">
+        {lines.map((l, i) => (
+          <div key={i}>
+            <span className="mr-3 text-ink-600 select-none">{i + 1}</span>
+            {l}
+          </div>
+        ))}
+      </pre>
+    </div>
   );
 }
