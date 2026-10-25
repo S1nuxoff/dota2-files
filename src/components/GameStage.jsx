@@ -57,5 +57,20 @@ export default function GameStage({ path, title }) {
   params.set("autoplay", "1");
   params.set("link", "0");
   params.set("bg", "0");
-  return <iframe key={path} src={`${DOTADEX}/embed/${page}?${params}`} title={`${title} in 3D`} allow="fullscreen" className="absolute inset-0 h-full w-full border-0 bg-transparent [color-scheme:dark]" />;
+  return <Frame key={path} src={`${DOTADEX}/embed/${page}?${params}`} title={`${title} in 3D`} />;
+}
+
+// The frame: shown once its page has loaded, fading in; its edges fade out into the page on all four
+// sides (the scene's pedestal, smoke and light would end at the frame's straight edges)
+function Frame({ src, title }) {
+  const [loaded, setLoaded] = useState(false);
+  return (
+    <iframe
+      src={src}
+      title={title}
+      allow="fullscreen"
+      onLoad={() => setTimeout(() => setLoaded(true), 250)}
+      className={`absolute inset-0 h-full w-full border-0 bg-transparent transition-opacity duration-700 [color-scheme:dark] [mask-composite:intersect] [mask-image:linear-gradient(to_right,transparent,black_14%,black_86%,transparent),linear-gradient(to_bottom,transparent,black_10%,black_80%,transparent)] ${loaded ? "opacity-100" : "opacity-0"}`}
+    />
+  );
 }
