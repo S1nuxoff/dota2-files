@@ -166,10 +166,10 @@ model-viewer {
   transform: none;
 }
 @media (prefers-reduced-motion: reduce) {
+  /* a block still eases in as it scrolls into view: a short fade, no travel */
   [data-reveal] {
-    opacity: 1;
     transform: none;
-    transition: none;
+    transition-duration: 0.5s !important;
   }
   .anim-stand,
   .anim-card,
