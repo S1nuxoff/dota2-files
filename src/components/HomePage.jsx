@@ -359,13 +359,13 @@ function Feature({ icon: Icon, label, href, title, text, points = [], frame = tr
   );
 }
 
-// Heroes gathering as the page scrolls: a tall section whose inner screen stays in place while it
-// passes. At its start the heroes stand far apart, small and faint, low on the floor; as the scroll goes
-// on they close in, rise and grow into one group round the middle one, and the words over them come
-// up; at the end the group draws back. Driven by the section's own place in the page, set each frame
-const SCENE = 7;
+// Heroes passing as the page scrolls: a tall section whose inner screen stays in place while it goes
+// by, and in it a long row of heroes standing apart that slides from right to left with the scroll,
+// quickly, the words over them. Driven by the section's own place in the page, set each frame
+const SCENE = 18;
 function HeroScene({ heroes }) {
   const section = useRef(null);
+  const track = useRef(null);
   const row = useMemo(() => {
     const day = Math.floor(Date.now() / 86400000);
     return Array.from({ length: SCENE }, (_, i) => heroes[(day * 7 + i * 19) % heroes.length]);
@@ -373,9 +373,7 @@ function HeroScene({ heroes }) {
   useEffect(() => {
     const el = section.current;
     const scroller = el?.closest(".overflow-y-auto");
-    if (!el || !scroller) return;
-    const figures = [...el.querySelectorAll("[data-figure]")];
-    const words = el.querySelector("[data-words]");
+    if (!el || !scroller || !track.current) return;
     let frame = 0;
     const draw = () => {
       frame = 0;
@@ -383,24 +381,10 @@ function HeroScene({ heroes }) {
       const view = scroller.clientHeight;
       // 0 as the section comes up from the bottom of the screen, 1 as its inner screen lets go
       const t = Math.min(1, Math.max(0, (view - box.top) / box.height));
-      const gather = Math.min(1, Math.max(0, (t - 0.1) / 0.45)); // they come together
-      const ease = 1 - (1 - gather) ** 3;
-      const leave = Math.max(0, (t - 0.85) / 0.15); // the group draws back
-      figures.forEach((f, i) => {
-        const side = i - (SCENE - 1) / 2;
-        const far = Math.abs(side);
-        const x = side * (34 - 22 * ease); // vw: spread out, then close
-        const y = (1 - ease) * 8 + leave * 6; // vh: a little low, then on the floor
-        const scale = (0.7 + 0.3 * ease) * (1 - far * 0.09) * (1 - leave * 0.15);
-        f.style.transform = `translate(-50%, 0) translate(${x}vw, ${y}vh) scale(${scale})`;
-        f.style.opacity = String((0.45 + 0.55 * ease) * (1 - far * 0.1) * (1 - leave));
-        f.style.zIndex = String(10 - far);
-      });
-      if (words) {
-        const show = Math.min(1, Math.max(0, (t - 0.08) / 0.25));
-        words.style.opacity = String(show * (1 - leave));
-        words.style.transform = `translateY(${(1 - show) * 30}px)`;
-      }
+      const width = track.current.scrollWidth;
+      const screen = el.clientWidth;
+      // the row enters from the right edge and leaves past the left one
+      track.current.style.transform = `translateX(${screen - t * (width + screen)}px)`;
     };
     const onScroll = () => (frame ||= requestAnimationFrame(draw));
     scroller.addEventListener("scroll", onScroll, { passive: true });
@@ -413,10 +397,10 @@ function HeroScene({ heroes }) {
     };
   }, [row]);
   return (
-    <section ref={section} className="relative mt-24 h-[260vh]">
+    <section ref={section} className="relative mt-24 h-[200vh]">
       <div className="sticky top-0 h-[100dvh] overflow-hidden">
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-[60%] bg-[radial-gradient(45%_55%_at_50%_100%,rgba(178,34,24,0.2),transparent_70%)]" />
-        <div data-words className="relative z-20 mx-auto max-w-3xl px-8 pt-[14vh] text-center opacity-0">
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-[60%] bg-[radial-gradient(55%_55%_at_50%_100%,rgba(178,34,24,0.2),transparent_70%)]" />
+        <div className="relative z-20 mx-auto max-w-3xl px-8 pt-[14vh] text-center">
           <a href={link("/heroes")} className="group inline-flex items-center gap-2 text-[0.92rem] text-ink-300 transition-colors hover:text-ink-100">
             <Users size={16} /> Heroes <ArrowRight size={14} className="transition-transform group-hover:translate-x-0.5" />
           </a>
@@ -425,22 +409,18 @@ function HeroScene({ heroes }) {
             {heroes.length} heroes, each with its model in 3D, its personas and abilities, its items by set, and every sound, effect and picture of it.
           </p>
         </div>
-        {row.map((h) => (
-          <a
-            key={h.id}
-            data-figure
-            href={link(`/hero/${h.key}`)}
-            title={h.name}
-            className="group absolute bottom-0 left-1/2 h-[min(62vh,40rem)] origin-bottom will-change-transform"
-          >
-            <img
-              src={heroCard(h)}
-              alt={h.name}
-              loading="lazy"
-              className="h-full w-auto max-w-none mix-blend-lighten transition-[filter] duration-300 [mask-image:linear-gradient(to_bottom,black_80%,transparent)] group-hover:brightness-125"
-            />
-          </a>
-        ))}
+        <div ref={track} className="absolute bottom-0 left-0 flex items-end gap-[6vw] will-change-transform">
+          {row.map((h, i) => (
+            <a key={`${h.id}${i}`} href={link(`/hero/${h.key}`)} title={h.name} className="group relative h-[min(56vh,36rem)] shrink-0">
+              <img
+                src={heroCard(h)}
+                alt={h.name}
+                className="h-full w-auto max-w-none mix-blend-lighten transition-transform duration-300 [mask-image:linear-gradient(to_bottom,black_80%,transparent)] group-hover:-translate-y-2"
+              />
+              <span className="absolute inset-x-0 bottom-3 text-center text-[0.86rem] text-ink-300 opacity-0 transition-opacity group-hover:opacity-100">{h.name}</span>
+            </a>
+          ))}
+        </div>
       </div>
     </section>
   );
