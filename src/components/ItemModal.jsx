@@ -33,6 +33,9 @@ export default function ItemModal({ itemId, catalog, indexes, withCopies }) {
   const models = files.filter((e) => e.ext === "glb");
   const textures = files.filter((e) => e.ds === "textures");
   const sounds = files.filter((e) => e.ds === "sounds");
+  // The item's pictures but its icon (a loading screen, a HUD's art, cursors), the largest on the stage
+  const pictures = files.filter((e) => e.kind === "image" && e.ds !== "textures" && e.path !== item?.icon);
+  const poster = pictures.reduce((best, e) => (!best || e.size > best.size ? e : best), null);
   const [style, setStyle] = useState(0);
   const [shown, setShown] = useLook();
   const model = models[Math.min(style, models.length - 1)];
@@ -76,7 +79,9 @@ export default function ItemModal({ itemId, catalog, indexes, withCopies }) {
             </Suspense>
           ) : (
             <div className="flex h-full items-center justify-center">
-              {item.icon ? <img src={imageUrl(item.icon)} alt="" className="max-h-[60%] max-w-[60%] rounded-2xl object-contain shadow-2xl" /> : <Package size={48} strokeWidth={1} className="text-ink-600" />}
+              {poster ? (
+                <img src={fileUrl(datasetById(poster.ds), poster.path)} alt="" className="max-h-[86%] max-w-[90%] rounded-xl object-contain shadow-2xl" />
+              ) : item.icon ? <img src={imageUrl(item.icon)} alt="" className="max-h-[60%] max-w-[60%] rounded-2xl object-contain shadow-2xl" /> : <Package size={48} strokeWidth={1} className="text-ink-600" />}
             </div>
           )}
           {list.length > 1 && (
@@ -192,6 +197,20 @@ export default function ItemModal({ itemId, catalog, indexes, withCopies }) {
             )}
             <Loot item={item} catalog={catalog} compact />
             {sounds.length > 0 && <SoundList files={sounds} route={{}} />}
+            {pictures.length > 1 && (
+              <section>
+                <h3 className="font-medium">
+                  Pictures <span className="ml-1 text-[0.8rem] font-normal text-ink-400">{pictures.length}</span>
+                </h3>
+                <div className="mt-3 grid grid-cols-3 gap-2">
+                  {pictures.map((e) => (
+                    <a key={e.path} href={fileUrl(datasetById(e.ds), e.path, true)} title={`Download ${e.name}`} className="checker flex aspect-square items-center justify-center overflow-hidden rounded-xl border border-white/[0.06] transition-colors hover:border-white/20">
+                      <img src={fileUrl(datasetById(e.ds), e.path)} alt="" loading="lazy" className="max-h-full max-w-full object-contain p-1.5" />
+                    </a>
+                  ))}
+                </div>
+              </section>
+            )}
             <section>
               <h3 className="font-medium">Textures</h3>
               {textures.length === 0 ? (

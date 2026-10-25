@@ -44,6 +44,9 @@ export default function ItemPage({ itemId, catalog, indexes, withCopies, route }
   const model = models[Math.min(style, models.length - 1)];
   const textures = files.filter((e) => e.ds === "textures");
   const sounds = files.filter((e) => e.ds === "sounds");
+  // The item's pictures but its icon (a loading screen, a HUD's art, cursors), the largest on the stage
+  const pictures = files.filter((e) => e.kind === "image" && e.ds !== "textures" && e.path !== item?.icon);
+  const poster = pictures.reduce((best, e) => (!best || e.size > best.size ? e : best), null);
   const effects = files.filter((e) => e.ds === "particles");
   const order = Object.fromEntries(DATASETS.map((d, i) => [d.id, i]));
   const sorted = [...files].sort((a, b) => order[a.ds] - order[b.ds] || a.path.localeCompare(b.path));
@@ -70,7 +73,9 @@ export default function ItemPage({ itemId, catalog, indexes, withCopies, route }
             </Suspense>
           ) : (
             <div className="flex h-full items-center justify-center">
-              {item.icon ? <img src={imageUrl(item.icon)} alt="" className="max-h-[55%] max-w-[55%] rounded-2xl object-contain shadow-2xl" /> : <Package size={52} strokeWidth={1} className="text-ink-600" />}
+              {poster ? (
+                <img src={fileUrl(datasetById(poster.ds), poster.path)} alt="" className="max-h-[86%] max-w-[90%] rounded-xl object-contain shadow-2xl" />
+              ) : item.icon ? <img src={imageUrl(item.icon)} alt="" className="max-h-[55%] max-w-[55%] rounded-2xl object-contain shadow-2xl" /> : <Package size={52} strokeWidth={1} className="text-ink-600" />}
             </div>
           )}
 
@@ -173,6 +178,21 @@ export default function ItemPage({ itemId, catalog, indexes, withCopies, route }
         {item.text && <p className="mt-10 max-w-[46rem] leading-relaxed whitespace-pre-line text-ink-300">{item.text}</p>}
 
         <Loot item={item} catalog={catalog} />
+
+        {pictures.length > 1 && (
+          <section className="mt-14">
+            <h2 className="text-[1.35rem] font-semibold tracking-[-0.02em]">
+              Pictures <span className="ml-1 text-[1rem] font-normal text-ink-400">{pictures.length}</span>
+            </h2>
+            <div className="mt-5 grid grid-cols-[repeat(auto-fill,minmax(10rem,1fr))] gap-3">
+              {pictures.map((e) => (
+                <a key={e.path} href={fileUrl(datasetById(e.ds), e.path, true)} title={`Download ${e.name}`} className="checker flex aspect-square items-center justify-center overflow-hidden rounded-xl border border-white/[0.06] transition-colors hover:border-white/20">
+                  <img src={fileUrl(datasetById(e.ds), e.path)} alt="" loading="lazy" className="max-h-full max-w-full object-contain p-2" />
+                </a>
+              ))}
+            </div>
+          </section>
+        )}
 
         {effects.length > 0 && (
           <section className="mt-14">
