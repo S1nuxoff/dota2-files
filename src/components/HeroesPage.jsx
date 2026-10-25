@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Search } from "lucide-react";
-import { heroCard } from "../lib/catalog.js";
+import { heroCard, heroPortrait } from "../lib/catalog.js";
 import { link } from "../lib/route.js";
 import { Card, PageHead, SearchField, Spinner } from "./ui.jsx";
 
@@ -25,7 +25,17 @@ export default function HeroesPage({ catalog, error }) {
               style={{ animationDelay: `${Math.min(i, 30) * 18}ms` }}
               title={hero.name}
               meta={`${hero.items.length} items${hero.personas.length ? `, ${hero.personas.length} persona${hero.personas.length > 1 ? "s" : ""}` : ""}`}
-              picture={<img src={heroCard(hero)} loading="lazy" decoding="async" alt="" className="h-full w-full object-cover object-top transition-transform duration-500 ease-out group-hover:scale-[1.04]" />}
+              picture={
+                <img
+                  src={heroCard(hero)}
+                  loading="lazy"
+                  decoding="async"
+                  alt=""
+                  // A hero new to the game may come before its set picture: its portrait meanwhile
+                  onError={(e) => e.currentTarget.src !== heroPortrait(hero) && ((e.currentTarget.src = heroPortrait(hero)), e.currentTarget.classList.replace("object-top", "object-center"))}
+                  className="h-full w-full object-cover object-top transition-transform duration-500 ease-out group-hover:scale-[1.04]"
+                />
+              }
             />
           ))}
         </div>
