@@ -298,14 +298,14 @@ export default function HomePage({ catalog, indexes }) {
   );
 }
 
-// Two heroes of the day in 3D at the sides of the opening, in their default look on a lit floor,
+// Two heroes in 3D at the sides of the opening, in their default look on a lit floor,
 // turning as the page scrolls (each its own way); they show once they stand
 function SideHeroes({ catalog, indexes, turn }) {
   const [ready, setReady] = useState([false, false]);
+  // Pudge at the left, Invoker at the right (any two with a model if the game ever drops one)
   const heroes = useMemo(() => {
     const withModel = catalog.heroes.filter((h) => h.model);
-    const day = Math.floor(Date.now() / 86400000);
-    return [withModel[(day * 2) % withModel.length], withModel[(day * 2 + 37) % withModel.length]];
+    return ["pudge", "invoker"].map((key, i) => withModel.find((h) => h.key === key) || withModel[i]);
   }, [catalog]);
   const looks = useMemo(() => {
     if (!indexes.models) return [];
