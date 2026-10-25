@@ -118,6 +118,17 @@ const SIGNS = {
 };
 
 function Kinds({ catalog }) {
+  // A search over every item: by name, hero, kind or event; the latest first
+  const [query, setQuery] = useState("");
+  const [more, setMore] = useState(1);
+  const found = useMemo(() => {
+    const words = query.toLowerCase().split(/\s+/).filter(Boolean);
+    if (!words.length) return null;
+    const hay = (i) => `${i.name} ${i.heroes.map((h) => catalog.heroById.get(h)?.name || "").join(" ")} ${titleOf(i.prefab)} ${catalog.events?.[i.event] || ""}`.toLowerCase();
+    return Object.values(catalog.items)
+      .filter((i) => words.every((w) => hay(i).includes(w)))
+      .sort((a, b) => (b.date || "").localeCompare(a.date || "") || a.name.localeCompare(b.name));
+  }, [query, catalog]);
   const { count, covers } = useMemo(() => {
     const byKind = {};
     for (const item of Object.values(catalog.items)) (byKind[item.prefab] ??= []).push(item);
@@ -185,9 +196,37 @@ function Kinds({ catalog }) {
   let i = 0;
   return (
     <div className="anim-page">
-      <PageHead title="Cosmetics" sub="Everything a player can own, by kind: the heroes' items, couriers, wards, loading screens, music, effects." />
+      <PageHead title="Cosmetics" sub="Everything a player can own, by kind: the heroes' items, couriers, wards, loading screens, music, effects.">
+        <SearchField
+          value={query}
+          onChange={(v) => {
+            setQuery(v);
+            setMore(1);
+          }}
+          icon={Search}
+          placeholder="Search every item by name, hero, kind or event"
+        />
+      </PageHead>
       <div className="mx-auto max-w-[100rem] space-y-10 px-8 pb-20">
-        {sections.map(([title, kinds]) => (
+        {found && (
+          <section>
+            <h2 className="text-[1.15rem] font-semibold tracking-[-0.02em]">
+              {formatCount(found.length)} {found.length === 1 ? "item" : "items"}
+            </h2>
+            {found.length === 0 && <p className="py-12 text-center text-ink-400">Nothing of that name.</p>}
+            <div className="mt-4 grid grid-cols-[repeat(auto-fill,minmax(12.5rem,1fr))] gap-4">
+              {found.slice(0, more * 120).map((item, n) => (
+                <ItemCard key={item.id} item={item} rarities={catalog.rarities} delay={Math.min(n, 30) * 15} list={found.slice(0, more * 120).map((x) => x.id)} />
+              ))}
+            </div>
+            {found.length > more * 120 && (
+              <button onClick={() => setMore(more + 1)} className="mt-6 rounded-lg px-4 py-2 text-[0.9rem] text-ink-300 transition-colors hover:bg-ink-850 hover:text-ink-100">
+                Show more of {formatCount(found.length)}
+              </button>
+            )}
+          </section>
+        )}
+        {!found && sections.map(([title, kinds]) => (
           <section key={title}>
             <h2 className="text-[1.15rem] font-semibold tracking-[-0.02em]">{title}</h2>
             <div className="mt-4 grid grid-cols-[repeat(auto-fill,minmax(16rem,1fr))] gap-4">
@@ -198,7 +237,7 @@ function Kinds({ catalog }) {
             </div>
           </section>
         ))}
-        {events.length > 0 && (
+        {!found && events.length > 0 && (
           <section>
             <h2 className="text-[1.15rem] font-semibold tracking-[-0.02em]">Events and battle passes</h2>
             <div className="mt-4 grid grid-cols-[repeat(auto-fill,minmax(16rem,1fr))] gap-4">
