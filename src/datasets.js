@@ -1,4 +1,4 @@
-import { AudioLines, Box, Braces, Film, Image, Layers, Map as MapIcon, Sparkles } from "lucide-react";
+import { AudioLines, Box, Braces, Film, Image, Layers, Map as MapIcon, Flame } from "lucide-react";
 
 // The tracker's Hugging Face datasets (dota2-game-tracker lib/datasets.js), in the order the site
 // shows them. names: the dataset has names.json ({ path: [name, kind] }) next to its files.json
@@ -10,7 +10,7 @@ export const DATASETS = [
   { id: "textures", repo: "dota2-textures", title: "Textures", icon: Layers, blurb: "Every texture outside the interface on its own, as PNG (EXR for HDR)." },
   { id: "sounds", repo: "dota2-sounds", title: "Sounds", icon: AudioLines, blurb: "Every sound: voice lines, music, abilities, the menu. Sound events and phonemes." },
   { id: "videos", repo: "dota2-videos", title: "Videos", icon: Film, blurb: "The interface's videos: animated hero portraits, intros, subtitles." },
-  { id: "particles", repo: "dota2-particles", title: "Particles", icon: Sparkles, blurb: "Every particle system as JSON with its textures and the engine's schema." },
+  { id: "particles", repo: "dota2-particles", title: "Particles", icon: Flame, blurb: "Every particle system as JSON with its textures and the engine's schema." },
   { id: "maps", repo: "dota2-maps", title: "Maps", icon: MapIcon, blurb: "Scenes and maps as glb with their lights and cameras." },
   { id: "data", repo: "dota2-data", title: "Data", icon: Braces, blurb: "Every script and localization as JSON, Panorama layouts, styles, fonts." },
 ];

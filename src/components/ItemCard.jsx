@@ -1,4 +1,4 @@
-import { AudioLines, Box, Image, Package, Sparkles } from "lucide-react";
+import { AudioLines, Box, Image, Package, Flame } from "lucide-react";
 import { imageUrl, prefabTitle } from "../lib/catalog.js";
 import { link, openItem } from "../lib/route.js";
 import { Card } from "./ui.jsx";
@@ -9,7 +9,7 @@ function marks(item) {
   const has = (ds) => !!item.refs[ds]?.length;
   const out = [];
   if (has("models") || item.bundle) out.push([Box, "3D model"]);
-  if (has("particles")) out.push([Sparkles, "Effects"]);
+  if (has("particles")) out.push([Flame, "Effects"]);
   if (has("sounds")) out.push([AudioLines, "Sounds"]);
   if (!out.length) out.push([Image, "Picture only"]);
   return out;
