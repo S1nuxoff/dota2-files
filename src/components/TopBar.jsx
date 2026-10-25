@@ -76,10 +76,10 @@ export default function TopBar({ route }) {
             href={KOFI}
             target="_blank"
             rel="noreferrer"
-            title="Support the project on Ko-fi"
+            title="Support the author on Ko-fi"
             className="flex h-8 items-center gap-1.5 rounded-lg bg-ink-800 px-3 text-[0.85rem] text-ink-100 transition-colors hover:bg-ink-700"
           >
-            <Heart size={15} /> Support
+            <Heart size={15} /> Support the author
           </a>
         </div>
         <label className="flex h-9 w-64 items-center gap-2.5 rounded-lg border border-white/[0.08] bg-ink-900 px-3 transition-colors focus-within:border-white/20">
