@@ -41,7 +41,7 @@ export default function Preview({ entry: opened, ds, onClose }) {
 
   return (
     <div data-lock className="anim-fade fixed inset-0 z-40 bg-black/70 backdrop-blur-sm" role="dialog" aria-modal="true" aria-label={entry.name} onClick={onClose}>
-      <div className="anim-open absolute inset-0 flex flex-col overflow-y-auto overscroll-contain bg-ink-950 md:grid md:gap-4 md:overflow-hidden md:bg-transparent md:inset-5 md:inset-x-[5%] md:inset-y-[6%] md:grid-cols-[minmax(0,1fr)_23rem]" onClick={(e) => e.stopPropagation()}>
+      <div className="anim-open absolute inset-0 flex flex-col overflow-y-auto overscroll-contain bg-ink-950 md:grid md:gap-4 md:overflow-hidden md:bg-transparent md:inset-auto md:top-1/2 md:left-1/2 md:h-[min(84vh,50rem)] md:w-[min(calc(100%-5rem),84rem)] md:-translate-x-1/2 md:-translate-y-1/2 md:grid-cols-[minmax(0,1fr)_23rem]" onClick={(e) => e.stopPropagation()}>
         <div className="stage relative h-[52svh] shrink-0 overflow-hidden border-b border-white/[0.06] md:h-auto md:rounded-2xl md:border md:border-white/[0.06]">
           <button onClick={onClose} aria-label="Close" className="absolute top-3 left-3 z-10 flex h-10 w-10 items-center justify-center rounded-full bg-black/50 text-ink-100 backdrop-blur md:hidden">
             <X size={19} />
