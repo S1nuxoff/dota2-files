@@ -32,70 +32,74 @@ function useScrolled() {
   return scrolled;
 }
 
-// The site's bar: the mark, the four parts, the search over everything; on a phone the parts move to
-// the bar at the bottom (MobileNav)
+// The site's bar: the mark and the four parts on the left, the search over everything in the middle,
+// the links out on the right; translucent once the page scrolls, so the page's light shows through.
+// On a phone the parts move to the bar at the bottom (MobileNav)
 export default function TopBar({ route }) {
   const scrolled = useScrolled();
   return (
     <header
       style={{ viewTransitionName: "topbar" }}
       className={`fixed inset-x-0 top-0 z-30 border-b transition-[background-color,border-color] duration-300 ${
-        scrolled ? "border-white/[0.06] bg-ink-950/80 backdrop-blur-xl" : "border-transparent bg-transparent"
+        scrolled ? "border-white/[0.05] bg-ink-950/45 backdrop-blur-2xl backdrop-saturate-150" : "border-transparent bg-transparent"
       }`}
     >
-      <nav aria-label="Main" className="page-x flex h-14 items-center gap-3 md:gap-8">
-        <a href={link("/")} className="flex shrink-0 items-center py-2" aria-label="Dotadex Files, home">
-          <img src={`${import.meta.env.BASE_URL}logo.png`} alt="Dotadex" width="875" height="113" className="h-3.5 w-auto" />
-          <span className="ml-2.5 hidden text-[0.86rem] font-medium text-ink-400 sm:inline">Files</span>
-        </a>
-        <ul className="hidden items-center gap-0.5 md:flex">
-          {SECTIONS.map(([path, title, , on]) => {
-            const active = on(route);
-            return (
-              <li key={path}>
-                <a
-                  href={link(path)}
-                  aria-current={active ? "page" : undefined}
-                  className={`relative flex h-8 items-center rounded-lg px-3 text-[0.9rem] transition-colors ${active ? "text-ink-100" : "text-ink-400 hover:bg-white/[0.05] hover:text-ink-100"}`}
-                >
-                  {title}
-                  {active && <span aria-hidden="true" className="absolute inset-x-3 -bottom-[0.6rem] h-px bg-gradient-to-r from-transparent via-ink-100/70 to-transparent" />}
-                </a>
-              </li>
-            );
-          })}
-        </ul>
-        <div className="flex-1" />
+      <nav aria-label="Main" className="page-x flex h-14 items-center gap-3 md:gap-6 lg:grid lg:grid-cols-[1fr_minmax(16rem,26rem)_1fr]">
+        <div className="flex min-w-0 flex-1 items-center gap-3 md:gap-6 lg:gap-8">
+          <a href={link("/")} className="flex shrink-0 items-center py-2" aria-label="Dotadex Files, home">
+            <img src={`${import.meta.env.BASE_URL}logo.png`} alt="Dotadex" width="875" height="113" className="h-3.5 w-auto" />
+            <span className="ml-2.5 hidden text-[0.86rem] font-medium text-ink-400 sm:inline">Files</span>
+          </a>
+          <ul className="hidden items-center gap-0.5 md:flex">
+            {SECTIONS.map(([path, title, , on]) => {
+              const active = on(route);
+              return (
+                <li key={path}>
+                  <a
+                    href={link(path)}
+                    aria-current={active ? "page" : undefined}
+                    className={`relative flex h-8 items-center rounded-lg px-3 text-[0.9rem] transition-colors ${active ? "text-ink-100" : "text-ink-400 hover:bg-white/[0.05] hover:text-ink-100"}`}
+                  >
+                    {title}
+                    {active && <span aria-hidden="true" className="absolute inset-x-3 -bottom-[0.6rem] h-px bg-gradient-to-r from-transparent via-ink-100/70 to-transparent" />}
+                  </a>
+                </li>
+              );
+            })}
+          </ul>
+        </div>
         <button
           onClick={() => openPalette()}
-          className="hidden h-9 w-[15rem] items-center gap-2.5 rounded-xl border border-white/[0.08] bg-ink-900/80 pr-2 pl-3 text-[0.88rem] text-ink-500 transition-colors hover:border-white/[0.16] hover:text-ink-300 md:flex lg:w-[18rem]"
+          className="hidden h-9 w-60 items-center gap-2.5 lg:w-full rounded-xl border border-white/[0.08] bg-ink-900/80 pr-2 pl-3 text-[0.88rem] text-ink-500 transition-colors hover:border-white/[0.16] hover:text-ink-300 md:flex"
         >
           <Search size={15} className="text-ink-400" />
           <span className="flex-1 text-left">Search everything</span>
           <kbd className="rounded-md border border-white/10 px-1.5 py-0.5 font-sans text-[0.7rem] text-ink-400">{SEARCH_KEY}</kbd>
         </button>
-        <div className="hidden items-center gap-1 lg:flex">
-          <a href={DATASETS_URL} target="_blank" rel="noreferrer" title="The Hugging Face datasets every file comes from" aria-label="Datasets on Hugging Face" className="flex h-9 w-9 items-center justify-center rounded-lg text-ink-400 transition-colors hover:bg-white/[0.05] hover:text-ink-100">
-            <Database size={16} />
+        <div className="flex items-center justify-end gap-1">
+          <div className="hidden items-center gap-1 lg:flex">
+            <a href={DATASETS_URL} target="_blank" rel="noreferrer" title="The Hugging Face datasets every file comes from" aria-label="Datasets on Hugging Face" className="flex h-9 w-9 items-center justify-center rounded-lg text-ink-400 transition-colors hover:bg-white/[0.05] hover:text-ink-100">
+              <Database size={16} />
+            </a>
+            <a href={SOURCE_URL} target="_blank" rel="noreferrer" title="This site's source code on GitHub" aria-label="Source on GitHub" className="flex h-9 w-9 items-center justify-center rounded-lg text-ink-400 transition-colors hover:bg-white/[0.05] hover:text-ink-100">
+              <Code size={16} />
+            </a>
+          </div>
+          <a
+            href={SUPPORT_URL}
+            target="_blank"
+            rel="noreferrer"
+            title="Support the author on Ko-fi"
+            aria-label="Support the author"
+            className="group flex h-9 items-center gap-1.5 rounded-xl px-2.5 text-[0.86rem] text-ink-200 transition-colors hover:bg-white/[0.06] sm:border sm:border-white/[0.08] sm:px-3"
+          >
+            <Heart size={15} className="text-ember transition-transform group-hover:scale-110" />
+            <span className="hidden sm:inline">Support</span>
           </a>
-          <a href={SOURCE_URL} target="_blank" rel="noreferrer" title="This site's source code on GitHub" aria-label="Source on GitHub" className="flex h-9 w-9 items-center justify-center rounded-lg text-ink-400 transition-colors hover:bg-white/[0.05] hover:text-ink-100">
-            <Code size={16} />
-          </a>
+          <button onClick={() => openPalette()} aria-label="Search" className="-mr-1 flex h-10 w-10 items-center justify-center rounded-xl text-ink-200 transition-colors hover:bg-white/[0.06] md:hidden">
+            <Search size={19} />
+          </button>
         </div>
-        <a
-          href={SUPPORT_URL}
-          target="_blank"
-          rel="noreferrer"
-          title="Support the author on Ko-fi"
-          aria-label="Support the author"
-          className="group flex h-9 items-center gap-1.5 rounded-xl px-2.5 text-[0.86rem] text-ink-200 transition-colors hover:bg-white/[0.06] sm:border sm:border-white/[0.08] sm:px-3"
-        >
-          <Heart size={15} className="text-ember transition-transform group-hover:scale-110" />
-          <span className="hidden sm:inline">Support</span>
-        </a>
-        <button onClick={() => openPalette()} aria-label="Search" className="-mr-1 flex h-10 w-10 items-center justify-center rounded-xl text-ink-200 transition-colors hover:bg-white/[0.06] md:hidden">
-          <Search size={19} />
-        </button>
       </nav>
     </header>
   );
