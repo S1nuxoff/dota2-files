@@ -52,6 +52,16 @@ export default function App() {
     }
   }, []);
 
+  // A treasure or a capsule opened over a page goes to its own page instead (the window would show
+  // only a corner of what it gives); Back returns to the list it was opened from
+  const over = route.item && catalog?.items[route.item];
+  const treasureOver = isTreasure(over);
+  useEffect(() => {
+    if (!treasureOver) return;
+    navigate({ ds: "item", dir: route.item }, true);
+    window.scrollTo(0, 0);
+  }, [treasureOver, route.item]);
+
   const hero = route.ds === "hero" && catalog?.heroByKey.get(route.dir);
   const item = route.ds === "item" && catalog?.items[route.dir];
   useEffect(() => {
@@ -172,7 +182,7 @@ export default function App() {
       </main>
       <MobileNav route={route} />
       {previewEntry && <Preview entry={previewEntry} ds={datasetById(previewEntry.ds)} onClose={() => navigate({ ...route, file: "" })} />}
-      {route.item && <ItemModal itemId={route.item} catalog={catalog} indexes={indexes} withCopies={withCopies} />}
+      {route.item && !treasureOver && <ItemModal itemId={route.item} catalog={catalog} indexes={indexes} withCopies={withCopies} />}
       <SelectionBar selection={selection} clear={() => setSelection(new Map())} resolve={resolve} route={route} />
       <Tray />
       <CommandPalette catalog={catalog} />
