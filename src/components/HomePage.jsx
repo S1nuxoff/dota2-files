@@ -1,12 +1,11 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { ArrowRight, ArrowUpRight, Check, Copy, Heart, Search } from "lucide-react";
-import { DATASETS, DOTADEX } from "../datasets.js";
+import { ArrowRight, ArrowUpRight, Check, Copy, Heart, Plus, Search } from "lucide-react";
+import { DATASETS, DOTADEX, cliCommand, datasetById, fileUrl, repoUrl } from "../datasets.js";
 import { formatCount, formatSize } from "../lib/format.js";
-import { link, openItem } from "../lib/route.js";
+import { link } from "../lib/route.js";
 import { openPalette } from "../lib/palette.js";
-import { previewOf } from "./CosmeticsPage.jsx";
-import { heroCard, heroPortrait, heroSelection, imageUrl } from "../lib/catalog.js";
-import { DATASETS_URL, SEARCH_KEY, SOURCE_URL, SUPPORT_URL } from "./TopBar.jsx";
+import { heroCard, heroSelection } from "../lib/catalog.js";
+import { SEARCH_KEY, SOURCE_URL, SUPPORT_URL } from "./TopBar.jsx";
 import { HeadGlow } from "./ui.jsx";
 
 // "3 hours ago", "2 days ago"
@@ -31,8 +30,9 @@ function daily(list, n) {
   return out.slice(0, n);
 }
 
-// The front page: what the site holds and the way into each part of it, every number and picture
-// taken from the files themselves
+// The front page: the opening with the search and the heroes, then the long read under it: what can
+// be downloaded, how the files get here, what is done and what comes next. Every number is taken
+// from the files themselves
 export default function HomePage({ catalog, indexes }) {
   const stats = useMemo(() => {
     if (!catalog) return null;
@@ -51,21 +51,11 @@ export default function HomePage({ catalog, indexes }) {
       complete: loaded.length === DATASETS.length,
     };
   }, [catalog, indexes]);
-  const n = (v) => (stats && v ? formatCount(v) : "…");
 
   return (
     <div className="pt-14">
       <Opening catalog={catalog} stats={stats} />
-      {catalog && (
-        <>
-          <Numbers stats={stats} />
-          <Browse catalog={catalog} stats={stats} indexes={indexes} n={n} />
-          <InTheGame catalog={catalog} />
-          <Treasures catalog={catalog} n={n} stats={stats} />
-          <Developers n={n} stats={stats} />
-          <Closing />
-        </>
-      )}
+      {catalog && <Story catalog={catalog} indexes={indexes} stats={stats} />}
     </div>
   );
 }
@@ -218,374 +208,308 @@ function HeroArc({ heroes }) {
   );
 }
 
-// The numbers of it, in a row
-function Numbers({ stats }) {
-  const cells = [
-    [stats.heroes, "heroes"],
-    [stats.items, "cosmetic items"],
-    [stats.sets, "sets"],
-    [stats.models, "3D models"],
-    [stats.sounds, "sounds"],
-    [stats.bytes, "of files", true],
-  ];
+
+// What each dataset holds, in words: the folders people come for and the formats they get
+const HOLDS = {
+  images: ["hero portraits and animated selection art", "item, ability and rune icons", "loading screens and emoticons", "every picture of the interface"],
+  models: ["heroes with every persona", "cosmetics, couriers and wards", "creeps, buildings, trees and props", "animations, cloth, faces and skins inside each glb"],
+  textures: ["colour, normal and mask maps", "of heroes, items, units and the world", "HDR ones as EXR"],
+  sounds: ["voice lines of every hero and announcer", "music packs and the menu", "abilities, items and the world", "sound events with volume and pitch"],
+  videos: ["animated hero portraits", "intros and the interface's clips", "subtitles"],
+  particles: ["every effect the game plays", "arcana and immortal effects", "their textures and the engine's defaults"],
+  maps: ["the whole map and every terrain", "menu backgrounds and MVP scenes", "treasure openings and event scenes"],
+  data: ["items_game and every hero, ability and item script", "texts in every language", "materials and sound events", "Panorama layouts, styles and fonts"],
+};
+const FORMATS = { images: "PNG", models: "glb", textures: "PNG, EXR", sounds: "MP3, WAV", videos: "WebM, MP4", particles: "JSON", maps: "glb", data: "JSON" };
+
+// The way from a game update to a file on this site
+const STEPS = [
+  ["Valve ships an update", "Dota 2 changes on Steam a few times a week: a patch, an event, a new set. Nothing here waits for anyone to notice."],
+  ["The tracker checks the game", "A GitHub workflow wakes every six hours, logs into Steam and compares the game's version with the last run. When nothing changed it stops within seconds, without downloading anything."],
+  ["It reads the game's own files", "When something did change, it opens the game's archive, about 388,000 files and 70 GB, and finds what was added, changed or removed since last time, file by file."],
+  ["Each kind is turned into something you can open", "Models become glb with their textures, animations and cloth (through Source 2 Viewer), textures PNG, scripts and texts JSON, particle systems JSON, interface layouts plain text. Sounds stay as the game keeps them."],
+  ["Only what changed is uploaded", "The files go to eight public datasets on Hugging Face at the game's own paths, with a list of every file and the names people know them by. A run that changed three icons uploads three icons."],
+  ["The game is linked together", "A catalog ties every hero to its personas, sets and items, every item to its chests and every file it is made of. Every model gets a picture from two sides and a search index, so it can be found by how it looks."],
+  ["This site rebuilds itself", "Every day and after every change the site reads the new lists, writes about 20,000 pages and goes live. Downloads go straight to Hugging Face: there is no server of ours in between."],
+];
+
+// What is there, newest first, and what comes next
+const DONE = [
+  ["2026-10-26", "The map", "The whole map and every terrain, each a few hundred MB, on a page of its own."],
+  ["2026-10-25", "Search by look", "Describe a model in words or cut it out of a screenshot: every model's picture is compared with it."],
+  ["2026-10-25", "Embeds", "Any hero or item in 3D on your own site, with the game's shading, by pasting one line."],
+  ["2026-10-25", "This site", "Heroes, cosmetics, sets, treasures, music, 3D models and every folder of the game, each with its downloads."],
+  ["2026-10-24", "The whole game in datasets", "One tracker, eight datasets, every model, texture, sound, picture, video, effect, map and script."],
+  ["2026-10-24", "Names people know", "Pictures and models carry the names the game shows, not only their file names."],
+];
+const NEXT = [
+  [true, "Every update checked against SteamDB", "After each patch, compare the game's list of changed files with what was exported, and report anything missed."],
+  [true, "Effects as the game draws them", "The engine's defaults for every particle setting, so effects in Dotadex match the game more closely."],
+  [false, "A public Dota 2 API", "Static JSON of every hero, ability, item, cosmetic, set and treasure in every language, each pointing at its pictures, models and sounds."],
+  [false, "More of the client", "Default item builds, the map editor's entities, the network messages and the engine's classes, read from the game itself."],
+  [false, "Names for sounds", "Voice lines and music with the words and titles the game gives them."],
+  [false, "Hero statistics", "Pick and win rates, popular items and matchups, taken once per run so the site never depends on a live API."],
+  [false, "Abilities as in a match", "Each ability's effects and sounds played on a target, the way a match shows them."],
+];
+
+const FAQ = [
+  ["Is it free?", "Yes. Every file can be downloaded without an account, one by one, as a folder, or a whole dataset at once."],
+  ["Whose files are these?", "Valve's. Dota 2 and everything in it belong to Valve Corporation; this is a fan project that only makes the game's own files easier to reach. It is not affiliated with Valve."],
+  ["How fresh is it?", "The tracker checks the game every six hours and exports what changed, so new heroes, sets and patches show up within hours of release."],
+  ["Which formats?", "Models and maps as glb (glTF 2.0) with textures and animations inside, pictures and textures as PNG (EXR for HDR), sounds as MP3 or WAV, everything else as JSON."],
+  ["Can I use the files in my project?", "For fan works, videos, mods and tools, as Valve's own terms for fan content allow. Selling them is not allowed."],
+  ["Something is missing or wrong", "Open an issue on GitHub with the page and what you expected; the tracker and this site are both open source."],
+];
+
+// Below the opening: what the files are, how they get here, what is done and what comes, how to use them
+function Story({ catalog, indexes, stats }) {
   return (
-    <section data-reveal className="page-x relative z-10 -mt-6">
-      <dl className="grid grid-cols-3 gap-px overflow-hidden rounded-2xl border border-white/[0.07] bg-white/[0.06] sm:grid-cols-3 lg:grid-cols-6">
-        {cells.map(([v, label, size]) => (
-          <div key={label} className="bg-ink-950/90 px-3 py-3.5 backdrop-blur sm:px-6 sm:py-5">
-            <dd className="text-[clamp(1.1rem,2.4vw,2.1rem)] font-semibold tracking-[-0.04em] tabular-nums">{v ? (size ? formatSize(v) : formatCount(v)) : "…"}</dd>
-            <dt className="mt-1 text-[0.74rem] leading-tight text-ink-400 sm:text-[0.84rem]">{label}</dt>
-          </div>
-        ))}
-      </dl>
+    <div className="pb-8">
+      <Statement catalog={catalog} stats={stats} />
+      <Downloads indexes={indexes} />
+      <HowItWorks />
+      <Progress />
+      <ForDevelopers />
+      <Questions />
+      <Closing />
+    </div>
+  );
+}
+
+// A part of the page: its title and a few words on the left, held in view while its content passes
+function Part({ id, title, text, children, aside }) {
+  return (
+    <section id={id} className="page-x mt-28 scroll-mt-24 sm:mt-40">
+      <div className="grid gap-x-16 gap-y-10 border-t border-white/[0.08] pt-10 lg:grid-cols-[minmax(0,20rem)_minmax(0,1fr)] lg:pt-14 xl:grid-cols-[minmax(0,24rem)_minmax(0,1fr)]">
+        <div data-reveal className="lg:sticky lg:top-28 lg:self-start">
+          <h2 className="text-[clamp(2rem,3.4vw,3rem)] leading-[1.02] font-semibold tracking-[-0.045em] text-balance">{title}</h2>
+          {text && <p className="mt-5 max-w-md text-[1rem] leading-relaxed text-pretty text-ink-400">{text}</p>}
+          {aside}
+        </div>
+        <div className="min-w-0">{children}</div>
+      </div>
     </section>
   );
 }
 
-// A heading of a block of the front page
-function Head({ title, text, href, more }) {
+// The whole of it in one sentence, its numbers in white
+function Statement({ catalog, stats }) {
+  const b = (v) => <span className="text-ink-100">{v}</span>;
+  const n = (v) => (stats.complete ? formatCount(v) : "…");
   return (
-    <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
-      <div className="max-w-2xl">
-        <h2 className="text-[clamp(1.9rem,3.4vw,3rem)] leading-[1.05] font-semibold tracking-[-0.045em] text-balance">{title}</h2>
-        {text && <p className="mt-4 text-[1.02rem] leading-relaxed text-pretty text-ink-400">{text}</p>}
-      </div>
-      {href && (
-        <a href={link(href)} className="group inline-flex shrink-0 items-center gap-1.5 text-[0.92rem] text-ink-300 transition-colors hover:text-ink-100">
-          {more} <ArrowRight size={15} className="transition-transform group-hover:translate-x-0.5" />
-        </a>
-      )}
-    </div>
+    <section className="page-x mt-24 sm:mt-32">
+      <p data-reveal className="max-w-[62rem] text-[clamp(1.5rem,2.9vw,2.6rem)] leading-[1.18] font-medium tracking-[-0.035em] text-pretty text-ink-500">
+        {b(`${n(stats.files)} files`)} and {b(stats.complete ? formatSize(stats.bytes) : "…")} of Dota 2, taken from the game itself: {b(`${formatCount(stats.heroes)} heroes`)},{" "}
+        {b(`${formatCount(stats.items)} cosmetic items`)} in {b(`${formatCount(stats.sets)} sets`)}, {b(`${n(stats.models)} models`)} and {b(`${n(stats.sounds)} sounds`)}. Sorted, linked, previewed, and updated
+        {catalog.updated ? <> {b(ago(catalog.updated))}</> : null}.
+      </p>
+    </section>
   );
 }
 
-// The site's parts as tiles of different sizes, each pictured by what it holds
-function Browse({ catalog, stats, indexes, n }) {
-  const heroes = useMemo(() => daily(catalog.heroes, 3), [catalog]);
-  const sets = useMemo(
-    () =>
-      [...catalog.setByKey.values()]
-        .filter((s) => s.icon && s.hero)
-        .sort((a, b) => b.items.length - a.items.length)
-        .slice(0, 60),
-    [catalog]
-  );
-  const shownSets = useMemo(() => daily(sets, 5), [sets]);
-  const chest = useMemo(() => latestChest(catalog), [catalog]);
-  const pack = useMemo(
-    () =>
-      Object.values(catalog.items)
-        .filter((i) => i.prefab === "music" && i.icon)
-        .sort((a, b) => (b.date || "").localeCompare(a.date || ""))[0],
-    [catalog]
-  );
-  const models = useMemo(() => latestModels(catalog, 6), [catalog]);
-  const tile = "group relative flex flex-col overflow-hidden rounded-3xl border border-white/[0.07] bg-ink-900 transition-[border-color,transform] duration-500 ease-[var(--ease-out-soft)] hover:border-white/[0.16]";
-  const caption = (title, text) => (
-    <div className="relative z-10 mt-auto flex items-end justify-between gap-4 p-5 sm:p-6">
-      <div className="min-w-0">
-        <h3 className="text-[1.15rem] font-semibold tracking-[-0.02em]">{title}</h3>
-        <p className="mt-1 text-[0.88rem] leading-snug text-ink-400">{text}</p>
-      </div>
-      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-white/[0.1] text-ink-300 transition-all group-hover:border-white/30 group-hover:bg-white group-hover:text-ink-950">
-        <ArrowUpRight size={16} />
-      </span>
-    </div>
-  );
-
+// Every dataset as a row: what it holds, how many files, how much, where to go
+function Downloads({ indexes }) {
   return (
-    <section className="page-x mt-28 sm:mt-36">
-      <div data-reveal>
-        <Head title="Everything in its place, and linked" text="A hero knows its sets, a set its items, an item the chests it drops from and every file it is made of." />
-      </div>
-      <div className="mt-10 grid gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-12 lg:grid-rows-[repeat(3,minmax(15rem,auto))]">
-        <a data-reveal href={link("/heroes")} className={`${tile} min-h-[24rem] lg:col-span-6 lg:row-span-2`}>
-          <div aria-hidden="true" className="absolute inset-x-0 top-0 h-[78%] bg-[radial-gradient(60%_70%_at_50%_100%,rgba(229,70,46,0.18),transparent_70%)]" />
-          <div className="absolute inset-x-0 top-6 bottom-24 flex items-end justify-center">
-            {heroes.map((h, i) => (
-              <img
-                key={h.id}
-                src={heroCard(h)}
-                alt=""
-                loading="lazy"
-                onError={(e) => (e.currentTarget.src = heroPortrait(h))}
-                className={`h-full max-h-[30rem] w-auto object-contain transition-transform duration-700 ease-[var(--ease-out-soft)] [mask-image:linear-gradient(to_bottom,black_80%,transparent)] ${
-                  i === 1 ? "relative z-10 group-hover:-translate-y-2" : `-mx-[8%] opacity-70 ${i === 0 ? "group-hover:-translate-x-3" : "group-hover:translate-x-3"}`
-                } ${i !== 1 ? "max-h-[24rem] scale-90" : ""}`}
-              />
-            ))}
-          </div>
-          {caption("Heroes", `${n(stats.heroes)} heroes, each with its model, personas, items, abilities and voice lines`)}
-        </a>
-
-        <a data-reveal href={link("/sets")} className={`${tile} min-h-[17rem] lg:col-span-6`}>
-          <div className="flex gap-2 p-5 pb-0 sm:gap-3 sm:p-6 sm:pb-0">
-            {shownSets.map((s, i) => (
-              <img
-                key={s.key}
-                src={imageUrl(s.icon)}
-                alt=""
-                loading="lazy"
-                style={{ transitionDelay: `${i * 40}ms` }}
-                className="aspect-[448/678] min-w-0 flex-1 rounded-xl border border-white/[0.06] object-cover object-top transition-transform duration-500 group-hover:-translate-y-1.5 max-sm:[&:nth-child(n+4)]:hidden"
-              />
-            ))}
-          </div>
-          {caption("Sets", `${n(stats.sets)} sets on their heroes, a whole set in one download`)}
-        </a>
-
-        <a data-reveal href={link("/cosmetics/treasures")} className={`${tile} min-h-[17rem] lg:col-span-3`}>
-          <div className="flex flex-1 items-center justify-center p-6 pb-0">
-            {chest && <img src={imageUrl(chest.icon)} alt="" loading="lazy" className="max-h-36 w-auto rounded-xl transition-transform duration-700 ease-[var(--ease-out-soft)] group-hover:scale-105 group-hover:-rotate-2" />}
-          </div>
-          {caption("Treasures", `${n(stats.treasures)} chests and what drops from them`)}
-        </a>
-
-        <a data-reveal href={link("/music")} className={`${tile} min-h-[17rem] lg:col-span-3`}>
-          <div className="flex flex-1 items-center justify-center gap-5 p-6 pb-0">
-            {pack && <img src={imageUrl(pack.icon)} alt="" loading="lazy" className="h-24 w-auto rounded-xl" />}
-            <span aria-hidden="true" className="flex h-14 items-end gap-1">
-              {[0, 1, 2, 3, 4].map((b) => (
-                <span key={b} className="h-full w-1.5 origin-bottom rounded-full bg-ink-300 [animation-play-state:paused] group-hover:[animation-play-state:running]" style={{ animation: `bar ${0.6 + b * 0.13}s ease-in-out ${b * -0.17}s infinite`, transform: `scaleY(${0.3 + (b % 3) * 0.25})` }} />
-              ))}
-            </span>
-          </div>
-          {caption("Music", `${n(stats.music)} music packs to play and download`)}
-        </a>
-
-        <a data-reveal href={link("/3d")} className={`${tile} min-h-[17rem] lg:col-span-6`}>
-          <div className="grid grid-cols-3 gap-px bg-white/[0.04] sm:grid-cols-6 lg:grid-cols-3 xl:grid-cols-6">
-            {models.map(([item, url]) => (
-              <div key={item.id} className="stage relative flex aspect-square items-center justify-center p-3">
-                <img src={url} alt="" loading="lazy" onError={(e) => (e.currentTarget.style.visibility = "hidden")} className="h-full w-full object-contain transition-transform duration-700 group-hover:scale-110" />
+    <Part
+      id="downloads"
+      title="What you can download"
+      text="Everything sits in eight public datasets, one per kind of file, at the paths the game itself uses. Take one file, a folder or all of it."
+      aside={
+        <div className="mt-8 flex flex-col items-start gap-1 text-[0.92rem]">
+          {[
+            ["/heroes", "Start from a hero"],
+            ["/cosmetics", "Browse cosmetics"],
+            ["/3d", "Find a 3D model"],
+            ["/map", "Get the map"],
+          ].map(([href, label]) => (
+            <a key={href} href={link(href)} className="group inline-flex items-center gap-2 py-1 text-ink-300 transition-colors hover:text-ink-100">
+              {label} <ArrowRight size={15} className="text-ink-500 transition-transform group-hover:translate-x-0.5 group-hover:text-ink-100" />
+            </a>
+          ))}
+        </div>
+      }
+    >
+      <ul className="border-b border-white/[0.08]">
+        {DATASETS.map((d) => {
+          const index = indexes[d.id];
+          const files = index?.entries.filter((e) => !e.copy);
+          const bytes = files?.reduce((s, e) => s + e.size, 0);
+          const Icon = d.icon;
+          return (
+            <li key={d.id} data-reveal className="group grid gap-x-8 gap-y-3 border-t border-white/[0.08] py-7 sm:grid-cols-[minmax(0,13rem)_minmax(0,1fr)] xl:grid-cols-[minmax(0,13rem)_minmax(0,1fr)_minmax(0,10rem)]">
+              <div>
+                <a href={link(`/${d.id}`)} className="inline-flex items-center gap-2.5 text-[1.3rem] font-semibold tracking-[-0.025em] transition-colors hover:text-white">
+                  <Icon size={19} strokeWidth={1.7} className="text-ink-400 transition-colors group-hover:text-ember" />
+                  {d.title}
+                </a>
+                <div className="mt-1.5 font-mono text-[0.78rem] text-ink-500">{d.repo}</div>
               </div>
-            ))}
-          </div>
-          {caption("3D Models", `${n(stats.models)} models as glb with textures, found by name, by look or by a screenshot`)}
-        </a>
-
-        <a data-reveal href={link("/files")} className={`${tile} min-h-[17rem] lg:col-span-6`}>
-          <ul className="px-5 pt-4 text-[0.86rem] sm:px-6">
-            {DATASETS.slice(0, 5).map((d) => {
-              const Icon = d.icon;
-              const index = indexes[d.id];
-              return (
-                <li key={d.id} className="flex items-center gap-3 border-b border-white/[0.05] py-2.5">
-                  <Icon size={15} className="text-ink-400" />
-                  <span className="flex-1">{d.title}</span>
-                  <span className="text-ink-500 tabular-nums">{index ? `${formatCount(index.count)} files` : ""}</span>
-                  <span className="w-16 text-right text-ink-300 tabular-nums">{index ? formatSize(index.size) : "…"}</span>
-                </li>
-              );
-            })}
-          </ul>
-          {caption("Files", `${n(stats.files)} files in eight datasets, by folder, with previews`)}
-        </a>
-      </div>
-    </section>
+              <div className="min-w-0">
+                <p className="text-[0.98rem] leading-relaxed text-ink-200">{d.blurb}</p>
+                <p className="mt-2 text-[0.9rem] leading-relaxed text-ink-400">{HOLDS[d.id].join(" · ")}</p>
+              </div>
+              <div className="flex items-baseline gap-x-5 gap-y-1 sm:col-start-2 xl:col-start-auto xl:flex-col xl:items-end xl:text-right">
+                <div className="text-[1.15rem] font-medium tabular-nums">{files ? formatCount(files.length) : "…"}<span className="ml-1.5 text-[0.84rem] font-normal text-ink-500">files</span></div>
+                <div className="text-[0.88rem] text-ink-400 tabular-nums">
+                  {bytes != null ? formatSize(bytes) : "…"} · {FORMATS[d.id]}
+                </div>
+                <div className="flex gap-4 text-[0.86rem] xl:mt-2">
+                  <a href={link(`/${d.id}`)} className="text-ink-300 transition-colors hover:text-ink-100">
+                    Browse
+                  </a>
+                  <a href={repoUrl(d)} target="_blank" rel="noreferrer" className="inline-flex items-center gap-0.5 text-ink-400 transition-colors hover:text-ink-100">
+                    Hub <ArrowUpRight size={13} />
+                  </a>
+                </div>
+              </div>
+            </li>
+          );
+        })}
+      </ul>
+    </Part>
   );
 }
 
-// Heroes to show in Dotadex on the front page, picked from by the row under the stage
-const SHOWN = ["pudge", "invoker", "juggernaut", "crystal_maiden", "nevermore", "phantom_assassin", "lina", "axe"];
-
-// Dotadex, the site that shows heroes and items as the game does: a hero standing large (a picture,
-// no 3D here, so the front page stays light), opening it in Dotadex; a row of heroes to switch it
-function InTheGame({ catalog }) {
-  const heroes = useMemo(() => SHOWN.map((k) => catalog.heroByKey.get(k)).filter(Boolean), [catalog]);
-  const [key, setKey] = useState(() => heroes[Math.floor(Date.now() / 86400000) % heroes.length]?.key);
-  const hero = catalog.heroByKey.get(key);
-  if (!hero) return null;
+// The way from a game update to these pages, as a line of steps
+function HowItWorks() {
   return (
-    <section className="page-x mt-28 sm:mt-36">
-      <div data-reveal className="grid items-center gap-10 lg:grid-cols-[minmax(0,26rem)_minmax(0,1fr)] xl:gap-16">
-        <div className="max-lg:text-center">
-          <img src={`${import.meta.env.BASE_URL}logo.png`} alt="Dotadex" width="875" height="113" className="h-5 w-auto max-lg:mx-auto" />
-          <h2 className="mt-6 text-[clamp(1.9rem,3.4vw,3rem)] leading-[1.05] font-semibold tracking-[-0.045em] text-balance">Every hero, as the game shows it</h2>
-          <p className="mt-4 text-[1.02rem] leading-relaxed text-pretty text-ink-400">
-            Dotadex draws heroes and items with the game's own shaders, lights and particles: every persona and set worn together, the voice lines with their lip sync, the treasures and scenes of the client. Free, in the browser.
-          </p>
-          <ul className="mt-7 space-y-3 text-left text-[0.92rem] text-ink-300 max-lg:mx-auto max-lg:max-w-sm">
-            {["The game's hero shading, not a generic viewer", "Effects of every item and arcana, as in a match", "Any set on its hero, any style, one link to share"].map((t) => (
-              <li key={t} className="flex gap-3">
-                <span aria-hidden="true" className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-ember" />
-                {t}
+    <Part
+      id="how"
+      title="How it works"
+      text="No one uploads anything by hand. One program watches the game and keeps the files in step with it; this site is drawn from what that program leaves behind."
+      aside={
+        <a href="https://github.com/S1nuxoff/dota2-game-tracker" target="_blank" rel="noreferrer" className="mt-8 inline-flex items-center gap-1.5 text-[0.92rem] text-ink-300 transition-colors hover:text-ink-100">
+          The tracker's code <ArrowUpRight size={15} />
+        </a>
+      }
+    >
+      <ol className="relative">
+        {/* the line the steps hang on, lit at its end */}
+        <span aria-hidden="true" className="absolute top-3 bottom-3 left-[0.9375rem] w-px bg-gradient-to-b from-white/[0.14] via-white/[0.1] to-ember/60" />
+        {STEPS.map(([title, text], i) => (
+          <li key={title} data-reveal className="relative grid grid-cols-[2rem_minmax(0,1fr)] gap-x-6 pb-11 last:pb-0">
+            <span
+              className={`relative z-10 flex h-8 w-8 items-center justify-center rounded-full border font-mono text-[0.78rem] tabular-nums ${
+                i === STEPS.length - 1 ? "border-ember/70 bg-ink-950 text-ember" : "border-white/[0.14] bg-ink-950 text-ink-300"
+              }`}
+            >
+              {i + 1}
+            </span>
+            <div className="pt-0.5">
+              <h3 className="text-[1.2rem] font-semibold tracking-[-0.02em]">{title}</h3>
+              <p className="mt-2 max-w-2xl text-[0.98rem] leading-relaxed text-ink-400">{text}</p>
+            </div>
+          </li>
+        ))}
+      </ol>
+    </Part>
+  );
+}
+
+// What is done, by date, and what is being made or comes next
+function Progress() {
+  return (
+    <Part id="progress" title="What is done, what comes next" text="The project grows a little every day. The newest first; what is being worked on now is marked with a lit dot.">
+      <div className="grid gap-x-12 gap-y-14 xl:grid-cols-2">
+        <div>
+          <h3 className="text-[0.92rem] font-medium text-ink-300">Done</h3>
+          <ul className="mt-4 border-b border-white/[0.08]">
+            {DONE.map(([date, title, text]) => (
+              <li key={title} data-reveal className="grid grid-cols-[5.5rem_minmax(0,1fr)] gap-x-5 border-t border-white/[0.08] py-5">
+                <time dateTime={date} className="pt-0.5 font-mono text-[0.78rem] text-ink-500 tabular-nums">
+                  {date.slice(5).replace("-", ".")}
+                </time>
+                <div>
+                  <div className="flex items-center gap-2 text-[1rem] font-medium">
+                    <Check size={15} className="shrink-0 text-ink-400" /> {title}
+                  </div>
+                  <p className="mt-1.5 text-[0.92rem] leading-relaxed text-ink-400">{text}</p>
+                </div>
               </li>
             ))}
           </ul>
-          <div className="mt-8 flex flex-wrap gap-3 max-lg:justify-center">
-            <a href={`${DOTADEX}/hero/${hero.key}`} target="_blank" rel="noreferrer" className="flex h-12 items-center gap-2 rounded-xl bg-ink-100 px-6 text-[0.95rem] font-medium text-ink-950 transition-colors hover:bg-white">
-              Open {hero.name} in Dotadex <ArrowUpRight size={17} />
-            </a>
-            <a href={DOTADEX} target="_blank" rel="noreferrer" className="flex h-12 items-center rounded-xl border border-white/[0.1] px-6 text-[0.95rem] text-ink-100 transition-colors hover:border-white/25">
-              All of Dotadex
-            </a>
-          </div>
         </div>
         <div>
-          <a href={`${DOTADEX}/hero/${hero.key}`} target="_blank" rel="noreferrer" title={`Open ${hero.name} in Dotadex`} className="group relative block h-[min(64vh,40rem)] max-sm:h-[26rem]">
-            <div aria-hidden="true" className="pointer-events-none absolute inset-x-[10%] bottom-[4%] h-[34%] rounded-[50%] bg-[radial-gradient(closest-side,rgba(229,70,46,0.2),transparent)] transition-opacity duration-500 group-hover:opacity-100 opacity-70" />
-            <img
-              key={hero.key}
-              src={heroCard(hero)}
-              alt={hero.name}
-              className="anim-fade absolute inset-0 m-auto h-[112%] max-h-none w-auto max-w-full -translate-y-[4%] object-contain transition-transform duration-700 ease-[var(--ease-out-soft)] [mask-image:linear-gradient(to_right,transparent,black_12%,black_88%,transparent)] group-hover:-translate-y-[6%]"
-            />
-            <span className="absolute bottom-4 left-1/2 flex -translate-x-1/2 items-center gap-1.5 rounded-full bg-black/55 px-4 py-2 text-[0.84rem] text-ink-100 opacity-0 backdrop-blur transition-opacity duration-300 group-hover:opacity-100 max-md:opacity-100">
-              See {hero.name} in 3D <ArrowUpRight size={14} />
+          <h3 className="flex items-center gap-4 text-[0.92rem] font-medium text-ink-300">
+            Next
+            <span className="flex items-center gap-3 text-[0.8rem] font-normal text-ink-500">
+              <span className="flex items-center gap-1.5"><Dot lit /> in progress</span>
+              <span className="flex items-center gap-1.5"><Dot /> planned</span>
             </span>
-          </a>
-          <div className="no-bar mt-4 flex justify-center gap-2 overflow-x-auto px-1 pb-1">
-            {heroes.map((h) => (
-              <button
-                key={h.key}
-                onClick={() => setKey(h.key)}
-                title={h.name}
-                aria-pressed={h.key === key}
-                className={`h-12 w-[4.5rem] shrink-0 overflow-hidden rounded-lg border transition-all ${h.key === key ? "border-white/60 opacity-100" : "border-white/[0.08] opacity-55 hover:opacity-90"}`}
-              >
-                <img src={heroPortrait(h)} alt={h.name} loading="lazy" className="h-full w-full object-cover" />
-              </button>
+          </h3>
+          <ul className="mt-4 border-b border-white/[0.08]">
+            {NEXT.map(([now, title, text]) => (
+              <li key={title} data-reveal className="grid grid-cols-[1.25rem_minmax(0,1fr)] gap-x-3 border-t border-white/[0.08] py-5">
+                <span className="pt-2">
+                  <Dot lit={now} />
+                </span>
+                <div>
+                  <div className={`text-[1rem] font-medium ${now ? "text-ink-100" : "text-ink-200"}`}>{title}</div>
+                  <p className="mt-1.5 text-[0.92rem] leading-relaxed text-ink-400">{text}</p>
+                </div>
+              </li>
             ))}
-          </div>
+          </ul>
         </div>
       </div>
-    </section>
+    </Part>
   );
 }
 
-// The latest chest that gives several things with pictures
-function latestChest(catalog) {
-  return Object.values(catalog.items)
-    .filter((i) => i.loot && i.icon && i.loot.drops.filter((d) => catalog.items[d]?.icon).length >= 6)
-    .sort((a, b) => (b.date || "").localeCompare(a.date || ""))[0];
+function Dot({ lit }) {
+  return lit ? (
+    <span className="relative flex h-2 w-2">
+      <span className="absolute inset-0 animate-ping rounded-full bg-ember/60" />
+      <span className="relative h-2 w-2 rounded-full bg-ember" />
+    </span>
+  ) : (
+    <span className="block h-2 w-2 rounded-full border border-ink-500" />
+  );
 }
 
-// The site's renders of the latest models of wearables, couriers and wards, each picture once
-function latestModels(catalog, count) {
-  const kinds = new Set(["wearable", "courier", "ward"]);
-  const out = [];
-  const seen = new Set();
-  const items = Object.values(catalog.items)
-    .filter((i) => kinds.has(i.prefab) && i.date)
-    .sort((a, b) => b.date.localeCompare(a.date) || Number(b.id) - Number(a.id));
-  for (const item of items) {
-    const url = previewOf(item, catalog);
-    if (!url || seen.has(url)) continue;
-    seen.add(url);
-    out.push([item, url]);
-    if (out.length === count) break;
-  }
-  return out;
-}
-
-// The latest chest open: its picture and name, what drops from it with each rarity's colour, and
-// its rare extras
-function Treasures({ catalog, n, stats }) {
-  const chest = useMemo(() => latestChest(catalog), [catalog]);
-  if (!chest) return null;
-  const drops = chest.loot.drops.map((d) => catalog.items[d]).filter((d) => d?.icon).slice(0, 12);
-  const bonus = chest.loot.bonus.map(([d]) => catalog.items[d]).filter((d) => d?.icon).slice(0, 6);
-  const list = [...drops, ...bonus].map((d) => d.id);
-  const cell = (item) => (
-    <button
-      key={item.id}
-      onClick={() => openItem(item.id, list)}
-      title={item.name}
-      className="group/cell relative aspect-[4/3] overflow-hidden rounded-xl border border-white/[0.06] bg-ink-850 transition-colors hover:border-white/25"
+// The files from code: a link to any file, the list of all of them, a whole dataset, a hero in 3D
+function ForDevelopers() {
+  const models = datasetById("models");
+  const images = datasetById("images");
+  return (
+    <Part
+      id="developers"
+      title="For developers"
+      text="Every file has a plain address that never changes while the game keeps it. Fetch it from a script, a bot or a page; no key, no account."
     >
-      <img src={imageUrl(item.icon)} alt={item.name} loading="lazy" className="h-full w-full object-cover transition-transform duration-500 group-hover/cell:scale-[1.06]" />
-      <span className="absolute inset-x-0 bottom-0 h-[2px]" style={{ background: catalog.rarities[item.rarity || "common"]?.color || "transparent" }} />
-    </button>
-  );
-  return (
-    <section className="page-x mt-28 sm:mt-36">
-      <div data-reveal>
-        <Head
-          title="Every chest, and what is inside it"
-          text={`${n(stats.treasures)} treasures and capsules with their contents and rare bonus drops. An item knows the chests it drops from and the bundles it comes in.`}
-          href="/cosmetics/treasures"
-          more="All treasures"
-        />
+      <div className="grid gap-4 2xl:grid-cols-2">
+        <Code title="Any file by its game path" lines={[`curl -LO ${fileUrl(images, "panorama/images/heroes/npc_dota_hero_pudge_png.png")}`]} />
+        <Code title="Every file of a dataset, with its size" lines={[`curl -L ${fileUrl(models, "files.json.gz")} | gunzip`, `# { "files": [["models/heroes/pudge/pudge.glb", <size>], ...] }`]} />
+        <Code title="A whole dataset, or one folder of it" lines={["pip install -U huggingface_hub", cliCommand(models, "models/heroes/pudge")]} />
+        <Code title="A hero in 3D on your page" lines={[`<iframe src="${DOTADEX}/embed/hero/pudge"`, '  width="800" height="500" style="border:0"></iframe>']} />
       </div>
-      <div data-reveal className="surface mt-10 grid gap-8 overflow-hidden rounded-3xl p-5 sm:p-8 md:grid-cols-[16rem_1fr] lg:grid-cols-[19rem_1fr] lg:p-10">
-        <button onClick={() => openItem(chest.id)} className="group flex flex-row items-center gap-5 text-left md:flex-col md:items-start">
-          <img src={imageUrl(chest.icon)} alt={chest.name} className="w-32 rounded-2xl transition-transform duration-500 group-hover:scale-[1.03] md:w-full" />
-          <span>
-            <span className="block text-[1.1rem] font-semibold tracking-[-0.02em]">{chest.name}</span>
-            <span className="mt-1 block text-[0.86rem] text-ink-400">
-              {chest.date?.slice(0, 4)}, {chest.loot.drops.length} items inside
-            </span>
-            <span className="mt-4 inline-flex items-center gap-1.5 text-[0.88rem] text-ink-200 group-hover:text-ink-100">
-              Open the chest <ArrowRight size={14} className="transition-transform group-hover:translate-x-0.5" />
-            </span>
-          </span>
-        </button>
-        <div>
-          <div className="text-[0.82rem] font-medium text-ink-400">Contents</div>
-          <div className="mt-3 grid grid-cols-3 gap-2 sm:grid-cols-4 xl:grid-cols-6">{drops.map(cell)}</div>
-          {bonus.length > 0 && (
-            <>
-              <div className="mt-7 text-[0.82rem] font-medium text-ink-400">Rare bonus drops</div>
-              <div className="mt-3 grid grid-cols-3 gap-2 sm:grid-cols-4 xl:grid-cols-6">{bonus.map(cell)}</div>
-            </>
-          )}
-        </div>
-      </div>
-    </section>
+    </Part>
   );
 }
 
-// For people who build: the datasets from the command line, a hero in 3D on their own page
-function Developers({ n, stats }) {
-  return (
-    <section className="page-x mt-28 sm:mt-36">
-      <div data-reveal>
-        <Head
-          title="Take the files anywhere"
-          text={`${n(stats.files)} files in public datasets on Hugging Face, updated after each patch. Download one file, a folder or all of it, or show any hero and item in 3D on your own site.`}
-        />
-      </div>
-      <div data-reveal className="mt-10 grid gap-4 lg:grid-cols-2">
-        <Code title="Download a dataset" href={DATASETS_URL} label="Hugging Face" lines={["pip install -U huggingface_hub", "hf download Sqls1/dota2-models --repo-type dataset"]} />
-        <Code title="Embed a hero in 3D" href={DOTADEX} label="Dotadex" lines={[`<iframe src="${DOTADEX}/embed/hero/pudge"`, '  width="800" height="500"', '  style="border:0;border-radius:12px"></iframe>']} />
-      </div>
-    </section>
-  );
-}
-
-// A few lines of code in a terminal-like panel, copied with a click
-function Code({ title, href, label, lines }) {
+// A few lines of code, copied with a click
+function Code({ title, lines }) {
   const [done, setDone] = useState(false);
   return (
-    <div className="flex flex-col overflow-hidden rounded-2xl border border-white/[0.07] bg-ink-900">
-      <div className="flex items-center gap-3 border-b border-white/[0.06] px-4 py-3">
-        <span className="flex gap-1.5" aria-hidden="true">
-          <span className="h-2.5 w-2.5 rounded-full bg-ink-700" />
-          <span className="h-2.5 w-2.5 rounded-full bg-ink-700" />
-          <span className="h-2.5 w-2.5 rounded-full bg-ink-700" />
-        </span>
-        <span className="text-[0.86rem] font-medium">{title}</span>
-        <a href={href} target="_blank" rel="noreferrer" className="ml-auto inline-flex items-center gap-1 text-[0.82rem] text-ink-400 hover:text-ink-100">
-          {label} <ArrowUpRight size={13} />
-        </a>
+    <div data-reveal className="flex min-w-0 flex-col overflow-hidden rounded-xl border border-white/[0.08] bg-ink-900">
+      <div className="flex items-center gap-3 border-b border-white/[0.06] py-2.5 pr-2.5 pl-4">
+        <span className="text-[0.86rem] text-ink-300">{title}</span>
         <button
           onClick={async () => {
-            await navigator.clipboard.writeText(lines.join("\n"));
+            await navigator.clipboard.writeText(lines.filter((l) => !l.startsWith("#")).join("\n"));
             setDone(true);
             setTimeout(() => setDone(false), 1400);
           }}
           title="Copy"
-          aria-label="Copy"
-          className="text-ink-400 hover:text-ink-100"
+          aria-label={`Copy: ${title}`}
+          className="ml-auto flex h-7 w-7 items-center justify-center rounded-md text-ink-400 transition-colors hover:bg-white/[0.06] hover:text-ink-100"
         >
-          {done ? <Check size={15} className="text-emerald-400" /> : <Copy size={15} />}
+          {done ? <Check size={14} className="text-emerald-400" /> : <Copy size={14} />}
         </button>
       </div>
-      <pre className="overflow-x-auto p-4 font-mono text-[0.78rem] leading-relaxed text-ink-300 sm:p-5">
+      <pre className="overflow-x-auto px-4 py-3.5 font-mono text-[0.78rem] leading-relaxed text-ink-200">
         {lines.map((l, i) => (
-          <div key={i}>
-            <span className="mr-4 text-ink-600 select-none">{i + 1}</span>
+          <div key={i} className={l.startsWith("#") ? "text-ink-500" : ""}>
             {l}
           </div>
         ))}
@@ -594,22 +518,47 @@ function Code({ title, href, label, lines }) {
   );
 }
 
+// The questions people ask first, opened one at a time
+function Questions() {
+  return (
+    <Part id="faq" title="Questions">
+      <div className="border-b border-white/[0.08]">
+        {FAQ.map(([q, a]) => (
+          <details key={q} data-reveal className="group border-t border-white/[0.08]">
+            <summary className="flex cursor-pointer list-none items-center justify-between gap-6 py-5 text-[1.05rem] font-medium transition-colors hover:text-white [&::-webkit-details-marker]:hidden">
+              {q}
+              <Plus size={18} className="shrink-0 text-ink-400 transition-transform duration-300 group-open:rotate-45" />
+            </summary>
+            <p className="max-w-2xl pb-6 text-[0.98rem] leading-relaxed text-ink-400">{a}</p>
+          </details>
+        ))}
+      </div>
+    </Part>
+  );
+}
+
 // The last word: who makes it, and a way to help
 function Closing() {
   return (
-    <section data-reveal className="relative mt-28 overflow-hidden px-4 py-24 text-center sm:mt-36 sm:py-32">
-      <div aria-hidden="true" className="pointer-events-none absolute inset-0 bg-[radial-gradient(40%_70%_at_50%_100%,rgba(229,70,46,0.2),transparent_70%)]" />
-      <h2 className="relative text-[clamp(2rem,4vw,3.4rem)] leading-[1.05] font-semibold tracking-[-0.045em]">Made by one person</h2>
-      <p className="relative mx-auto mt-5 max-w-xl text-[1.02rem] leading-relaxed text-balance text-ink-400">
-        This site, Dotadex and the datasets behind them are built and kept running by hand. If they saved you time, you can help keep them going.
-      </p>
-      <div className="relative mt-9 flex flex-wrap justify-center gap-3">
-        <a href={SUPPORT_URL} target="_blank" rel="noreferrer" className="flex h-12 items-center gap-2 rounded-xl bg-ink-100 px-6 text-[0.95rem] font-medium text-ink-950 transition-colors hover:bg-white">
-          <Heart size={17} className="text-ember" /> Support the author
-        </a>
-        <a href={SOURCE_URL} target="_blank" rel="noreferrer" className="flex h-12 items-center gap-2 rounded-xl border border-white/[0.1] bg-ink-900/80 px-6 text-[0.95rem] text-ink-100 transition-colors hover:border-white/25">
-          Source on GitHub
-        </a>
+    <section className="page-x mt-28 sm:mt-40">
+      <div data-reveal className="relative overflow-hidden border-t border-white/[0.08] pt-14 pb-20">
+        <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 -bottom-24 h-64 bg-[radial-gradient(45%_60%_at_50%_100%,rgba(229,70,46,0.16),transparent_70%)]" />
+        <div className="relative grid gap-10 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end">
+          <div>
+            <h2 className="max-w-3xl text-[clamp(2.2rem,4.6vw,4rem)] leading-[1] font-semibold tracking-[-0.05em] text-balance">Made and kept running by one person</h2>
+            <p className="mt-5 max-w-xl text-[1.02rem] leading-relaxed text-ink-400">
+              The tracker, the datasets, this site and Dotadex. If they saved you an evening of digging through the game's files, you can help keep them going.
+            </p>
+          </div>
+          <div className="flex flex-wrap gap-3">
+            <a href={SUPPORT_URL} target="_blank" rel="noreferrer" className="flex h-12 items-center gap-2 rounded-xl bg-ink-100 px-6 text-[0.95rem] font-medium text-ink-950 transition-colors hover:bg-white">
+              <Heart size={17} className="text-ember" /> Support the author
+            </a>
+            <a href={SOURCE_URL} target="_blank" rel="noreferrer" className="flex h-12 items-center gap-2 rounded-xl border border-white/[0.1] px-6 text-[0.95rem] text-ink-100 transition-colors hover:border-white/25">
+              Source on GitHub <ArrowUpRight size={16} />
+            </a>
+          </div>
+        </div>
       </div>
     </section>
   );
