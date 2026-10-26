@@ -1,10 +1,10 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { ArrowRight, ArrowUpRight, Check, Copy, Heart, Plus, Search } from "lucide-react";
+import { ArrowRight, ArrowUpRight, Check, Copy, Heart, Plus, ScanSearch, Search, Sparkles } from "lucide-react";
 import { DATASETS, DOTADEX, cliCommand, datasetById, fileUrl, repoUrl } from "../datasets.js";
 import { formatCount, formatSize } from "../lib/format.js";
 import { link } from "../lib/route.js";
 import { openPalette } from "../lib/palette.js";
-import { heroCard, heroSelection } from "../lib/catalog.js";
+import { heroCard, heroSelection, imageUrl, prefabTitle } from "../lib/catalog.js";
 import { SEARCH_KEY, SOURCE_URL, SUPPORT_URL } from "./TopBar.jsx";
 import { HeadGlow } from "./ui.jsx";
 
@@ -267,27 +267,32 @@ function Story({ catalog, indexes, stats }) {
     <div className="pb-8">
       <Statement catalog={catalog} stats={stats} />
       <Downloads indexes={indexes} />
+      <Latest catalog={catalog} />
+      <Counted catalog={catalog} />
+      <Finding />
       <HowItWorks />
+      <Formats />
       <Progress />
       <ForDevelopers />
+      <InDotadex />
+      <BuiltOn />
       <Questions />
       <Closing />
     </div>
   );
 }
 
-// A part of the page: its title and a few words on the left, held in view while its content passes
-function Part({ id, title, text, children, aside }) {
+// A part of the page: its title and a few words in the middle, its content in a column under them
+// (narrow: a column of text; else as wide as a page of reading)
+function Part({ id, title, text, children, aside, narrow = false }) {
   return (
-    <section id={id} className="page-x mt-28 scroll-mt-24 sm:mt-40">
-      <div className="grid gap-x-16 gap-y-10 border-t border-white/[0.08] pt-10 lg:grid-cols-[minmax(0,20rem)_minmax(0,1fr)] lg:pt-14 xl:grid-cols-[minmax(0,24rem)_minmax(0,1fr)]">
-        <div data-reveal className="lg:sticky lg:top-28 lg:self-start">
-          <h2 className="text-[clamp(2rem,3.4vw,3rem)] leading-[1.02] font-semibold tracking-[-0.045em] text-balance">{title}</h2>
-          {text && <p className="mt-5 max-w-md text-[1rem] leading-relaxed text-pretty text-ink-400">{text}</p>}
-          {aside}
-        </div>
-        <div className="min-w-0">{children}</div>
+    <section id={id} className="page-x mt-32 scroll-mt-24 sm:mt-44">
+      <div data-reveal className="mx-auto flex max-w-2xl flex-col items-center text-center">
+        <h2 className="text-[clamp(2.1rem,3.8vw,3.4rem)] leading-[1.02] font-semibold tracking-[-0.045em] text-balance">{title}</h2>
+        {text && <p className="mt-5 text-[1.05rem] leading-relaxed text-balance text-ink-400">{text}</p>}
+        {aside}
       </div>
+      <div className={`mx-auto mt-12 min-w-0 sm:mt-16 ${narrow ? "max-w-3xl" : "max-w-[72rem]"}`}>{children}</div>
     </section>
   );
 }
@@ -298,7 +303,7 @@ function Statement({ catalog, stats }) {
   const n = (v) => (stats.complete ? formatCount(v) : "…");
   return (
     <section className="page-x mt-24 sm:mt-32">
-      <p data-reveal className="max-w-[62rem] text-[clamp(1.5rem,2.9vw,2.6rem)] leading-[1.18] font-medium tracking-[-0.035em] text-pretty text-ink-500">
+      <p data-reveal className="mx-auto max-w-[62rem] text-center text-[clamp(1.5rem,2.9vw,2.6rem)] leading-[1.18] font-medium tracking-[-0.035em] text-pretty text-ink-500">
         {b(`${n(stats.files)} files`)} and {b(stats.complete ? formatSize(stats.bytes) : "…")} of Dota 2, taken from the game itself: {b(`${formatCount(stats.heroes)} heroes`)},{" "}
         {b(`${formatCount(stats.items)} cosmetic items`)} in {b(`${formatCount(stats.sets)} sets`)}, {b(`${n(stats.models)} models`)} and {b(`${n(stats.sounds)} sounds`)}. Sorted, linked, previewed, and updated
         {catalog.updated ? <> {b(ago(catalog.updated))}</> : null}.
@@ -315,7 +320,7 @@ function Downloads({ indexes }) {
       title="What you can download"
       text="Everything sits in eight public datasets, one per kind of file, at the paths the game itself uses. Take one file, a folder or all of it."
       aside={
-        <div className="mt-8 flex flex-col items-start gap-1 text-[0.92rem]">
+        <div className="mt-7 flex flex-wrap justify-center gap-x-7 gap-y-1 text-[0.92rem]">
           {[
             ["/heroes", "Start from a hero"],
             ["/cosmetics", "Browse cosmetics"],
@@ -375,6 +380,7 @@ function HowItWorks() {
   return (
     <Part
       id="how"
+      narrow
       title="How it works"
       text="No one uploads anything by hand. One program watches the game and keeps the files in step with it; this site is drawn from what that program leaves behind."
       aside={
@@ -521,7 +527,7 @@ function Code({ title, lines }) {
 // The questions people ask first, opened one at a time
 function Questions() {
   return (
-    <Part id="faq" title="Questions">
+    <Part id="faq" title="Questions" narrow>
       <div className="border-b border-white/[0.08]">
         {FAQ.map(([q, a]) => (
           <details key={q} data-reveal className="group border-t border-white/[0.08]">
@@ -541,16 +547,16 @@ function Questions() {
 function Closing() {
   return (
     <section className="page-x mt-28 sm:mt-40">
-      <div data-reveal className="relative overflow-hidden border-t border-white/[0.08] pt-14 pb-20">
+      <div data-reveal className="relative overflow-hidden pt-14 pb-24">
         <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 -bottom-24 h-64 bg-[radial-gradient(45%_60%_at_50%_100%,rgba(229,70,46,0.16),transparent_70%)]" />
-        <div className="relative grid gap-10 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end">
-          <div>
+        <div className="relative flex flex-col items-center gap-10 text-center">
+          <div className="flex flex-col items-center">
             <h2 className="max-w-3xl text-[clamp(2.2rem,4.6vw,4rem)] leading-[1] font-semibold tracking-[-0.05em] text-balance">Made and kept running by one person</h2>
-            <p className="mt-5 max-w-xl text-[1.02rem] leading-relaxed text-ink-400">
+            <p className="mt-5 max-w-xl text-[1.02rem] leading-relaxed text-balance text-ink-400">
               The tracker, the datasets, this site and Dotadex. If they saved you an evening of digging through the game's files, you can help keep them going.
             </p>
           </div>
-          <div className="flex flex-wrap gap-3">
+          <div className="flex flex-wrap justify-center gap-3">
             <a href={SUPPORT_URL} target="_blank" rel="noreferrer" className="flex h-12 items-center gap-2 rounded-xl bg-ink-100 px-6 text-[0.95rem] font-medium text-ink-950 transition-colors hover:bg-white">
               <Heart size={17} className="text-ember" /> Support the author
             </a>
@@ -561,5 +567,227 @@ function Closing() {
         </div>
       </div>
     </section>
+  );
+}
+
+// The newest bundles the game added, with their heroes, newest first
+function Latest({ catalog }) {
+  const list = useMemo(
+    () =>
+      Object.entries(catalog.items)
+        .filter(([, it]) => it.prefab === "bundle" && it.icon && it.date)
+        .sort((a, b) => b[1].date.localeCompare(a[1].date))
+        .slice(0, 8),
+    [catalog]
+  );
+  if (!list.length) return null;
+  return (
+    <Part
+      id="latest"
+      narrow
+      title="Fresh from the game"
+      text={`What the last updates brought, the day they came out. The newest is from ${list[0][1].date}; every one is here with its models, textures and icons.`}
+      aside={
+        <a href={link("/bundles")} className="group mt-8 inline-flex items-center gap-2 text-[0.92rem] text-ink-300 transition-colors hover:text-ink-100">
+          Every bundle <ArrowRight size={15} className="transition-transform group-hover:translate-x-0.5" />
+        </a>
+      }
+    >
+      <ul className="border-b border-white/[0.08]">
+        {list.map(([id, it]) => {
+          const heroes = it.heroes.map((h) => catalog.heroById.get(h)?.name).filter(Boolean);
+          const rarity = catalog.rarities[it.rarity];
+          return (
+            <li key={id} data-reveal className="border-t border-white/[0.08]">
+              <a href={link(`/item/${id}`)} className="group grid grid-cols-[5.5rem_minmax(0,1fr)] items-center gap-x-5 py-3.5 sm:grid-cols-[7rem_minmax(0,1fr)_auto]">
+                <span className="aspect-[256/170] overflow-hidden rounded-lg bg-ink-900">
+                  <img src={imageUrl(it.icon)} alt="" loading="lazy" decoding="async" className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.05]" />
+                </span>
+                <span className="min-w-0">
+                  <span className="block truncate text-[1.02rem] font-medium transition-colors group-hover:text-white">{it.name}</span>
+                  <span className="mt-1 flex items-center gap-2 text-[0.86rem] text-ink-400">
+                    {rarity && <span className="h-1.5 w-1.5 shrink-0 rounded-full" style={{ background: rarity.color }} />}
+                    <span className="truncate">{[rarity?.name, heroes.join(", ")].filter(Boolean).join(" · ")}</span>
+                  </span>
+                </span>
+                <time dateTime={it.date} className="hidden font-mono text-[0.78rem] text-ink-500 tabular-nums sm:block">
+                  {it.date}
+                </time>
+              </a>
+            </li>
+          );
+        })}
+      </ul>
+    </Part>
+  );
+}
+
+// The kinds of things the game gives and how rare they are, as lines measured against each other
+const NOT_SHOWN = new Set(["tool", "default_item", "misc", "dynamic_recipe", "socket_gem", "key", "retired_treasure_chest", "sticker_capsule"]);
+function Counted({ catalog }) {
+  const { kinds, rarities } = useMemo(() => {
+    const items = Object.values(catalog.items);
+    const by = (pick) => {
+      const out = new Map();
+      for (const it of items) {
+        const k = pick(it);
+        if (k) out.set(k, (out.get(k) || 0) + 1);
+      }
+      return [...out];
+    };
+    return {
+      kinds: by((it) => !NOT_SHOWN.has(it.prefab) && it.prefab)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 12),
+      rarities: by((it) => catalog.rarities[it.rarity] && it.rarity).sort((a, b) => catalog.rarities[a[0]].order - catalog.rarities[b[0]].order),
+    };
+  }, [catalog]);
+  const top = Math.max(...kinds.map(([, v]) => v));
+  const most = Math.max(...rarities.map(([, v]) => v));
+  return (
+    <Part id="counted" title="Cosmetics, counted" text="Every item the game has ever had: worn by heroes, carried, shown on a loading screen, played as music. Each one opens to its files.">
+      <div className="grid gap-x-12 gap-y-14 xl:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)]">
+        <div>
+          <h3 className="text-[0.92rem] font-medium text-ink-300">By kind</h3>
+          <ul className="mt-5 space-y-1">
+            {kinds.map(([k, v]) => (
+              <li key={k} data-reveal>
+                <a href={link(`/cosmetics/${k}`)} className="group grid grid-cols-[minmax(0,11rem)_minmax(0,1fr)_4.5rem] items-center gap-x-4 py-2">
+                  <span className="truncate text-[0.95rem] text-ink-200 capitalize transition-colors group-hover:text-white">{prefabTitle(k)}</span>
+                  <span className="h-1.5 overflow-hidden rounded-full bg-white/[0.05]">
+                    <span className="block h-full rounded-full bg-ink-300 transition-colors group-hover:bg-ember" style={{ width: `${Math.max(1.5, (v / top) * 100)}%` }} />
+                  </span>
+                  <span className="text-right text-[0.9rem] text-ink-400 tabular-nums">{formatCount(v)}</span>
+                </a>
+              </li>
+            ))}
+          </ul>
+        </div>
+        <div>
+          <h3 className="text-[0.92rem] font-medium text-ink-300">By rarity</h3>
+          <ul className="mt-5 space-y-1">
+            {rarities.map(([k, v]) => {
+              const r = catalog.rarities[k];
+              return (
+                <li key={k} data-reveal className="grid grid-cols-[minmax(0,7rem)_minmax(0,1fr)_4.5rem] items-center gap-x-4 py-2">
+                  <span className="flex items-center gap-2 text-[0.95rem] text-ink-200">
+                    <span className="h-2 w-2 shrink-0 rounded-full" style={{ background: r.color }} />
+                    {r.name}
+                  </span>
+                  <span className="h-1.5 overflow-hidden rounded-full bg-white/[0.05]">
+                    <span className="block h-full rounded-full opacity-80" style={{ width: `${Math.max(1.5, (v / most) * 100)}%`, background: r.color }} />
+                  </span>
+                  <span className="text-right text-[0.9rem] text-ink-400 tabular-nums">{formatCount(v)}</span>
+                </li>
+              );
+            })}
+          </ul>
+        </div>
+      </div>
+    </Part>
+  );
+}
+
+// The three ways to find a file
+const WAYS = [
+  [Search, "By name", "Type a hero, an item, a set or a file's path. Typos are forgiven and words are matched to the names the game uses, so “puge berserkr” still finds Pudge.", "Search everything"],
+  [Sparkles, "By how it looks", "On the 3D models page, describe a model in a few words: “a red dragon with wings”. Every model's picture is compared with them by a model that runs in your browser.", "Open 3D models"],
+  [ScanSearch, "By a screenshot", "Paste a screenshot from a match or a video and draw a box around the thing you want; the models that look most like it come first.", "Try it"],
+];
+function Finding() {
+  return (
+    <Part id="finding" title="Three ways to find a file" text="Most files have names no one would guess. So the site lets you look for them the way you remember them.">
+      <div className="grid gap-x-10 gap-y-12 md:grid-cols-3">
+        {WAYS.map(([Icon, title, text, label], i) => (
+          <div key={title} data-reveal className="flex flex-col items-center border-t border-white/[0.08] pt-8 text-center">
+            <Icon size={22} strokeWidth={1.5} className="text-ember" />
+            <h3 className="mt-5 text-[1.2rem] font-semibold tracking-[-0.02em]">{title}</h3>
+            <p className="mt-2.5 flex-1 text-[0.96rem] leading-relaxed text-ink-400">{text}</p>
+            {i === 0 ? (
+              <button onClick={() => openPalette()} className="group mt-5 inline-flex items-center gap-2 text-[0.9rem] text-ink-300 transition-colors hover:text-ink-100">
+                {label} <ArrowRight size={15} className="transition-transform group-hover:translate-x-0.5" />
+              </button>
+            ) : (
+              <a href={link("/3d")} className="group mt-5 inline-flex items-center gap-2 text-[0.9rem] text-ink-300 transition-colors hover:text-ink-100">
+                {label} <ArrowRight size={15} className="transition-transform group-hover:translate-x-0.5" />
+              </a>
+            )}
+          </div>
+        ))}
+      </div>
+    </Part>
+  );
+}
+
+// What opens each kind of file
+const TOOLS = [
+  ["glb", "Models and maps", "Blender (File, Import, glTF 2.0), Unity and Unreal with a glTF importer, three.js or Babylon.js, or any online glTF viewer. Textures, skeletons and animations come inside the file."],
+  ["PNG, EXR", "Pictures and textures", "Any image editor. EXR holds HDR values (light probes, some effects): Photoshop, Krita, GIMP and Blender read it."],
+  ["MP3, WAV", "Sounds", "Any player or editor. Voice lines are grouped by hero, music by pack."],
+  ["JSON", "Scripts, texts, effects", "Any text editor or language. Valve's KeyValues and KV3 are turned into plain JSON, keys as the game writes them."],
+  ["WebM, MP4", "Videos", "Any browser or player; animated portraits keep their transparency in WebM."],
+];
+function Formats() {
+  return (
+    <Part id="formats" narrow title="Opening the files" text="Nothing here needs the game's own tools. Every file is in a format ordinary programs open.">
+      <dl className="border-b border-white/[0.08]">
+        {TOOLS.map(([ext, what, how]) => (
+          <div key={ext} data-reveal className="grid gap-x-8 gap-y-2 border-t border-white/[0.08] py-6 sm:grid-cols-[minmax(0,12rem)_minmax(0,1fr)]">
+            <dt>
+              <div className="font-mono text-[0.95rem] text-ink-100">{ext}</div>
+              <div className="mt-1 text-[0.88rem] text-ink-500">{what}</div>
+            </dt>
+            <dd className="text-[0.98rem] leading-relaxed text-ink-400">{how}</dd>
+          </div>
+        ))}
+      </dl>
+    </Part>
+  );
+}
+
+// The sister site that draws the same files the way the game does
+function InDotadex() {
+  return (
+    <Part id="dotadex" title="See it as the game does" text="The same files are the base of Dotadex: heroes and items with the game's own shading, lights, particles and voice lines, in the browser.">
+      <div data-reveal className="flex flex-col items-center gap-10">
+        <ul className="space-y-4 text-[1rem] leading-relaxed text-ink-300">
+          {["Every persona and set worn together, any style, one link to share", "Effects of every item and arcana, as in a match", "Voice lines with their lip sync, treasures and the client's scenes"].map((t) => (
+            <li key={t} className="flex gap-3">
+              <span aria-hidden="true" className="mt-2.5 h-1.5 w-1.5 shrink-0 rounded-full bg-ember" />
+              {t}
+            </li>
+          ))}
+        </ul>
+        <a href={DOTADEX} target="_blank" rel="noreferrer" className="flex h-12 items-center gap-2 rounded-xl border border-white/[0.1] px-6 text-[0.95rem] text-ink-100 transition-colors hover:border-white/25">
+          Open Dotadex <ArrowUpRight size={16} />
+        </a>
+      </div>
+    </Part>
+  );
+}
+
+// The work of others this stands on
+const CREDITS = [
+  ["Valve", "https://www.dota2.com", "made the game and every file in it"],
+  ["Source 2 Viewer", "https://github.com/ValveResourceFormat/ValveResourceFormat", "reads Valve's formats and turns models, textures and maps into glTF and PNG"],
+  ["Hugging Face", "https://huggingface.co", "keeps the datasets and serves every download"],
+  ["SteamDB GameTracking", "https://github.com/SteamDatabase/GameTracking-Dota2", "the record of every change to the game's files"],
+  ["DotaFlow client dump", "https://github.com/DotaFlow/dota2_client_dump", "the engine's schema: the defaults of every particle setting"],
+  ["GitHub", "https://github.com/S1nuxoff", "runs the tracker every six hours and hosts this site"],
+];
+function BuiltOn() {
+  return (
+    <Part id="credits" title="Built on" text="One person keeps it running, on the shoulders of others.">
+      <ul className="grid gap-x-10 border-b border-white/[0.08] sm:grid-cols-2">
+        {CREDITS.map(([name, href, what]) => (
+          <li key={name} data-reveal className="border-t border-white/[0.08] py-5">
+            <a href={href} target="_blank" rel="noreferrer" className="group inline-flex items-center gap-1.5 text-[1.02rem] font-medium transition-colors hover:text-white">
+              {name} <ArrowUpRight size={14} className="text-ink-500 transition-colors group-hover:text-ink-100" />
+            </a>
+            <p className="mt-1.5 text-[0.92rem] leading-relaxed text-ink-400">{what}</p>
+          </li>
+        ))}
+      </ul>
+    </Part>
   );
 }
