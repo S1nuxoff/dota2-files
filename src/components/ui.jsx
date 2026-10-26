@@ -148,7 +148,7 @@ export function Chip({ active, children, className = "", ...props }) {
     <button
       {...props}
       aria-pressed={active}
-      className={`inline-flex h-9 shrink-0 items-center rounded-full border px-3.5 text-[0.86rem] whitespace-nowrap transition-colors ${
+      className={`inline-flex h-9 shrink-0 items-center gap-1.5 rounded-full border px-3.5 text-[0.86rem] whitespace-nowrap transition-colors ${
         active ? "border-transparent bg-ink-100 text-ink-950" : "border-white/[0.07] bg-white/[0.03] text-ink-300 hover:border-white/[0.14] hover:text-ink-100"
       } ${className}`}
     >
