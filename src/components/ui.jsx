@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { Check, ChevronDown, ChevronRight, Search, X } from "lucide-react";
 import { link } from "../lib/route.js";
 // The pieces every page is built of, so they look one: a page's head, its sticky bar of filters,
@@ -415,7 +416,8 @@ export function Sheet({ title, onClose, children, footer }) {
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, [onClose]);
-  return (
+  // On the body: a page that is still easing in holds its own layer, under the top bar
+  return createPortal(
     <div data-lock className="anim-fade fixed inset-0 z-50 bg-black/60 backdrop-blur-[2px]" onClick={onClose} role="dialog" aria-modal="true" aria-label={title}>
       <div
         onClick={(e) => e.stopPropagation()}
@@ -431,7 +433,8 @@ export function Sheet({ title, onClose, children, footer }) {
         <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-5 pt-2 pb-6">{children}</div>
         {footer && <div className="border-t border-white/[0.06] px-5 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))]">{footer}</div>}
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
 
