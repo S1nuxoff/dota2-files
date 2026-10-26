@@ -235,11 +235,11 @@ export default function HeroPage({ heroKey, catalog, indexes, withCopies, route 
             </div>
             {grouping === "sets" ? (
               <>
-                <Section title="Sets" count={hero.sets.length} center>
+                <Section title="Sets" count={hero.sets.length}>
                   <Progressive items={hero.sets} step={24} className={GRID.tall} render={(set, i) => <SetCard key={set.key} set={set} delay={Math.min(i % 24, 24) * 20} />} />
                 </Section>
                 {loose.length > 0 && (
-                  <Section title="Not in a set" count={loose.length} center>
+                  <Section title="Not in a set" count={loose.length}>
                     <Progressive items={loose} step={36} className={GRID.item} render={(item, i) => <ItemCard key={item.id} item={item} rarities={catalog.rarities} delay={Math.min(i % 36, 24) * 20} list={loose.map((x) => x.id)} />} />
                   </Section>
                 )}

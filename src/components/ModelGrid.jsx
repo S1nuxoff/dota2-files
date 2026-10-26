@@ -87,7 +87,7 @@ export default function ModelGrid({ files, catalog, indexes, heroName = "", rout
           <h3 className="text-[1.3rem] font-semibold tracking-[-0.03em]">
             Other model files <span className="ml-1 font-normal text-ink-400">{others.length}</span>
           </h3>
-          <p className="mt-1 text-center text-[0.88rem] text-ink-400">Skeletons, cloth, skins and sequences as JSON, and the cube maps the materials reflect</p>
+          <p className="mt-1 text-[0.88rem] text-ink-400">Skeletons, cloth, skins and sequences as JSON, and the cube maps the materials reflect</p>
           <div className="mt-4 overflow-hidden rounded-2xl border border-white/[0.06] bg-ink-900 p-2">
             <FileTable entries={others} route={route} height={`${Math.min(30, others.length * 2.75 + 0.5)}rem`} />
           </div>

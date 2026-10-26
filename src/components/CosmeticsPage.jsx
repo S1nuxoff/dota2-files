@@ -262,7 +262,7 @@ function Kinds({ catalog }) {
         )}
         {!found &&
           sections.map(([title, kinds]) => (
-            <Section key={title} id={anchor(title)} title={title} center>
+            <Section key={title} id={anchor(title)} title={title}>
               <div className={TILES}>
                 {title === "Hero items" && tile("/sets", "Sets", catalog.setByKey.size, setCovers, i++)}
                 {title === "Hero items" && tile("/bundles", "Bundles", count.bundle || 0, covers.bundle || [], i++)}
@@ -272,7 +272,7 @@ function Kinds({ catalog }) {
             </Section>
           ))}
         {!found && events.length > 0 && (
-          <Section id={anchor("Events and battle passes")} title="Events and battle passes" count={events.length} center sub="Every battle pass, The International and seasonal event, the latest first, with all it brought">
+          <Section id={anchor("Events and battle passes")} title="Events and battle passes" count={events.length} sub="Every battle pass, The International and seasonal event, the latest first, with all it brought">
             <div className={TILES}>{events.map((e) => tile(`/cosmetics/${eventKind(e.id)}`, catalog.events?.[e.id] || e.id, e.n, e.icons, i++))}</div>
           </Section>
         )}
