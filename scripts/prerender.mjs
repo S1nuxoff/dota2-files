@@ -103,7 +103,7 @@ page("/", {
   title: "Dotadex Files: download every Dota 2 model, texture, sound and icon",
   description: `Browse and download every file of Dota 2: ${catalog.heroes.length} heroes with their 3D models, ${itemPages.length.toLocaleString("en-US")} cosmetic items, textures, sounds, voice lines, particles and icons. Free, straight from the game files.`,
   image: portrait(catalog.heroes[0]),
-  body: `<h1>Every file of Dota 2, sorted and linked</h1><p>Heroes with their models, items, voice lines and effects. Sets, bundles, treasures and what drops from them. Every model, texture, sound and picture of the game, free to download.</p>${list([["/heroes", "Heroes"], ["/sets", "Sets"], ["/bundles", "Bundles"], ["/cosmetics/treasures", "Treasures"], ["/music", "Music"], ["/3d", "3D models"], ["/cosmetics", "Cosmetics"], ["/files", "Files"]])}`,
+  body: `<h1>Every file of Dota 2, sorted and linked</h1><p>Heroes with their models, items, voice lines and effects. Sets, bundles, treasures and what drops from them. Every model, texture, sound and picture of the game, free to download.</p>${list([["/heroes", "Heroes"], ["/sets", "Sets"], ["/bundles", "Bundles"], ["/cosmetics/treasures", "Treasures"], ["/music", "Music"], ["/3d", "3D models"], ["/map", "The map"], ["/cosmetics", "Cosmetics"], ["/files", "Files"]])}`,
   jsonld: { "@context": "https://schema.org", "@type": "WebSite", name: SITE_NAME, url: url("/"), about: game },
 });
 page("/heroes", {
@@ -248,6 +248,12 @@ page("/3d", {
   title: "Every Dota 2 3D model: heroes, items, creeps, props, scenes",
   description: "Browse and download every Dota 2 3D model as glb with textures and animations: heroes, cosmetics, couriers, creeps, trees, rocks, buildings and scenes, by type, theme, size and hero.",
   body: "<h1>3D models</h1><p>Every model of Dota 2 as glb with its textures and animations, sorted by type (heroes, cosmetics, units, world, effects, scenes), theme, size and hero.</p>",
+});
+page("/map", {
+  crumbs: [["/map", "The map"]],
+  title: "The Dota 2 map as a 3D model: every terrain to download",
+  description: `Download the whole Dota 2 map as glb with its textures, lights and fog: the default map and every terrain (${(byPrefab.get("terrain") || []).map(([, it]) => it.name).filter((n) => !/default/i.test(n)).slice(0, 4).join(", ")} and more), plus the other maps of the game.`,
+  body: `<h1>The map</h1><p>Dota 2's map, whole, as glb: the one every match is played on and every terrain the game sells.</p>${list((byPrefab.get("terrain") || []).map(([id, it]) => [`/item/${id}`, it.name]))}`,
 });
 page("/files", {
   crumbs: [["/files", "Files"]],

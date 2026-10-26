@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { ArrowUpRight, Box, Code, Database, FolderOpen, Gem, Heart, Search, Users } from "lucide-react";
+import { ArrowUpRight, Box, Code, Database, FolderOpen, Gem, Heart, Map as MapIcon, Search, Users } from "lucide-react";
 import { link } from "../lib/route.js";
 import { DOTADEX, datasetById } from "../datasets.js";
 import { openPalette } from "../lib/palette.js";
@@ -8,12 +8,13 @@ export const SOURCE_URL = "https://github.com/S1nuxoff/dota2-files";
 export const DATASETS_URL = "https://huggingface.co/Sqls1";
 export const SUPPORT_URL = "https://ko-fi.com/s1nuxoff";
 
-// The site's four parts. Sets, bundles, treasures and music are kinds of cosmetics: they live under it
+// The site's parts. Sets, bundles, treasures and music are kinds of cosmetics: they live under it
 const COSMETIC = new Set(["cosmetics", "item", "set", "sets", "bundles", "music"]);
 export const SECTIONS = [
   ["/heroes", "Heroes", Users, (r) => r.ds === "heroes" || r.ds === "hero"],
   ["/cosmetics", "Cosmetics", Gem, (r) => COSMETIC.has(r.ds)],
   ["/3d", "3D Models", Box, (r) => r.ds === "3d"],
+  ["/map", "Map", MapIcon, (r) => r.ds === "map"],
   ["/files", "Files", FolderOpen, (r) => r.ds === "files" || r.ds === "all" || !!datasetById(r.ds)],
 ];
 
@@ -32,7 +33,7 @@ function useScrolled() {
   return scrolled;
 }
 
-// The site's bar: the mark and the four parts on the left, the search over everything in the middle,
+// The site's bar: the mark and the parts on the left, the search over everything in the middle,
 // the links out on the right; translucent once the page scrolls, so the page's light shows through.
 // On a phone the parts move to the bar at the bottom (MobileNav)
 export default function TopBar({ route }) {
@@ -116,7 +117,7 @@ export default function TopBar({ route }) {
   );
 }
 
-// A phone's bar at the bottom, in reach of the thumb: the four parts and the search
+// A phone's bar at the bottom, in reach of the thumb: the parts and the search
 export function MobileNav({ route }) {
   return (
     <nav
@@ -124,7 +125,7 @@ export function MobileNav({ route }) {
       style={{ viewTransitionName: "mobilenav" }}
       className="fixed inset-x-0 bottom-0 z-30 border-t border-white/[0.07] bg-ink-950/85 pb-[env(safe-area-inset-bottom)] backdrop-blur-xl md:hidden"
     >
-      <ul className="grid h-[4.25rem] grid-cols-5">
+      <ul className="grid h-[4.25rem] grid-cols-6">
         {SECTIONS.map(([path, title, Icon, on]) => {
           const active = on(route);
           return (

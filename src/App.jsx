@@ -14,6 +14,7 @@ import HeroPage from "./components/HeroPage.jsx";
 import ItemPage from "./components/ItemPage.jsx";
 import CosmeticsPage from "./components/CosmeticsPage.jsx";
 import ModelsPage from "./components/ModelsPage.jsx";
+import MapPage from "./components/MapPage.jsx";
 import ItemModal from "./components/ItemModal.jsx";
 import SetPage from "./components/SetPage.jsx";
 import BundlesPage from "./components/BundlesPage.jsx";
@@ -60,6 +61,8 @@ export default function App() {
           ? item.name
           : route.ds === "3d"
             ? "3D models"
+            : route.ds === "map"
+            ? "The map"
             : route.ds === "music"
             ? "Music"
             : route.ds === "heroes"
@@ -144,6 +147,7 @@ export default function App() {
   else if (route.ds === "item") page = <ItemPage key={route.dir} itemId={route.dir} {...common} />;
   else if (route.ds === "cosmetics") page = <CosmeticsPage key={route.dir} prefab={route.dir} catalog={catalog} />;
   else if (route.ds === "3d") page = <ModelsPage catalog={catalog} indexes={indexes} />;
+  else if (route.ds === "map") page = <MapPage catalog={catalog} indexes={indexes} />;
   else if (route.ds === "files") page = <Home indexes={indexes} errors={errors} />;
   else if (route.ds === "heroes") page = <HeroesPage catalog={catalog} error={catalogError} />;
   else page = <HomePage catalog={catalog} indexes={indexes} />;
