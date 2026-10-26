@@ -195,7 +195,7 @@ function HeroArc({ heroes }) {
             key={hero.id}
             href={link(`/hero/${hero.key}`)}
             title={hero.name}
-            className="arc-card absolute top-0 left-0 block w-[calc(var(--r)*0.13)] overflow-hidden rounded-xl border border-white/[0.1] bg-ink-900 shadow-[0_20px_40px_-18px_rgba(0,0,0,0.9)] transition-[border-color,box-shadow] duration-300 hover:border-white/40 hover:shadow-[0_0_40px_-6px_rgba(229,70,46,0.6)]"
+            className="arc-card absolute top-0 left-0 block w-[calc(var(--r)*0.13)] overflow-hidden rounded-xl bg-ink-900 shadow-[0_20px_40px_-18px_rgba(0,0,0,0.9)] transition-[box-shadow] duration-300 hover:shadow-[0_0_40px_-6px_rgba(229,70,46,0.6)]"
             style={{ transform: `translate(-50%, -50%) rotate(${i * step}deg) translateY(calc(var(--r) * -1))` }}
           >
             <img
