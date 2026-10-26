@@ -46,7 +46,7 @@ export default function TopBar({ route }) {
         scrolled ? "border-white/[0.05] bg-ink-950/55 backdrop-blur-xl" : "border-transparent bg-transparent"
       }`}
     >
-      <nav aria-label="Main" className="page-x flex h-14 items-center gap-3 md:gap-5">
+      <nav aria-label="Main" className="page-x flex h-14 items-center gap-3 md:gap-5 xl:grid xl:grid-cols-[1fr_minmax(0,24rem)_1fr]">
         <div className="flex shrink-0 items-center gap-3 md:gap-5 xl:gap-8">
           <a href={link("/")} className="flex shrink-0 items-center py-2" aria-label="Dotadex Files, home">
             <img src={`${import.meta.env.BASE_URL}logo.png`} alt="Dotadex" width="875" height="113" className="h-3.5 w-auto" />
@@ -75,8 +75,8 @@ export default function TopBar({ route }) {
             </li>
           </ul>
         </div>
-        {/* the search in the room between the parts and the links out, where there is enough of it
-            (a button on the right otherwise); the front page has its own large search */}
+        {/* the search in the middle of the bar, a column that gives way to the parts when they need the room
+            (a button on the right on a smaller screen); the front page has its own large search */}
         <div className="flex min-w-0 flex-1 justify-center">
           {!home && (
           <button
