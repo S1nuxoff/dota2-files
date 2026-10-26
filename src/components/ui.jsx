@@ -68,10 +68,10 @@ export function HeadGlow({ className = "-z-10" }) {
     <div aria-hidden="true" className={`anim-fade pointer-events-none absolute inset-x-0 top-0 h-[70rem] overflow-hidden ${className}`}>
       <div className={`absolute inset-0 max-sm:opacity-60 ${TOP_LIGHT}`} />
       {/* the light shimmers: a warmer and a deeper red drifting slowly to each side, at their own pace */}
-      <div className="anim-sway absolute top-[-12rem] left-[18%] h-[34rem] w-[42%] rounded-[50%] bg-[radial-gradient(closest-side,rgba(255,128,64,0.16),transparent)] blur-3xl" style={{ "--sway": "9%", animationDuration: "19s" }} />
-      <div className="anim-sway absolute top-[-10rem] right-[16%] max-sm:hidden h-[32rem] w-[40%] rounded-[50%] bg-[radial-gradient(closest-side,rgba(205,36,84,0.14),transparent)] blur-3xl" style={{ "--sway": "-10%", animationDuration: "23s", animationDelay: "-7s" }} />
+      <div className="anim-sway absolute top-[-10rem] left-[14%] h-[36rem] w-[46%] rounded-[50%] bg-[radial-gradient(closest-side,rgba(255,128,64,0.34),transparent)] blur-3xl" style={{ "--sway": "22%", animationDuration: "12s" }} />
+      <div className="anim-sway absolute top-[-8rem] right-[12%] h-[34rem] w-[44%] rounded-[50%] bg-[radial-gradient(closest-side,rgba(205,36,84,0.3),transparent)] blur-3xl" style={{ "--sway": "-24%", animationDuration: "15s", animationDelay: "-5s" }} />
       {/* a fine grain over the light, so its fall to the dark has no steps (banding) */}
-      <div className="absolute inset-0 opacity-[0.05] mix-blend-overlay [mask-image:linear-gradient(to_bottom,black,transparent_75%)]" style={{ backgroundImage: GRAIN, backgroundSize: "160px 160px" }} />
+      <div className="absolute inset-0 opacity-[0.09] [mask-image:linear-gradient(to_bottom,black,transparent_70%)]" style={{ backgroundImage: GRAIN, backgroundSize: "160px 160px" }} />
     </div>
   );
 }
