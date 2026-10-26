@@ -81,7 +81,7 @@ function Opening({ catalog, stats }) {
         <h1 style={{ animationDelay: "70ms" }} className="anim-card max-w-4xl text-[clamp(2.5rem,6.4vw,5.6rem)] leading-[0.98] font-semibold tracking-[-0.055em] text-balance">
           Every file of Dota&nbsp;2
         </h1>
-        <p style={{ animationDelay: "140ms" }} className="anim-card mt-6 max-w-2xl text-[clamp(1rem,1.25vw,1.2rem)] leading-relaxed text-pretty text-ink-400">
+        <p style={{ animationDelay: "140ms" }} className="anim-card mt-6 max-w-2xl text-[clamp(1rem,1.25vw,1.2rem)] leading-relaxed text-balance text-ink-400">
           {stats?.files ? `${formatCount(stats.files)} files` : "Every file"} straight from the game, sorted and free to download.
         </p>
         <button
