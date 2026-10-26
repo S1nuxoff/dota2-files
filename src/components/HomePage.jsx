@@ -120,23 +120,27 @@ function Opening({ catalog, stats }) {
 function HeroArc({ heroes }) {
   const picks = useMemo(() => daily(heroes, 36), [heroes]);
   const step = 360 / picks.length;
+  // The wheel's middle: its radius below the top card's centre, which stands half a card (3 : 4 of
+  // a card 0.13 of the radius wide) and a gap below the top of the band, so no card is cut there
+  const centre = "calc(var(--r) * 1.087 + 2rem)";
   return (
     <div
-      className="group anim-fade relative mt-auto h-[clamp(15rem,30vw,27rem)] w-full shrink-0 [--r:max(34rem,min(62vw,68rem))] [mask-image:linear-gradient(to_right,transparent,black_18%,black_82%,transparent)]"
+      className="group anim-fade relative mt-auto h-[clamp(18rem,34vw,32rem)] w-full shrink-0 [--r:max(34rem,min(62vw,68rem))] [mask-composite:intersect] [mask-image:linear-gradient(to_right,transparent,black_16%,black_84%,transparent),linear-gradient(to_bottom,black_62%,transparent)]"
       style={{ animationDelay: "350ms" }}
     >
-      {/* the line of light the heroes stand on: the top of a circle inside the wheel, and its glow */}
+      {/* the line of light the heroes stand on: the top edge of a circle inside the wheel, a fine
+          stroke that thins out down its sides, a haze of the same red rising from it */}
       <div
         aria-hidden="true"
-        className="anim-breathe pointer-events-none absolute left-1/2 h-[calc(var(--r)*1.8)] w-[calc(var(--r)*1.8)] -translate-x-1/2 rounded-full"
-        style={{
-          top: "calc(var(--r) * 0.1 + 3.5rem)",
-          background: "radial-gradient(closest-side, transparent 97.6%, rgba(255,120,90,0.85) 99.4%, transparent 100%)",
-          boxShadow: "0 -30px 90px -20px rgba(229,70,46,0.55), inset 0 40px 110px -40px rgba(229,70,46,0.35)",
-        }}
+        className="anim-breathe pointer-events-none absolute left-1/2 h-[calc(var(--r)*0.34)] w-[calc(var(--r)*1.3)] -translate-x-1/2 -translate-y-1/2 rounded-[50%] bg-[radial-gradient(closest-side,rgba(229,70,46,0.34),rgba(229,70,46,0.08)_60%,transparent)] blur-2xl"
+        style={{ top: `calc(${centre} - var(--r) * 0.9)` }}
       />
-      <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-ink-950 to-transparent" />
-      <div className="anim-turn absolute left-1/2 h-0 w-0 group-hover:[animation-play-state:paused]" style={{ top: "calc(var(--r) + 3.5rem)", "--turn": "260s" }}>
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute left-1/2 h-[calc(var(--r)*1.8)] w-[calc(var(--r)*1.8)] -translate-x-1/2 rounded-full border-[1.5px] border-transparent border-t-[rgba(255,150,115,0.95)] [mask-image:linear-gradient(to_right,transparent_8%,black_36%,black_64%,transparent_92%)]"
+        style={{ top: `calc(${centre} - var(--r) * 0.9)` }}
+      />
+      <div className="anim-turn absolute left-1/2 h-0 w-0 group-hover:[animation-play-state:paused]" style={{ top: centre, "--turn": "260s" }}>
         {picks.map((hero, i) => (
           <a
             key={hero.id}
