@@ -80,7 +80,7 @@ function Section({ title, list, grid, route }) {
           ))}
         </div>
       ) : (
-        <div className="mt-4 overflow-hidden rounded-2xl border border-white/[0.06] frost p-2">
+        <div className="mt-4 overflow-hidden rounded-2xl border border-white/[0.06] bg-ink-900 p-2">
           {shown.map((e) => (
             <Row key={keyOf(e)} e={e} active={route.file === keyOf(e)} onOpen={() => open(e)} />
           ))}

@@ -196,7 +196,7 @@ export default function ItemPage({ itemId, catalog, indexes, withCopies, route }
 
         {effects.length > 0 && (
           <Section title="Effects" count={effects.length} sub="The particle systems it plays, as the game describes them">
-            <div className="overflow-hidden rounded-2xl border border-white/[0.06] frost p-1.5 sm:p-2">
+            <div className="overflow-hidden rounded-2xl border border-white/[0.06] bg-ink-900 p-1.5 sm:p-2">
               {effects.map((e) => (
                 <Row key={e.path} e={e} active={route.file === `${e.ds}:${e.path}`} onOpen={() => navigate({ ...route, file: `${e.ds}:${e.path}` })} />
               ))}
@@ -215,7 +215,7 @@ export default function ItemPage({ itemId, catalog, indexes, withCopies, route }
                   href={fileUrl(datasetById("textures"), t.path, true)}
                   title={`Download ${t.name}`}
                   style={{ animationDelay: `${i * 25}ms` }}
-                  className="anim-card group overflow-hidden rounded-xl border border-white/[0.06] frost transition-colors hover:border-white/[0.16]"
+                  className="anim-card group overflow-hidden rounded-xl border border-white/[0.06] bg-ink-900 transition-colors hover:border-white/[0.16]"
                 >
                   <div className="checker relative flex aspect-square items-center justify-center">
                     {t.ext === "png" ? <img src={fileUrl(datasetById("textures"), t.path)} alt="" loading="lazy" className="h-full w-full object-cover" /> : <ImageIcon size={24} className="text-ink-600" />}
@@ -234,7 +234,7 @@ export default function ItemPage({ itemId, catalog, indexes, withCopies, route }
         )}
 
         <Section title="Every file" count={files.length} sub={`Model, textures, icon${item.refs.particles ? ", effects" : ""}${item.refs.sounds ? ", sounds" : ""}`}>
-          <div className="overflow-hidden rounded-2xl border border-white/[0.06] frost p-1.5 sm:p-2">
+          <div className="overflow-hidden rounded-2xl border border-white/[0.06] bg-ink-900 p-1.5 sm:p-2">
             <FileTable entries={sorted} route={route} height={`${Math.min(32, Math.max(1, sorted.length) * 2.75 + 0.5)}rem`} />
           </div>
         </Section>

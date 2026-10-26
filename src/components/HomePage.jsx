@@ -94,7 +94,7 @@ function Opening({ catalog, stats }) {
         <button
           onClick={() => openPalette()}
           style={{ animationDelay: "640ms" }}
-          className="anim-card group mt-9 flex h-14 w-full max-w-[36rem] items-center gap-3 rounded-2xl border border-white/[0.1] frost pr-2 pl-5 text-left shadow-[0_24px_70px_-24px_rgba(0,0,0,0.9)] backdrop-blur-md transition-colors hover:border-white/[0.2]"
+          className="anim-card group mt-9 flex h-14 w-full max-w-[36rem] items-center gap-3 rounded-2xl border border-white/[0.1] bg-ink-900/85 pr-2 pl-5 text-left shadow-[0_24px_70px_-24px_rgba(0,0,0,0.9)] backdrop-blur-md transition-colors hover:border-white/[0.2]"
         >
           <Search size={19} className="shrink-0 text-ink-400" />
           <span className="flex-1 truncate text-[1rem] text-ink-500">Pudge, Crimson Witness, courier…</span>
@@ -280,7 +280,7 @@ function Browse({ catalog, stats, indexes, n }) {
     [catalog]
   );
   const models = useMemo(() => latestModels(catalog, 6), [catalog]);
-  const tile = "group relative flex flex-col overflow-hidden rounded-3xl border border-white/[0.07] frost transition-[border-color,transform] duration-500 ease-[var(--ease-out-soft)] hover:border-white/[0.16]";
+  const tile = "group relative flex flex-col overflow-hidden rounded-3xl border border-white/[0.07] bg-ink-900 transition-[border-color,transform] duration-500 ease-[var(--ease-out-soft)] hover:border-white/[0.16]";
   const caption = (title, text) => (
     <div className="relative z-10 mt-auto flex items-end justify-between gap-4 p-5 sm:p-6">
       <div className="min-w-0">
@@ -558,7 +558,7 @@ function Developers({ n, stats }) {
 function Code({ title, href, label, lines }) {
   const [done, setDone] = useState(false);
   return (
-    <div className="flex flex-col overflow-hidden rounded-2xl border border-white/[0.07] frost">
+    <div className="flex flex-col overflow-hidden rounded-2xl border border-white/[0.07] bg-ink-900">
       <div className="flex items-center gap-3 border-b border-white/[0.06] px-4 py-3">
         <span className="flex gap-1.5" aria-hidden="true">
           <span className="h-2.5 w-2.5 rounded-full bg-ink-700" />
@@ -607,7 +607,7 @@ function Closing() {
         <a href={SUPPORT_URL} target="_blank" rel="noreferrer" className="flex h-12 items-center gap-2 rounded-xl bg-ink-100 px-6 text-[0.95rem] font-medium text-ink-950 transition-colors hover:bg-white">
           <Heart size={17} className="text-ember" /> Support the author
         </a>
-        <a href={SOURCE_URL} target="_blank" rel="noreferrer" className="flex h-12 items-center gap-2 rounded-xl border border-white/[0.1] frost px-6 text-[0.95rem] text-ink-100 transition-colors hover:border-white/25">
+        <a href={SOURCE_URL} target="_blank" rel="noreferrer" className="flex h-12 items-center gap-2 rounded-xl border border-white/[0.1] bg-ink-900/80 px-6 text-[0.95rem] text-ink-100 transition-colors hover:border-white/25">
           Source on GitHub
         </a>
       </div>

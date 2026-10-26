@@ -186,7 +186,7 @@ function Kinds({ catalog }) {
         key={href}
         href={link(href)}
         style={{ animationDelay: `${Math.min(i, 30) * 18}ms` }}
-        className="anim-card group relative overflow-hidden rounded-2xl border border-white/[0.06] frost transition-[border-color,transform] duration-300 hover:-translate-y-0.5 hover:border-white/[0.15]"
+        className="anim-card group relative overflow-hidden rounded-2xl border border-white/[0.06] bg-ink-900 transition-[border-color,transform] duration-300 hover:-translate-y-0.5 hover:border-white/[0.15]"
       >
         <div className="stage relative aspect-[16/10] overflow-hidden">
           {!front && (

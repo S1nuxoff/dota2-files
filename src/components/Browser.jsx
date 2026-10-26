@@ -246,7 +246,7 @@ export default function Browser({ ds, route, index, error, indexes, catalog, wit
       {named.length > 0 && (
         <div className="page-x no-bar flex gap-2 overflow-x-auto pt-4">
           {named.map((n) => (
-            <a key={n.key} href={n.href} className="flex w-48 shrink-0 items-center gap-2.5 rounded-xl border border-white/[0.07] frost p-1.5 pr-3 transition-colors hover:border-white/[0.16]">
+            <a key={n.key} href={n.href} className="flex w-48 shrink-0 items-center gap-2.5 rounded-xl border border-white/[0.07] bg-ink-900 p-1.5 pr-3 transition-colors hover:border-white/[0.16]">
               <span className="h-9 w-12 shrink-0 overflow-hidden rounded-lg bg-ink-850">{n.icon && <img src={n.icon} alt="" loading="lazy" className="h-full w-full object-cover" />}</span>
               <span className="min-w-0 leading-tight">
                 <span className="block truncate text-[0.84rem]">{n.name}</span>
@@ -349,7 +349,7 @@ function GridCell({ row, picked, active, onPick, onOpen }) {
     <div
       onClick={onOpen}
       style={{ height: `${CELL}rem` }}
-      className={`group relative flex cursor-pointer flex-col overflow-hidden rounded-xl border transition-colors ${active ? "border-white/30 frost" : "border-white/[0.06] frost hover:border-white/[0.14]"}`}
+      className={`group relative flex cursor-pointer flex-col overflow-hidden rounded-xl border transition-colors ${active ? "border-white/30 bg-ink-900" : "border-white/[0.06] bg-ink-900 hover:border-white/[0.14]"}`}
     >
       <div className={`flex min-h-0 flex-1 items-center justify-center ${thumb ? "checker" : ""}`}>
         {thumb ? <img src={thumb} loading="lazy" decoding="async" alt="" className="max-h-full max-w-full object-contain p-2" /> : <EntryIcon entry={e} dir={!!row.node} size={30} />}

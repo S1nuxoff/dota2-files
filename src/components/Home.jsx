@@ -22,7 +22,7 @@ export default function Home({ indexes, errors }) {
         actions={
           <button
             onClick={() => openPalette()}
-            className="flex h-10 items-center gap-2.5 rounded-xl border border-white/[0.08] frost px-3.5 text-[0.9rem] text-ink-400 transition-colors hover:border-white/[0.16] hover:text-ink-200 max-md:w-full"
+            className="flex h-10 items-center gap-2.5 rounded-xl border border-white/[0.08] bg-ink-900 px-3.5 text-[0.9rem] text-ink-400 transition-colors hover:border-white/[0.16] hover:text-ink-200 max-md:w-full"
           >
             <Search size={16} /> Search every file
           </button>
@@ -30,7 +30,7 @@ export default function Home({ indexes, errors }) {
       />
 
       <div className="page-x pt-6 sm:pt-10 lg:pt-12">
-        <ul className="overflow-hidden rounded-2xl border border-white/[0.07] frost">
+        <ul className="overflow-hidden rounded-2xl border border-white/[0.07] bg-ink-900">
           {DATASETS.map((ds, i) => {
             const Icon = ds.icon;
             const index = indexes[ds.id];
@@ -74,7 +74,7 @@ export default function Home({ indexes, errors }) {
           title="A whole dataset at once"
           sub="Folders and picked files download as one ZIP right here. For a whole dataset, tens of gigabytes, the Hugging Face command line is faster and resumes."
         >
-          <div className="overflow-hidden rounded-2xl border border-white/[0.07] frost">
+          <div className="overflow-hidden rounded-2xl border border-white/[0.07] bg-ink-900">
             <div className="flex items-center gap-3 border-b border-white/[0.06] px-4 py-2.5">
               <span className="flex gap-1.5" aria-hidden="true">
                 <span className="h-2.5 w-2.5 rounded-full bg-ink-700" />
