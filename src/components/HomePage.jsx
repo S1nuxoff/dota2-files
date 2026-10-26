@@ -154,26 +154,36 @@ function HeroArc({ heroes }) {
     <div
       className="group relative mt-10 h-[clamp(15rem,34vw,32rem)] w-full shrink-0 [--r:max(28rem,min(62vw,68rem))] max-sm:[--r:150vw] sm:mt-auto [mask-composite:intersect] [mask-image:linear-gradient(to_right,transparent,black_16%,black_84%,transparent),linear-gradient(to_bottom,black_62%,transparent)]"
     >
-      {/* the line of light the heroes stand on: the top edge of a circle inside the wheel, a fine
-          stroke that thins out down its sides, a haze of the same red rising from it */}
+      {/* a haze of red over the line of light the heroes stand on (the line itself turns with them) */}
       <div
         aria-hidden="true"
         className="anim-breathe pointer-events-none absolute left-1/2 h-[calc(var(--r)*0.34)] w-[calc(var(--r)*1.3)] -translate-x-1/2 -translate-y-1/2 rounded-[50%] bg-[radial-gradient(closest-side,rgba(229,70,46,0.3),rgba(229,70,46,0.08)_55%,transparent)]"
         style={{ top: `calc(${centre} - var(--r) * 0.9)` }}
       />
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute left-1/2 h-[calc(var(--r)*1.8)] w-[calc(var(--r)*1.8)] -translate-x-1/2 rounded-full border-transparent [mask-image:linear-gradient(to_right,transparent_8%,black_36%,black_64%,transparent_92%)] blur-[6px] anim-draw [animation-delay:500ms]"
-        style={{ top: `calc(${centre} - var(--r) * 0.9)`, borderWidth: "8px", borderTopColor: "rgba(229,70,46,0.7)" }}
-      />
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute left-1/2 h-[calc(var(--r)*1.8)] w-[calc(var(--r)*1.8)] -translate-x-1/2 rounded-full border-transparent [mask-image:linear-gradient(to_right,transparent_8%,black_36%,black_64%,transparent_92%)] anim-draw [animation-delay:500ms]"
-        style={{ top: `calc(${centre} - var(--r) * 0.9)`, borderWidth: "3px", borderTopColor: "rgba(255,150,115,0.95)" }}
-      />
       <div ref={wheel} className="absolute left-1/2 h-0 w-0 will-change-transform" style={{ top: centre }}>
       <div className="anim-roll h-0 w-0" style={{ animationDelay: "350ms" }}>
       <div className="anim-turn h-0 w-0 will-change-transform group-hover:[animation-play-state:paused]" style={{ "--turn": "260s" }}>
+        {/* the line of light, turning with the wheel: a faint ring the whole way round, and brighter
+            strokes of different lengths along it, glowing, so its turning shows */}
+        <svg
+          aria-hidden="true"
+          viewBox="0 0 1000 1000"
+          className="pointer-events-none absolute overflow-visible"
+          style={{ left: "calc(var(--r) * -0.9)", top: "calc(var(--r) * -0.9)", width: "calc(var(--r) * 1.8)", height: "calc(var(--r) * 1.8)" }}
+        >
+          <defs>
+            <filter id="arc-glow" x="-10%" y="-10%" width="120%" height="120%">
+              <feGaussianBlur stdDeviation="5" result="b" />
+              <feMerge>
+                <feMergeNode in="b" />
+                <feMergeNode in="SourceGraphic" />
+              </feMerge>
+            </filter>
+          </defs>
+          <circle cx="500" cy="500" r="499" fill="none" stroke="rgba(255,140,105,0.28)" strokeWidth="1.2" />
+          <circle cx="500" cy="500" r="499" fill="none" stroke="rgba(229,70,46,0.55)" strokeWidth="6" strokeDasharray="420 180 90 240 560 260 150 330 260 220 70 310" strokeLinecap="round" style={{ filter: "blur(6px)" }} />
+          <circle cx="500" cy="500" r="499" fill="none" stroke="rgba(255,175,140,0.95)" strokeWidth="2" strokeDasharray="420 180 90 240 560 260 150 330 260 220 70 310" strokeLinecap="round" filter="url(#arc-glow)" />
+        </svg>
         {picks.map((hero, i) => (
           <a
             key={hero.id}
