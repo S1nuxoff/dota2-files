@@ -196,15 +196,26 @@ img[loading="lazy"]:not(.is-loaded) {
   opacity: 0;
 }
 img[loading="lazy"].is-loaded {
-  animation: picture-in 0.6s var(--ease-out-soft) both;
+  animation: fade 0.5s ease-out both;
 }
-@keyframes picture-in {
+/* A card of the front page's wheel shows with its picture, never as an empty frame */
+.arc-card {
+  transition:
+    opacity 0.7s ease-out,
+    border-color 0.3s,
+    box-shadow 0.3s;
+}
+.arc-card:has(img:not(.is-loaded)) {
+  opacity: 0;
+}
+
+/* The light passing over a place still loading moves as a layer (transform), drawn once */
+@keyframes sweep {
   from {
-    opacity: 0;
-    filter: blur(8px);
+    transform: translateX(-100%);
   }
   to {
-    opacity: 1;
+    transform: translateX(100%);
   }
 }
 .stage:has(img[loading="lazy"]:not(.is-loaded))::after {
@@ -212,9 +223,8 @@ img[loading="lazy"].is-loaded {
   position: absolute;
   inset: 0;
   pointer-events: none;
-  background: linear-gradient(100deg, transparent 30%, rgb(255 255 255 / 0.05) 50%, transparent 70%);
-  background-size: 250% 100%;
-  animation: shimmer 1.6s ease-in-out infinite;
+  background: linear-gradient(100deg, transparent 25%, rgb(255 255 255 / 0.05) 50%, transparent 75%);
+  animation: sweep 1.6s ease-in-out infinite;
 }
 
 /* Blocks showing as they scroll in */
@@ -259,6 +269,44 @@ img[loading="lazy"].is-loaded {
 }
 @utility anim-sway {
   animation: sway 20s ease-in-out infinite;
+}
+/* The front page's opening: the title's words rising out of their line, the line of light drawn out
+   from the middle (uncovered, never squeezed), the wheel of heroes rolling up into place */
+@keyframes word {
+  from {
+    transform: translateY(108%);
+  }
+  to {
+    transform: none;
+  }
+}
+@utility anim-word {
+  animation: word 1s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+@keyframes draw {
+  /* the line's glow reaches past its box: the window opens wider than it */
+  from {
+    clip-path: inset(-2rem 50% -2rem 50%);
+  }
+  to {
+    clip-path: inset(-2rem -2rem -2rem -2rem);
+  }
+}
+@utility anim-draw {
+  animation: draw 1.8s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+@keyframes roll-in {
+  from {
+    transform: translateY(18%) rotate(14deg);
+    opacity: 0;
+  }
+  to {
+    transform: none;
+    opacity: 1;
+  }
+}
+@utility anim-roll {
+  animation: roll-in 2s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 @utility anim-turn {
   animation: turn var(--turn, 220s) linear infinite;
@@ -305,6 +353,11 @@ img[loading="lazy"].is-loaded {
   .anim-turn {
     animation: none;
   }
+  .anim-word,
+  .anim-draw,
+  .anim-roll {
+    animation: none;
+  }
   ::view-transition-old(root),
   ::view-transition-new(root) {
     animation: none;
@@ -321,7 +374,14 @@ img[loading="lazy"].is-loaded {
   }
 }
 @utility skeleton {
-  background: linear-gradient(100deg, rgb(255 255 255 / 0.025) 30%, rgb(255 255 255 / 0.07) 50%, rgb(255 255 255 / 0.025) 70%) var(--color-ink-900);
-  background-size: 250% 100%;
-  animation: shimmer 1.6s ease-in-out infinite;
+  position: relative;
+  overflow: hidden;
+  background: rgb(255 255 255 / 0.03);
+  &::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(100deg, transparent 25%, rgb(255 255 255 / 0.05) 50%, transparent 75%);
+    animation: sweep 1.6s ease-in-out infinite;
+  }
 }

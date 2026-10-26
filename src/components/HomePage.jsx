@@ -5,8 +5,7 @@ import { formatCount, formatSize } from "../lib/format.js";
 import { link, openItem } from "../lib/route.js";
 import { openPalette } from "../lib/palette.js";
 import { previewOf } from "./CosmeticsPage.jsx";
-import GameStage from "./GameStage.jsx";
-import { heroCard, heroPortrait, imageUrl } from "../lib/catalog.js";
+import { heroCard, heroPortrait, heroSelection, imageUrl } from "../lib/catalog.js";
 import { DATASETS_URL, SEARCH_KEY, SOURCE_URL, SUPPORT_URL } from "./TopBar.jsx";
 import { HeadGlow } from "./ui.jsx";
 
@@ -78,15 +77,23 @@ function Opening({ catalog, stats }) {
       {/* the red of the Dotadex mark, as a light from above */}
       <HeadGlow className="" />
       <div className="relative z-10 page-x flex flex-col items-center pt-16 text-center sm:pt-[max(3rem,calc(50svh-18rem))]">
-        <h1 style={{ animationDelay: "70ms" }} className="anim-card max-w-4xl text-[clamp(2.5rem,6.4vw,5.6rem)] leading-[0.98] font-semibold tracking-[-0.055em] text-balance">
-          Every file of Dota&nbsp;2
+        {/* the title's words rise one after another out of their line */}
+        <h1 aria-label="Every file of Dota 2" className="max-w-4xl text-[clamp(2.5rem,6.4vw,5.6rem)] leading-[1.02] font-semibold tracking-[-0.055em] text-balance">
+          {["Every", "file", "of", "Dota 2"].map((w, i) => (
+            <span key={w} aria-hidden="true" className="inline-block overflow-hidden pb-[0.08em] align-bottom">
+              <span className="anim-word inline-block" style={{ animationDelay: `${120 + i * 90}ms` }}>
+                {w}
+              </span>
+              {i < 3 && " "}
+            </span>
+          ))}
         </h1>
-        <p style={{ animationDelay: "140ms" }} className="anim-card mt-6 max-w-2xl text-[clamp(1rem,1.25vw,1.2rem)] leading-relaxed text-balance text-ink-400">
-          {stats?.files ? `${formatCount(stats.files)} files` : "Every file"} straight from the game, sorted and free to download.
+        <p style={{ animationDelay: "520ms" }} className="anim-card mt-6 max-w-2xl text-[clamp(1rem,1.25vw,1.2rem)] leading-relaxed text-balance text-ink-400">
+          {stats?.complete ? `${formatCount(stats.files)} files` : "Every file"} straight from the game, sorted and free to download.
         </p>
         <button
           onClick={() => openPalette()}
-          style={{ animationDelay: "210ms" }}
+          style={{ animationDelay: "640ms" }}
           className="anim-card group mt-9 flex h-14 w-full max-w-[36rem] items-center gap-3 rounded-2xl border border-white/[0.1] bg-ink-900/85 pr-2 pl-5 text-left shadow-[0_24px_70px_-24px_rgba(0,0,0,0.9)] backdrop-blur-md transition-colors hover:border-white/[0.2]"
         >
           <Search size={19} className="shrink-0 text-ink-400" />
@@ -94,7 +101,7 @@ function Opening({ catalog, stats }) {
           <kbd className="hidden rounded-lg border border-white/10 px-2 py-1 font-sans text-[0.74rem] text-ink-400 sm:block">{SEARCH_KEY}</kbd>
           <span className="flex h-10 items-center rounded-xl bg-ink-100 px-4 text-[0.9rem] font-medium text-ink-950 transition-colors group-hover:bg-white">Search</span>
         </button>
-        <nav style={{ animationDelay: "280ms" }} className="anim-card mt-5 flex flex-wrap items-center justify-center gap-x-1 gap-y-1.5 text-[0.88rem]" aria-label="Popular">
+        <nav style={{ animationDelay: "760ms" }} className="anim-card mt-5 flex flex-wrap items-center justify-center gap-x-1 gap-y-1.5 text-[0.88rem]" aria-label="Popular">
           <span className="mr-1 text-ink-500">Popular:</span>
           {[
             ["/sets", "Sets"],
@@ -108,7 +115,7 @@ function Opening({ catalog, stats }) {
             </a>
           ))}
         </nav>
-        {catalog?.updated && <p className="anim-fade mt-6 text-[0.8rem] text-ink-500">Updated {ago(catalog.updated)}, after every patch</p>}
+        {catalog?.updated && <p style={{ animationDelay: "880ms" }} className="anim-fade mt-6 text-[0.8rem] text-ink-500">Updated {ago(catalog.updated)}, after every patch</p>}
       </div>
       {catalog && <HeroArc heroes={catalog.heroes} />}
     </section>
@@ -145,46 +152,46 @@ function HeroArc({ heroes }) {
   }, []);
   return (
     <div
-      className="group anim-fade relative mt-10 h-[clamp(15rem,34vw,32rem)] w-full shrink-0 [--r:max(28rem,min(62vw,68rem))] max-sm:[--r:150vw] sm:mt-auto [mask-composite:intersect] [mask-image:linear-gradient(to_right,transparent,black_16%,black_84%,transparent),linear-gradient(to_bottom,black_62%,transparent)]"
-      style={{ animationDelay: "350ms" }}
+      className="group relative mt-10 h-[clamp(15rem,34vw,32rem)] w-full shrink-0 [--r:max(28rem,min(62vw,68rem))] max-sm:[--r:150vw] sm:mt-auto [mask-composite:intersect] [mask-image:linear-gradient(to_right,transparent,black_16%,black_84%,transparent),linear-gradient(to_bottom,black_62%,transparent)]"
     >
       {/* the line of light the heroes stand on: the top edge of a circle inside the wheel, a fine
           stroke that thins out down its sides, a haze of the same red rising from it */}
       <div
         aria-hidden="true"
-        className="anim-breathe pointer-events-none absolute left-1/2 h-[calc(var(--r)*0.34)] w-[calc(var(--r)*1.3)] -translate-x-1/2 -translate-y-1/2 rounded-[50%] bg-[radial-gradient(closest-side,rgba(229,70,46,0.34),rgba(229,70,46,0.08)_60%,transparent)] blur-2xl"
+        className="anim-breathe pointer-events-none absolute left-1/2 h-[calc(var(--r)*0.34)] w-[calc(var(--r)*1.3)] -translate-x-1/2 -translate-y-1/2 rounded-[50%] bg-[radial-gradient(closest-side,rgba(229,70,46,0.3),rgba(229,70,46,0.08)_55%,transparent)]"
         style={{ top: `calc(${centre} - var(--r) * 0.9)` }}
       />
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute left-1/2 h-[calc(var(--r)*1.8)] w-[calc(var(--r)*1.8)] -translate-x-1/2 rounded-full border-transparent [mask-image:linear-gradient(to_right,transparent_8%,black_36%,black_64%,transparent_92%)] blur-[6px]"
+        className="pointer-events-none absolute left-1/2 h-[calc(var(--r)*1.8)] w-[calc(var(--r)*1.8)] -translate-x-1/2 rounded-full border-transparent [mask-image:linear-gradient(to_right,transparent_8%,black_36%,black_64%,transparent_92%)] blur-[6px] anim-draw [animation-delay:500ms]"
         style={{ top: `calc(${centre} - var(--r) * 0.9)`, borderWidth: "8px", borderTopColor: "rgba(229,70,46,0.7)" }}
       />
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute left-1/2 h-[calc(var(--r)*1.8)] w-[calc(var(--r)*1.8)] -translate-x-1/2 rounded-full border-transparent [mask-image:linear-gradient(to_right,transparent_8%,black_36%,black_64%,transparent_92%)] "
+        className="pointer-events-none absolute left-1/2 h-[calc(var(--r)*1.8)] w-[calc(var(--r)*1.8)] -translate-x-1/2 rounded-full border-transparent [mask-image:linear-gradient(to_right,transparent_8%,black_36%,black_64%,transparent_92%)] anim-draw [animation-delay:500ms]"
         style={{ top: `calc(${centre} - var(--r) * 0.9)`, borderWidth: "3px", borderTopColor: "rgba(255,150,115,0.95)" }}
       />
-      <div ref={wheel} className="absolute left-1/2 h-0 w-0" style={{ top: centre }}>
-      <div className="anim-turn h-0 w-0 group-hover:[animation-play-state:paused]" style={{ "--turn": "260s" }}>
+      <div ref={wheel} className="absolute left-1/2 h-0 w-0 will-change-transform" style={{ top: centre }}>
+      <div className="anim-roll h-0 w-0" style={{ animationDelay: "350ms" }}>
+      <div className="anim-turn h-0 w-0 will-change-transform group-hover:[animation-play-state:paused]" style={{ "--turn": "260s" }}>
         {picks.map((hero, i) => (
           <a
             key={hero.id}
             href={link(`/hero/${hero.key}`)}
             title={hero.name}
-            className="absolute top-0 left-0 block w-[calc(var(--r)*0.13)] overflow-hidden rounded-xl border border-white/[0.1] bg-ink-900 shadow-[0_20px_40px_-18px_rgba(0,0,0,0.9)] transition-[border-color,box-shadow] duration-300 hover:border-white/40 hover:shadow-[0_0_40px_-6px_rgba(229,70,46,0.6)]"
+            className="arc-card absolute top-0 left-0 block w-[calc(var(--r)*0.13)] overflow-hidden rounded-xl border border-white/[0.1] bg-ink-900 shadow-[0_20px_40px_-18px_rgba(0,0,0,0.9)] transition-[border-color,box-shadow] duration-300 hover:border-white/40 hover:shadow-[0_0_40px_-6px_rgba(229,70,46,0.6)]"
             style={{ transform: `translate(-50%, -50%) rotate(${i * step}deg) translateY(calc(var(--r) * -1))` }}
           >
             <img
-              src={heroCard(hero)}
+              src={heroSelection(hero)}
               alt={hero.name}
-              loading="lazy"
               decoding="async"
-              onError={(e) => (e.currentTarget.src = heroPortrait(hero))}
+              onError={(e) => e.currentTarget.src !== heroCard(hero) && (e.currentTarget.src = heroCard(hero))}
               className="aspect-[3/4] w-full object-cover object-top"
             />
           </a>
         ))}
+      </div>
       </div>
       </div>
     </div>
@@ -362,18 +369,11 @@ function Browse({ catalog, stats, indexes, n }) {
 // Heroes to show in Dotadex on the front page, picked from by the row under the stage
 const SHOWN = ["pudge", "invoker", "juggernaut", "crystal_maiden", "nevermore", "phantom_assassin", "lina", "axe"];
 
-// Dotadex, the site that shows heroes and items as the game does: the scene itself, live (started once
-// it comes into view, so the front page stays light), a row of heroes to switch it, and what it holds
+// Dotadex, the site that shows heroes and items as the game does: a hero standing large (a picture,
+// no 3D here, so the front page stays light), opening it in Dotadex; a row of heroes to switch it
 function InTheGame({ catalog }) {
   const heroes = useMemo(() => SHOWN.map((k) => catalog.heroByKey.get(k)).filter(Boolean), [catalog]);
   const [key, setKey] = useState(() => heroes[Math.floor(Date.now() / 86400000) % heroes.length]?.key);
-  const box = useRef(null);
-  const [seen, setSeen] = useState(false);
-  useEffect(() => {
-    const io = new IntersectionObserver(([e]) => e.isIntersecting && (setSeen(true), io.disconnect()), { rootMargin: "200px" });
-    if (box.current) io.observe(box.current);
-    return () => io.disconnect();
-  }, []);
   const hero = catalog.heroByKey.get(key);
   if (!hero) return null;
   return (
@@ -402,11 +402,19 @@ function InTheGame({ catalog }) {
             </a>
           </div>
         </div>
-        <div ref={box}>
-          <div className="relative h-[min(64vh,40rem)] max-sm:h-[26rem]">
-            <div aria-hidden="true" className="pointer-events-none absolute inset-x-[10%] bottom-[6%] h-[30%] rounded-[50%] bg-[radial-gradient(closest-side,rgba(229,70,46,0.14),transparent)] blur-2xl" />
-            {seen && <GameStage path={`hero/${hero.key}`} title={hero.name} />}
-          </div>
+        <div>
+          <a href={`${DOTADEX}/hero/${hero.key}`} target="_blank" rel="noreferrer" title={`Open ${hero.name} in Dotadex`} className="group relative block h-[min(64vh,40rem)] max-sm:h-[26rem]">
+            <div aria-hidden="true" className="pointer-events-none absolute inset-x-[10%] bottom-[4%] h-[34%] rounded-[50%] bg-[radial-gradient(closest-side,rgba(229,70,46,0.2),transparent)] transition-opacity duration-500 group-hover:opacity-100 opacity-70" />
+            <img
+              key={hero.key}
+              src={heroCard(hero)}
+              alt={hero.name}
+              className="anim-fade absolute inset-0 m-auto h-[112%] max-h-none w-auto max-w-full -translate-y-[4%] object-contain transition-transform duration-700 ease-[var(--ease-out-soft)] [mask-image:linear-gradient(to_right,transparent,black_12%,black_88%,transparent)] group-hover:-translate-y-[6%]"
+            />
+            <span className="absolute bottom-4 left-1/2 flex -translate-x-1/2 items-center gap-1.5 rounded-full bg-black/55 px-4 py-2 text-[0.84rem] text-ink-100 opacity-0 backdrop-blur transition-opacity duration-300 group-hover:opacity-100 max-md:opacity-100">
+              See {hero.name} in 3D <ArrowUpRight size={14} />
+            </span>
+          </a>
           <div className="no-bar mt-4 flex justify-center gap-2 overflow-x-auto px-1 pb-1">
             {heroes.map((h) => (
               <button

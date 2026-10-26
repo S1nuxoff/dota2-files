@@ -42,7 +42,7 @@ export default function TopBar({ route }) {
     <header
       style={{ viewTransitionName: "topbar" }}
       className={`fixed inset-x-0 top-0 z-30 border-b transition-[background-color,border-color] duration-300 ${
-        scrolled ? "border-white/[0.05] bg-ink-950/45 backdrop-blur-2xl backdrop-saturate-150" : "border-transparent bg-transparent"
+        scrolled ? "border-white/[0.05] bg-ink-950/55 backdrop-blur-xl" : "border-transparent bg-transparent"
       }`}
     >
       <nav aria-label="Main" className="page-x flex h-14 items-center gap-3 md:gap-6 lg:grid lg:grid-cols-[1fr_minmax(16rem,26rem)_1fr]">

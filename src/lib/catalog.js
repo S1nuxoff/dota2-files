@@ -284,3 +284,6 @@ const ATTRIBUTE_FILES = { Strength: "strength", Agility: "agility", Intelligence
 export const ATTRIBUTES = Object.keys(ATTRIBUTE_FILES);
 export const attributeIcon = (attribute) =>
   ATTRIBUTE_FILES[attribute] ? fileUrl(datasetById("images"), `panorama/images/primary_attribute_icons/primary_attribute_icon_${ATTRIBUTE_FILES[attribute]}_psd.png`) : "";
+
+// The hero's portrait of the game's hero picker: 142 x 188, light (about 15 KB), as the cards of a grid
+export const heroSelection = (hero) => fileUrl(datasetById("images"), `panorama/images/heroes/selection/${hero.id}_png.png`);
