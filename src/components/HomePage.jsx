@@ -154,14 +154,15 @@ function HeroArc({ heroes }) {
     <div
       className="group relative mt-10 h-[clamp(15rem,34vw,32rem)] w-full shrink-0 [--r:max(28rem,min(62vw,68rem))] max-sm:[--r:150vw] sm:mt-auto [mask-composite:intersect] [mask-image:linear-gradient(to_right,transparent,black_16%,black_84%,transparent),linear-gradient(to_bottom,black_62%,transparent)]"
     >
-      {/* the heroes stand on a dark world's rim: the disc under the line hides the light below it,
-          a wide faint atmosphere rises above it, the rim lit a little from within */}
+      {/* the heroes stand on a world's rim: a wide faint atmosphere rises above the line, and its light
+          runs down over the world below it, fading into the page */}
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute left-1/2 h-[calc(var(--r)*1.8)] w-[calc(var(--r)*1.8)] -translate-x-1/2 rounded-full bg-ink-950"
+        className="pointer-events-none absolute left-1/2 h-[calc(var(--r)*1.8)] w-[calc(var(--r)*1.8)] -translate-x-1/2 rounded-full"
         style={{
           top: `calc(${centre} - var(--r) * 0.9)`,
-          boxShadow: "0 -6px 40px -12px rgba(255,130,90,0.35), 0 -30px 140px -30px rgba(229,70,46,0.35), inset 0 26px 70px -46px rgba(255,140,100,0.3)",
+          background: "radial-gradient(70% 30% at 50% 0%, rgba(229,70,46,0.2), rgba(229,70,46,0.07) 45%, transparent 80%)",
+          boxShadow: "0 -8px 50px -14px rgba(255,130,90,0.45), 0 -36px 160px -30px rgba(229,70,46,0.45), inset 0 30px 80px -50px rgba(255,150,110,0.4)",
         }}
       />
       <div ref={wheel} className="absolute left-1/2 h-0 w-0 will-change-transform" style={{ top: centre }}>
@@ -187,7 +188,7 @@ function HeroArc({ heroes }) {
               <stop offset="1" stopColor="#ff9a74" stopOpacity="0.35" />
             </linearGradient>
           </defs>
-          <circle cx="500" cy="500" r="499" fill="none" stroke="url(#arc-light)" strokeWidth="1.6" />
+          <circle cx="500" cy="500" r="499" fill="none" stroke="url(#arc-light)" strokeWidth="2.2" />
         </svg>
         {picks.map((hero, i) => (
           <a
