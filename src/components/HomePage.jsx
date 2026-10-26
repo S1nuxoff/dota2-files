@@ -195,7 +195,7 @@ function HeroArc({ heroes }) {
             key={hero.id}
             href={link(`/hero/${hero.key}`)}
             title={hero.name}
-            className="arc-card group/card absolute top-0 left-0 block aspect-[1/1.1] w-[calc(var(--r)*0.17)] overflow-hidden"
+            className="arc-card group/card absolute top-0 left-0 block aspect-[1/1.1] w-[calc(var(--r)*0.17)]"
             style={{ transform: `translate(-50%, -50%) rotate(${i * step}deg) translateY(calc(var(--r) * -1))` }}
           >
             {/* the hero whole, as the game's set pages show it (448 x 678, empty above and below), on no
@@ -207,7 +207,7 @@ function HeroArc({ heroes }) {
               decoding="async"
               fetchPriority={Math.min(i, picks.length - i) < 5 ? "high" : "low"}
               onError={(e) => e.currentTarget.src !== heroSelection(hero) && (e.currentTarget.src = heroSelection(hero))}
-              className="absolute top-[-11.2%] left-0 w-full max-w-none transition-[filter] duration-300 [mask-composite:intersect] [mask-image:linear-gradient(to_right,transparent,black_12%,black_88%,transparent),linear-gradient(to_bottom,black_80%,transparent_86%)] group-hover/card:drop-shadow-[0_0_18px_rgba(229,70,46,0.7)]"
+              className="absolute top-[-11.2%] left-0 w-full max-w-none transition-[filter] duration-300 [mask-composite:intersect] [mask-image:linear-gradient(to_right,transparent_2%,black_26%,black_74%,transparent_98%),linear-gradient(to_bottom,black_66%,transparent_82%)] group-hover/card:drop-shadow-[0_0_18px_rgba(229,70,46,0.7)]"
             />
           </a>
         ))}
