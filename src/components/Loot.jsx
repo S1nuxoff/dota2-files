@@ -57,7 +57,7 @@ export default function Loot({ item, catalog, compact = false }) {
         <Progressive
           items={ids}
           step={36}
-          className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-[repeat(auto-fit,minmax(12rem,15rem))] sm:justify-center sm:gap-4"
+          className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-[repeat(auto-fit,minmax(16rem,20rem))] sm:justify-center sm:gap-4"
           render={(id, i) => <ItemCard key={id} item={catalog.items[id]} rarities={catalog.rarities} delay={Math.min(i % 36, 24) * 20} list={ids} />}
         />
       </section>

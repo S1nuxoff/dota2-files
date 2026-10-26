@@ -184,7 +184,7 @@ export default function ItemPage({ itemId, catalog, indexes, withCopies, route }
 
         {pictures.length > 1 && (
           <Section title="Pictures" count={pictures.length} sub="Click one to download it">
-            <div className="grid grid-cols-2 gap-2 sm:grid-cols-[repeat(auto-fit,minmax(14rem,17.5rem))] sm:justify-center sm:gap-3">
+            <div className="grid grid-cols-2 gap-2 sm:grid-cols-[repeat(auto-fit,minmax(17.5rem,22rem))] sm:justify-center sm:gap-3">
               {pictures.map((e) => (
                 <a key={e.path} href={fileUrl(datasetById(e.ds), e.path, true)} title={`Download ${e.name}`} className="checker flex aspect-video items-center justify-center overflow-hidden rounded-xl border border-white/[0.06] transition-colors hover:border-white/20">
                   <img src={fileUrl(datasetById(e.ds), e.path)} alt="" loading="lazy" className="h-full w-full object-contain" />
