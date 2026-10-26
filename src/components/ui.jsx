@@ -57,16 +57,21 @@ export function PageHead({ crumbs, title, sub, search, actions, children, classN
   );
 }
 
+// A fine noise, drawn by the browser (an SVG turbulence)
+const GRAIN = `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0.55 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")`;
+
 // The front page's light at the top of a page: the red of the Dotadex mark from above, fading down.
 // Put inside a relative, isolated parent
 export const TOP_LIGHT = "bg-[radial-gradient(90%_95%_at_50%_0%,rgba(229,70,46,0.3),rgba(150,30,18,0.11)_52%,transparent_82%)]";
 export function HeadGlow({ className = "-z-10" }) {
   return (
     <div aria-hidden="true" className={`anim-fade pointer-events-none absolute inset-x-0 top-0 h-[70rem] overflow-hidden ${className}`}>
-      <div className={`absolute inset-0 ${TOP_LIGHT}`} />
+      <div className={`absolute inset-0 max-sm:opacity-60 ${TOP_LIGHT}`} />
       {/* the light shimmers: a warmer and a deeper red drifting slowly to each side, at their own pace */}
       <div className="anim-sway absolute top-[-12rem] left-[18%] h-[34rem] w-[42%] rounded-[50%] bg-[radial-gradient(closest-side,rgba(255,128,64,0.16),transparent)] blur-3xl" style={{ "--sway": "9%", animationDuration: "19s" }} />
-      <div className="anim-sway absolute top-[-10rem] right-[16%] h-[32rem] w-[40%] rounded-[50%] bg-[radial-gradient(closest-side,rgba(205,36,84,0.14),transparent)] blur-3xl" style={{ "--sway": "-10%", animationDuration: "23s", animationDelay: "-7s" }} />
+      <div className="anim-sway absolute top-[-10rem] right-[16%] max-sm:hidden h-[32rem] w-[40%] rounded-[50%] bg-[radial-gradient(closest-side,rgba(205,36,84,0.14),transparent)] blur-3xl" style={{ "--sway": "-10%", animationDuration: "23s", animationDelay: "-7s" }} />
+      {/* a fine grain over the light, so its fall to the dark has no steps (banding) */}
+      <div className="absolute inset-0 opacity-[0.05] mix-blend-overlay [mask-image:linear-gradient(to_bottom,black,transparent_75%)]" style={{ backgroundImage: GRAIN, backgroundSize: "160px 160px" }} />
     </div>
   );
 }

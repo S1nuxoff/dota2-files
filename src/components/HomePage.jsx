@@ -74,15 +74,15 @@ export default function HomePage({ catalog, indexes }) {
 // The opening: what this is, the search, and the heroes going round on an arc of light under it
 function Opening({ catalog, stats }) {
   return (
-    <section className="relative -mt-14 flex min-h-[min(100svh,64rem)] flex-col overflow-hidden pt-14">
+    <section className="relative -mt-14 flex flex-col overflow-hidden pt-14 sm:min-h-[min(100svh,64rem)]">
       {/* the red of the Dotadex mark, as a light from above */}
       <HeadGlow className="" />
-      <div className="relative z-10 page-x flex flex-col items-center pt-[max(3rem,calc(50svh-18rem))] text-center">
+      <div className="relative z-10 page-x flex flex-col items-center pt-16 text-center sm:pt-[max(3rem,calc(50svh-18rem))]">
         <h1 style={{ animationDelay: "70ms" }} className="anim-card max-w-4xl text-[clamp(2.5rem,6.4vw,5.6rem)] leading-[0.98] font-semibold tracking-[-0.055em] text-balance">
           Every file of Dota&nbsp;2
         </h1>
         <p style={{ animationDelay: "140ms" }} className="anim-card mt-6 max-w-2xl text-[clamp(1rem,1.25vw,1.2rem)] leading-relaxed text-pretty text-ink-400">
-          Heroes, cosmetics, models, voice lines, effects and chest drops, straight from the game{stats?.files ? `: ${formatCount(stats.files)} files` : ""}. Sorted, linked and free to download.
+          {stats?.files ? `${formatCount(stats.files)} files` : "Every file"} straight from the game, sorted and free to download.
         </p>
         <button
           onClick={() => openPalette()}
@@ -145,7 +145,7 @@ function HeroArc({ heroes }) {
   }, []);
   return (
     <div
-      className="group anim-fade relative mt-auto h-[clamp(18rem,34vw,32rem)] w-full shrink-0 [--r:max(34rem,min(62vw,68rem))] [mask-composite:intersect] [mask-image:linear-gradient(to_right,transparent,black_16%,black_84%,transparent),linear-gradient(to_bottom,black_62%,transparent)]"
+      className="group anim-fade relative mt-10 h-[clamp(15rem,34vw,32rem)] w-full shrink-0 [--r:max(28rem,min(62vw,68rem))] max-sm:[--r:150vw] sm:mt-auto [mask-composite:intersect] [mask-image:linear-gradient(to_right,transparent,black_16%,black_84%,transparent),linear-gradient(to_bottom,black_62%,transparent)]"
       style={{ animationDelay: "350ms" }}
     >
       {/* the line of light the heroes stand on: the top edge of a circle inside the wheel, a fine
@@ -203,11 +203,11 @@ function Numbers({ stats }) {
   ];
   return (
     <section data-reveal className="page-x relative z-10 -mt-6">
-      <dl className="grid grid-cols-2 gap-px overflow-hidden rounded-2xl border border-white/[0.07] bg-white/[0.06] sm:grid-cols-3 lg:grid-cols-6">
+      <dl className="grid grid-cols-3 gap-px overflow-hidden rounded-2xl border border-white/[0.07] bg-white/[0.06] sm:grid-cols-3 lg:grid-cols-6">
         {cells.map(([v, label, size]) => (
-          <div key={label} className="bg-ink-950/90 px-5 py-5 backdrop-blur sm:px-6">
-            <dd className="text-[clamp(1.5rem,2.4vw,2.1rem)] font-semibold tracking-[-0.04em] tabular-nums">{v ? (size ? formatSize(v) : formatCount(v)) : "…"}</dd>
-            <dt className="mt-1 text-[0.84rem] text-ink-400">{label}</dt>
+          <div key={label} className="bg-ink-950/90 px-3 py-3.5 backdrop-blur sm:px-6 sm:py-5">
+            <dd className="text-[clamp(1.1rem,2.4vw,2.1rem)] font-semibold tracking-[-0.04em] tabular-nums">{v ? (size ? formatSize(v) : formatCount(v)) : "…"}</dd>
+            <dt className="mt-1 text-[0.74rem] leading-tight text-ink-400 sm:text-[0.84rem]">{label}</dt>
           </div>
         ))}
       </dl>
