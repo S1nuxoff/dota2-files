@@ -128,8 +128,8 @@ function HeroArc({ heroes }) {
   const picks = useMemo(() => daily(heroes, 28), [heroes]);
   const step = 360 / picks.length;
   // The wheel's middle: its radius below the top card's centre, which stands half a card (1 : 1.1 of
-  // a card 0.14 of the radius wide) and a gap below the top of the band, so no card is cut there
-  const centre = "calc(var(--r) * 1.077 + 2rem)";
+  // a card 0.17 of the radius wide) and a gap below the top of the band, so no card is cut there
+  const centre = "calc(var(--r) * 1.094 + 2rem)";
   // The wheel turns on with the page's scroll, a degree for every 14 px, easing after it
   const wheel = useRef(null);
   useEffect(() => {
@@ -158,9 +158,9 @@ function HeroArc({ heroes }) {
           runs down over the world below it, fading into the page */}
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute left-1/2 h-[calc(var(--r)*1.8)] w-[calc(var(--r)*1.8)] -translate-x-1/2 rounded-full"
+        className="pointer-events-none absolute left-1/2 h-[calc(var(--r)*1.76)] w-[calc(var(--r)*1.76)] -translate-x-1/2 rounded-full"
         style={{
-          top: `calc(${centre} - var(--r) * 0.9)`,
+          top: `calc(${centre} - var(--r) * 0.88)`,
           background: "radial-gradient(70% 30% at 50% 0%, rgba(229,70,46,0.2), rgba(229,70,46,0.07) 45%, transparent 80%)",
           boxShadow: "0 -8px 50px -14px rgba(255,130,90,0.45), 0 -36px 160px -30px rgba(229,70,46,0.45), inset 0 30px 80px -50px rgba(255,150,110,0.4)",
         }}
@@ -174,7 +174,7 @@ function HeroArc({ heroes }) {
           aria-hidden="true"
           viewBox="0 0 1000 1000"
           className="pointer-events-none absolute overflow-visible"
-          style={{ left: "calc(var(--r) * -0.9)", top: "calc(var(--r) * -0.9)", width: "calc(var(--r) * 1.8)", height: "calc(var(--r) * 1.8)" }}
+          style={{ left: "calc(var(--r) * -0.88)", top: "calc(var(--r) * -0.88)", width: "calc(var(--r) * 1.76)", height: "calc(var(--r) * 1.76)" }}
         >
           <defs>
             {/* brightness flowing along the ring: soft bright reaches easing into dim ones */}
@@ -195,7 +195,7 @@ function HeroArc({ heroes }) {
             key={hero.id}
             href={link(`/hero/${hero.key}`)}
             title={hero.name}
-            className="arc-card absolute top-0 left-0 block aspect-[1/1.1] w-[calc(var(--r)*0.14)] overflow-hidden rounded-xl bg-[radial-gradient(90%_70%_at_50%_35%,#2a2a30,#141416_75%)] shadow-[0_20px_40px_-18px_rgba(0,0,0,0.9)] transition-[box-shadow] duration-300 hover:shadow-[0_0_40px_-6px_rgba(229,70,46,0.6)]"
+            className="arc-card absolute top-0 left-0 block aspect-[1/1.1] w-[calc(var(--r)*0.17)] overflow-hidden rounded-xl bg-[radial-gradient(90%_70%_at_50%_35%,#2a2a30,#141416_75%)] shadow-[0_20px_40px_-18px_rgba(0,0,0,0.9)] transition-[box-shadow] duration-300 hover:shadow-[0_0_40px_-6px_rgba(229,70,46,0.6)]"
             style={{ transform: `translate(-50%, -50%) rotate(${i * step}deg) translateY(calc(var(--r) * -1))` }}
           >
             {/* the hero whole, as the game's set pages show it (448 x 678, empty above and below):
