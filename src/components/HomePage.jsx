@@ -123,6 +123,26 @@ function HeroArc({ heroes }) {
   // The wheel's middle: its radius below the top card's centre, which stands half a card (3 : 4 of
   // a card 0.13 of the radius wide) and a gap below the top of the band, so no card is cut there
   const centre = "calc(var(--r) * 1.087 + 2rem)";
+  // The wheel turns on with the page's scroll, a degree for every 14 px, easing after it
+  const wheel = useRef(null);
+  useEffect(() => {
+    if (window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) return;
+    let shown = window.scrollY / 14;
+    let frame = 0;
+    const tick = () => {
+      const target = window.scrollY / 14;
+      shown += (target - shown) * 0.12;
+      if (wheel.current) wheel.current.style.transform = `rotate(${(-shown).toFixed(3)}deg)`;
+      frame = Math.abs(target - shown) > 0.01 ? requestAnimationFrame(tick) : 0;
+    };
+    const onScroll = () => (frame ||= requestAnimationFrame(tick));
+    tick();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      cancelAnimationFrame(frame);
+    };
+  }, []);
   return (
     <div
       className="group anim-fade relative mt-auto h-[clamp(18rem,34vw,32rem)] w-full shrink-0 [--r:max(34rem,min(62vw,68rem))] [mask-composite:intersect] [mask-image:linear-gradient(to_right,transparent,black_16%,black_84%,transparent),linear-gradient(to_bottom,black_62%,transparent)]"
@@ -145,7 +165,8 @@ function HeroArc({ heroes }) {
         className="pointer-events-none absolute left-1/2 h-[calc(var(--r)*1.8)] w-[calc(var(--r)*1.8)] -translate-x-1/2 rounded-full border-transparent [mask-image:linear-gradient(to_right,transparent_8%,black_36%,black_64%,transparent_92%)] "
         style={{ top: `calc(${centre} - var(--r) * 0.9)`, borderWidth: "3px", borderTopColor: "rgba(255,150,115,0.95)" }}
       />
-      <div className="anim-turn absolute left-1/2 h-0 w-0 group-hover:[animation-play-state:paused]" style={{ top: centre, "--turn": "260s" }}>
+      <div ref={wheel} className="absolute left-1/2 h-0 w-0" style={{ top: centre }}>
+      <div className="anim-turn h-0 w-0 group-hover:[animation-play-state:paused]" style={{ "--turn": "260s" }}>
         {picks.map((hero, i) => (
           <a
             key={hero.id}
@@ -164,6 +185,7 @@ function HeroArc({ heroes }) {
             />
           </a>
         ))}
+      </div>
       </div>
     </div>
   );
