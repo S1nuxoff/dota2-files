@@ -154,17 +154,21 @@ function HeroArc({ heroes }) {
     <div
       className="group relative mt-10 h-[clamp(15rem,34vw,32rem)] w-full shrink-0 [--r:max(28rem,min(62vw,68rem))] max-sm:[--r:150vw] sm:mt-auto [mask-composite:intersect] [mask-image:linear-gradient(to_right,transparent,black_16%,black_84%,transparent),linear-gradient(to_bottom,black_62%,transparent)]"
     >
-      {/* a haze of red over the line of light the heroes stand on (the line itself turns with them) */}
+      {/* the heroes stand on a dark world's rim: the disc under the line hides the light below it,
+          a wide faint atmosphere rises above it, the rim lit a little from within */}
       <div
         aria-hidden="true"
-        className="anim-breathe pointer-events-none absolute left-1/2 h-[calc(var(--r)*0.34)] w-[calc(var(--r)*1.3)] -translate-x-1/2 -translate-y-1/2 rounded-[50%] bg-[radial-gradient(closest-side,rgba(229,70,46,0.3),rgba(229,70,46,0.08)_55%,transparent)]"
-        style={{ top: `calc(${centre} - var(--r) * 0.9)` }}
+        className="pointer-events-none absolute left-1/2 h-[calc(var(--r)*1.8)] w-[calc(var(--r)*1.8)] -translate-x-1/2 rounded-full bg-ink-950"
+        style={{
+          top: `calc(${centre} - var(--r) * 0.9)`,
+          boxShadow: "0 -6px 40px -12px rgba(255,130,90,0.35), 0 -30px 140px -30px rgba(229,70,46,0.35), inset 0 26px 70px -46px rgba(255,140,100,0.3)",
+        }}
       />
       <div ref={wheel} className="absolute left-1/2 h-0 w-0 will-change-transform" style={{ top: centre }}>
       <div className="anim-roll h-0 w-0" style={{ animationDelay: "350ms" }}>
       <div className="anim-turn h-0 w-0 will-change-transform group-hover:[animation-play-state:paused]" style={{ "--turn": "260s" }}>
-        {/* the line of light, turning with the wheel: one stroke whose brightness flows along it, bright
-            reaches easing into dim ones, so its turning shows */}
+        {/* the line of light, turning with the wheel: one fine stroke whose brightness flows along it,
+            bright reaches easing into dim ones, so its turning shows */}
         <svg
           aria-hidden="true"
           viewBox="0 0 1000 1000"
@@ -172,26 +176,18 @@ function HeroArc({ heroes }) {
           style={{ left: "calc(var(--r) * -0.9)", top: "calc(var(--r) * -0.9)", width: "calc(var(--r) * 1.8)", height: "calc(var(--r) * 1.8)" }}
         >
           <defs>
-            <filter id="arc-glow" x="-10%" y="-10%" width="120%" height="120%">
-              <feGaussianBlur stdDeviation="5" result="b" />
-              <feMerge>
-                <feMergeNode in="b" />
-                <feMergeNode in="SourceGraphic" />
-              </feMerge>
-            </filter>
             {/* brightness flowing along the ring: soft bright reaches easing into dim ones */}
             <linearGradient id="arc-light" x1="0" y1="0" x2="1" y2="1">
-              <stop offset="0" stopColor="#ff8c64" stopOpacity="0.25" />
-              <stop offset="0.18" stopColor="#ffb08a" stopOpacity="1" />
-              <stop offset="0.36" stopColor="#ff8c64" stopOpacity="0.3" />
-              <stop offset="0.52" stopColor="#ffc2a0" stopOpacity="1" />
-              <stop offset="0.68" stopColor="#ff8c64" stopOpacity="0.28" />
-              <stop offset="0.84" stopColor="#ffa47c" stopOpacity="0.9" />
-              <stop offset="1" stopColor="#ff8c64" stopOpacity="0.25" />
+              <stop offset="0" stopColor="#ff9a74" stopOpacity="0.35" />
+              <stop offset="0.18" stopColor="#ffd2b8" stopOpacity="1" />
+              <stop offset="0.36" stopColor="#ff9a74" stopOpacity="0.4" />
+              <stop offset="0.52" stopColor="#fff0e6" stopOpacity="1" />
+              <stop offset="0.68" stopColor="#ff9a74" stopOpacity="0.38" />
+              <stop offset="0.84" stopColor="#ffc6a6" stopOpacity="0.95" />
+              <stop offset="1" stopColor="#ff9a74" stopOpacity="0.35" />
             </linearGradient>
           </defs>
-          <circle cx="500" cy="500" r="499" fill="none" stroke="url(#arc-light)" strokeWidth="7" opacity="0.55" style={{ filter: "blur(6px)" }} />
-          <circle cx="500" cy="500" r="499" fill="none" stroke="url(#arc-light)" strokeWidth="2.4" filter="url(#arc-glow)" />
+          <circle cx="500" cy="500" r="499" fill="none" stroke="url(#arc-light)" strokeWidth="1.6" />
         </svg>
         {picks.map((hero, i) => (
           <a
