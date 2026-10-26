@@ -106,16 +106,16 @@ textarea:focus {
 
 /* A surface: one step above the page, with a hairline edge and a faint light on its top edge */
 @utility surface {
-  background: linear-gradient(180deg, rgb(255 255 255 / 0.025), transparent 60%), rgb(255 255 255 / 0.012);
-  backdrop-filter: blur(18px) saturate(150%);
+  background: linear-gradient(180deg, rgb(255 255 255 / 0.03), transparent 60%), rgb(255 255 255 / 0.03);
+  backdrop-filter: blur(24px) saturate(140%);
   border: 1px solid rgb(255 255 255 / 0.065);
   box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.035);
 }
 
 /* A card, a panel, a field: frosted glass, the page's light showing through blurred */
 @utility frost {
-  background: rgb(255 255 255 / 0.015);
-  backdrop-filter: blur(18px) saturate(150%);
+  background: rgb(255 255 255 / 0.035);
+  backdrop-filter: blur(24px) saturate(140%);
 }
 
 /* A control on a surface: a field, a chip, a quiet button */
