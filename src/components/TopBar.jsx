@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
-import { ArrowUpRight, Box, Code, Database, FolderOpen, Gem, Heart, Map as MapIcon, Search, Users } from "lucide-react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { ArrowUpRight, Box, Code, Database, FolderOpen, Gem, Heart, Map as MapIcon, ScrollText, Search, Users } from "lucide-react";
 import { link } from "../lib/route.js";
 import { DOTADEX, datasetById } from "../datasets.js";
 import { openPalette } from "../lib/palette.js";
@@ -15,6 +15,7 @@ export const SECTIONS = [
   ["/cosmetics", "Cosmetics", Gem, (r) => COSMETIC.has(r.ds)],
   ["/3d", "3D Models", Box, (r) => r.ds === "3d"],
   ["/map", "Map", MapIcon, (r) => r.ds === "map"],
+  ["/patches", "Patches", ScrollText, (r) => r.ds === "patches"],
   ["/files", "Files", FolderOpen, (r) => r.ds === "files" || r.ds === "all" || !!datasetById(r.ds)],
 ];
 
@@ -33,12 +34,46 @@ function useScrolled() {
   return scrolled;
 }
 
+// The two sides of the bar as wide as the wider of them, so the search between them stands in the
+// middle; where that leaves it less than 13rem, the search is the button on the right instead
+function useCentred() {
+  const nav = useRef(null);
+  const left = useRef(null);
+  const right = useRef(null);
+  const [layout, setLayout] = useState({ side: 0, fits: true });
+  useLayoutEffect(() => {
+    const wide = matchMedia("(min-width: 80rem)");
+    const measure = () => {
+      let next = { side: 0, fits: true };
+      if (wide.matches) {
+        const style = getComputedStyle(nav.current);
+        const side = Math.ceil(Math.max(left.current.offsetWidth, right.current.offsetWidth));
+        const room = nav.current.clientWidth - parseFloat(style.paddingLeft) - parseFloat(style.paddingRight) - 2 * side - 2 * parseFloat(style.columnGap);
+        const fits = room >= 13 * parseFloat(getComputedStyle(document.documentElement).fontSize);
+        next = { side: fits ? side : 0, fits };
+      }
+      setLayout((l) => (l.side === next.side && l.fits === next.fits ? l : next));
+    };
+    const ro = new ResizeObserver(measure);
+    for (const r of [nav, left, right]) ro.observe(r.current);
+    wide.addEventListener("change", measure);
+    measure();
+    return () => {
+      ro.disconnect();
+      wide.removeEventListener("change", measure);
+    };
+  }, []);
+  return { nav, left, right, ...layout };
+}
+
 // The site's bar: the mark and the parts on the left, the search over everything in the middle,
 // the links out on the right; translucent once the page scrolls, so the page's light shows through.
 // On a phone the parts move to the bar at the bottom (MobileNav)
 export default function TopBar({ route }) {
   const scrolled = useScrolled();
   const home = !route.ds;
+  const { nav, left, right, side, fits } = useCentred();
+  const sideStyle = side ? { minWidth: side } : undefined;
   return (
     <header
       style={{ viewTransitionName: "topbar" }}
@@ -46,8 +81,9 @@ export default function TopBar({ route }) {
         scrolled ? "border-white/[0.05] bg-ink-950/55 backdrop-blur-xl" : "border-transparent bg-transparent"
       }`}
     >
-      <nav aria-label="Main" className="page-x flex h-14 items-center gap-3 md:gap-5 xl:gap-8">
-        <div className="flex shrink-0 items-center gap-3 md:gap-5 xl:flex-1 xl:basis-0 xl:gap-8">
+      <nav ref={nav} aria-label="Main" className="page-x flex h-14 items-center gap-3 md:gap-5 xl:gap-8">
+        <div className="flex shrink-0 xl:flex-1 xl:basis-0" style={sideStyle}>
+        <div ref={left} className="flex shrink-0 items-center gap-3 md:gap-5 xl:gap-8">
           <a href={link("/")} className="flex shrink-0 items-center py-2" aria-label="Dotadex Files, home">
             <img src={`${import.meta.env.BASE_URL}logo.png`} alt="Dotadex" width="875" height="113" className="h-3.5 w-auto" />
             <span className="ml-2.5 hidden text-[0.86rem] font-medium text-ink-400 sm:inline">Files</span>
@@ -68,21 +104,22 @@ export default function TopBar({ route }) {
                 </li>
               );
             })}
-            <li className="hidden 2xl:block">
+            <li className="hidden min-[112rem]:block">
               <a href={DOTADEX} target="_blank" rel="noreferrer" title="Heroes and items as the game shows them" className="flex h-8 items-center gap-1 rounded-lg px-3 text-[0.9rem] text-ink-400 transition-colors hover:bg-white/[0.05] hover:text-ink-100">
                 Dotadex <ArrowUpRight size={13} className="text-ember" />
               </a>
             </li>
           </ul>
         </div>
+        </div>
         {/* the search in the middle of the bar: the two sides grow alike, so it stands centred while the
             parts leave room, and narrows (never closer than the gap) when they do not; a button on the
             right on a smaller screen. The front page has its own large search */}
-        <div className="flex min-w-0 flex-1 justify-center xl:w-[24rem] xl:flex-none xl:shrink">
+        <div className={`flex min-w-0 flex-1 justify-center ${fits ? "xl:w-[24rem] xl:flex-none xl:shrink" : ""}`}>
           {!home && (
           <button
             onClick={() => openPalette()}
-            className="hidden h-9 w-full max-w-[26rem] items-center gap-2.5 rounded-xl border border-white/[0.08] bg-white/[0.04] pr-2 pl-3 text-[0.88rem] text-ink-500 backdrop-blur-xl transition-colors hover:border-white/[0.16] hover:bg-white/[0.07] hover:text-ink-300 xl:flex"
+            className={`hidden h-9 w-full max-w-[26rem] items-center gap-2.5 rounded-xl border border-white/[0.08] bg-white/[0.04] pr-2 pl-3 text-[0.88rem] text-ink-500 backdrop-blur-xl transition-colors hover:border-white/[0.16] hover:bg-white/[0.07] hover:text-ink-300 ${fits ? "xl:flex" : ""}`}
           >
             <Search size={15} className="text-ink-400" />
             <span className="flex-1 text-left">Search everything</span>
@@ -90,7 +127,8 @@ export default function TopBar({ route }) {
           </button>
           )}
         </div>
-        <div className="flex items-center justify-end gap-1 xl:flex-1 xl:basis-0">
+        <div className="flex justify-end xl:flex-1 xl:basis-0" style={sideStyle}>
+        <div ref={right} className="flex shrink-0 items-center gap-1">
           <div className="hidden items-center gap-1 lg:flex">
             <a href={DATASETS_URL} target="_blank" rel="noreferrer" title="The Hugging Face datasets every file comes from" aria-label="Datasets on Hugging Face" className="flex h-9 w-9 items-center justify-center rounded-lg text-ink-400 transition-colors hover:bg-white/[0.05] hover:text-ink-100">
               <Database size={16} />
@@ -110,9 +148,10 @@ export default function TopBar({ route }) {
             <Heart size={15} className="text-ember transition-transform group-hover:scale-110" />
             <span className="hidden lg:inline">Support</span>
           </a>
-          <button onClick={() => openPalette()} aria-label="Search" className={`-mr-1 h-10 w-10 items-center justify-center rounded-xl text-ink-200 transition-colors hover:bg-white/[0.06] xl:hidden ${home ? "hidden" : "flex"}`}>
+          <button onClick={() => openPalette()} aria-label="Search" className={`-mr-1 h-10 w-10 items-center justify-center rounded-xl text-ink-200 transition-colors hover:bg-white/[0.06] ${fits ? "xl:hidden" : ""} ${home ? "hidden" : "flex"}`}>
             <Search size={19} />
           </button>
+        </div>
         </div>
       </nav>
     </header>
@@ -127,7 +166,7 @@ export function MobileNav({ route }) {
       style={{ viewTransitionName: "mobilenav" }}
       className="fixed inset-x-0 bottom-0 z-30 border-t border-white/[0.07] bg-ink-950/85 pb-[env(safe-area-inset-bottom)] backdrop-blur-xl md:hidden"
     >
-      <ul className="grid h-[4.25rem] grid-cols-6">
+      <ul className="grid h-[4.25rem] grid-cols-7">
         {SECTIONS.map(([path, title, Icon, on]) => {
           const active = on(route);
           return (
