@@ -12,6 +12,7 @@ import Browser from "./components/Browser.jsx";
 import HeroesPage from "./components/HeroesPage.jsx";
 import HeroPage from "./components/HeroPage.jsx";
 import ItemPage from "./components/ItemPage.jsx";
+import TreasurePage, { isTreasure } from "./components/TreasurePage.jsx";
 import CosmeticsPage from "./components/CosmeticsPage.jsx";
 import ModelsPage from "./components/ModelsPage.jsx";
 import MapPage from "./components/MapPage.jsx";
@@ -147,6 +148,7 @@ export default function App() {
   else if (route.ds === "music") page = <MusicPage {...common} />;
   else if (route.ds === "bundles") page = <BundlesPage catalog={catalog} />;
   else if (route.ds === "set") page = <SetPage key={route.dir} setKey={route.dir} {...common} />;
+  else if (route.ds === "item" && isTreasure(item)) page = <TreasurePage key={route.dir} item={item} {...common} />;
   else if (route.ds === "item") page = <ItemPage key={route.dir} itemId={route.dir} {...common} />;
   else if (route.ds === "cosmetics") page = <CosmeticsPage key={route.dir} prefab={route.dir} catalog={catalog} />;
   else if (route.ds === "3d") page = <ModelsPage catalog={catalog} indexes={indexes} />;
