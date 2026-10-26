@@ -249,6 +249,12 @@ page("/3d", {
   description: "Browse and download every Dota 2 3D model as glb with textures and animations: heroes, cosmetics, couriers, creeps, trees, rocks, buildings and scenes, by type, theme, size and hero.",
   body: "<h1>3D models</h1><p>Every model of Dota 2 as glb with its textures and animations, sorted by type (heroes, cosmetics, units, world, effects, scenes), theme, size and hero.</p>",
 });
+page("/patches", {
+  crumbs: [["/patches", "Patch notes"]],
+  title: "Dota 2 patch notes: every gameplay patch since 7.06d",
+  description: "Every Dota 2 gameplay patch from the game's own notes: general changes, items, neutral items and every hero's abilities, talents and facets, patch by patch.",
+  body: "<h1>Patch notes</h1><p>Every gameplay patch of Dota 2 since 7.06d, from the notes the game itself shows.</p>",
+});
 page("/map", {
   crumbs: [["/map", "The map"]],
   title: "The Dota 2 map as a 3D model: every terrain to download",

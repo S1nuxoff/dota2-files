@@ -3,7 +3,7 @@ import { link } from "../lib/route.js";
 import { DATASETS_URL, SOURCE_URL, SUPPORT_URL } from "./TopBar.jsx";
 
 const COLUMNS = [
-  ["Browse", [["/heroes", "Heroes"], ["/sets", "Sets"], ["/bundles", "Bundles"], ["/cosmetics/treasures", "Treasures"], ["/music", "Music"]]],
+  ["Browse", [["/heroes", "Heroes"], ["/sets", "Sets"], ["/bundles", "Bundles"], ["/cosmetics/treasures", "Treasures"], ["/music", "Music"], ["/patches", "Patch notes"]]],
   ["Files", [["/3d", "3D models"], ["/cosmetics", "Cosmetics"], ["/files", "Datasets"], [DATASETS_URL, "Hugging Face"]]],
   ["Project", [[DOTADEX, "Dotadex"], [SOURCE_URL, "Source code"], [SUPPORT_URL, "Support the author"]]],
 ];

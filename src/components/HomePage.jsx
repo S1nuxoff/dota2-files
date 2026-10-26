@@ -235,6 +235,7 @@ const STEPS = [
 
 // What is there, newest first, and what comes next
 const DONE = [
+  ["2026-10-26", "Patch notes", "Every gameplay patch since 7.06d, from the notes the game itself shows, hero by hero and item by item."],
   ["2026-10-26", "The map", "The whole map and every terrain, each a few hundred MB, on a page of its own."],
   ["2026-10-25", "Search by look", "Describe a model in words or cut it out of a screenshot: every model's picture is compared with it."],
   ["2026-10-25", "Embeds", "Any hero or item in 3D on your own site, with the game's shading, by pasting one line."],
@@ -326,6 +327,7 @@ function Downloads({ indexes }) {
             ["/cosmetics", "Browse cosmetics"],
             ["/3d", "Find a 3D model"],
             ["/map", "Get the map"],
+            ["/patches", "Read the patch notes"],
           ].map(([href, label]) => (
             <a key={href} href={link(href)} className="group inline-flex items-center gap-2 py-1 text-ink-300 transition-colors hover:text-ink-100">
               {label} <ArrowRight size={15} className="text-ink-500 transition-transform group-hover:translate-x-0.5 group-hover:text-ink-100" />
