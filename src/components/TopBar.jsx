@@ -37,6 +37,7 @@ function useScrolled() {
 // On a phone the parts move to the bar at the bottom (MobileNav)
 export default function TopBar({ route }) {
   const scrolled = useScrolled();
+  const home = !route.ds;
   return (
     <header
       style={{ viewTransitionName: "topbar" }}
@@ -73,14 +74,19 @@ export default function TopBar({ route }) {
             </li>
           </ul>
         </div>
-        <button
-          onClick={() => openPalette()}
-          className="hidden h-9 w-60 items-center gap-2.5 lg:w-full rounded-xl border border-white/[0.08] bg-ink-900/80 pr-2 pl-3 text-[0.88rem] text-ink-500 transition-colors hover:border-white/[0.16] hover:text-ink-300 md:flex"
-        >
-          <Search size={15} className="text-ink-400" />
-          <span className="flex-1 text-left">Search everything</span>
-          <kbd className="rounded-md border border-white/10 px-1.5 py-0.5 font-sans text-[0.7rem] text-ink-400">{SEARCH_KEY}</kbd>
-        </button>
+        {/* the front page has its own large search: the bar keeps the middle free there */}
+        {home ? (
+          <div className="hidden lg:block" />
+        ) : (
+          <button
+            onClick={() => openPalette()}
+            className="hidden h-9 w-60 items-center gap-2.5 lg:w-full rounded-xl border border-white/[0.08] bg-ink-900/80 pr-2 pl-3 text-[0.88rem] text-ink-500 transition-colors hover:border-white/[0.16] hover:text-ink-300 md:flex"
+          >
+            <Search size={15} className="text-ink-400" />
+            <span className="flex-1 text-left">Search everything</span>
+            <kbd className="rounded-md border border-white/10 px-1.5 py-0.5 font-sans text-[0.7rem] text-ink-400">{SEARCH_KEY}</kbd>
+          </button>
+        )}
         <div className="flex items-center justify-end gap-1">
           <div className="hidden items-center gap-1 lg:flex">
             <a href={DATASETS_URL} target="_blank" rel="noreferrer" title="The Hugging Face datasets every file comes from" aria-label="Datasets on Hugging Face" className="flex h-9 w-9 items-center justify-center rounded-lg text-ink-400 transition-colors hover:bg-white/[0.05] hover:text-ink-100">
@@ -101,7 +107,7 @@ export default function TopBar({ route }) {
             <Heart size={15} className="text-ember transition-transform group-hover:scale-110" />
             <span className="hidden sm:inline">Support</span>
           </a>
-          <button onClick={() => openPalette()} aria-label="Search" className="-mr-1 flex h-10 w-10 items-center justify-center rounded-xl text-ink-200 transition-colors hover:bg-white/[0.06] md:hidden">
+          <button onClick={() => openPalette()} aria-label="Search" className={`-mr-1 h-10 w-10 items-center justify-center rounded-xl text-ink-200 transition-colors hover:bg-white/[0.06] md:hidden ${home ? "hidden" : "flex"}`}>
             <Search size={19} />
           </button>
         </div>
