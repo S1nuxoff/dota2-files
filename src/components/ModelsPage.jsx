@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { useDeferredValue, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { fuzzyMatch } from "../lib/smart.js";
 import { useWindowVirtualizer } from "@tanstack/react-virtual";
 import { Box, Check, ChevronDown, Download, LoaderCircle, ScanSearch, Search, SlidersHorizontal, Sparkles, X } from "lucide-react";
@@ -38,6 +38,14 @@ const SORTS = [
 const pretty = (s) => s.replace(/_/g, " ").replace(/\s+/g, " ").trim();
 const previewUrl = (m) => fileUrl(datasetById("models"), `previews/${m.path.slice(0, -4)}.webp`);
 const longest = (card) => (card.dims ? Math.max(...card.dims) : -1);
+const collator = new Intl.Collator("en", { numeric: true });
+const ORDERS = {
+  name: (a, b) => collator.compare(a.name, b.name),
+  "size-desc": (a, b) => longest(b) - longest(a),
+  "size-asc": (a, b) => (longest(a) < 0) - (longest(b) < 0) || longest(a) - longest(b),
+  "tris-desc": (a, b) => b.triangles - a.triangles,
+  "tris-asc": (a, b) => (a.triangles < 0) - (b.triangles < 0) || a.triangles - b.triangles,
+};
 
 // Every 3D model as cards, one card for a model and its numbered copies (the tracker's variant key):
 // by type, group, theme, hero, size, animated, from the tracker's catalog/models.json
@@ -109,7 +117,10 @@ export default function ModelsPage({ catalog, indexes }) {
     });
   }, [ready, models, catalog, entries]);
 
-  const ofType = useMemo(() => cards.filter((c) => (type ? c.type === type : c.type !== "technical")), [cards, type]);
+  // In the chosen order once: the filters below keep it, so typing does not sort thousands again
+  const ofType = useMemo(() => cards.filter((c) => (type ? c.type === type : c.type !== "technical")).sort(ORDERS[sort]), [cards, type, sort]);
+  // The list follows the typing a moment behind, so the field never waits for it
+  const query = useDeferredValue(filter);
   const count = (list, pick) => {
     const out = {};
     for (const c of list) {
@@ -124,7 +135,7 @@ export default function ModelsPage({ catalog, indexes }) {
 
   const shown = useMemo(() => {
     // by name, forgiving typos (lib/smart.js); not while searching by a picture or by meaning
-    const match = similar || meaning ? null : fuzzyMatch(cards, (c) => c.hay, filter);
+    const match = similar || meaning ? null : fuzzyMatch(cards, (c) => c.hay, query);
     const list = ofType.filter(
       (c) =>
         (!group || c.group === group) &&
@@ -143,16 +154,8 @@ export default function ModelsPage({ catalog, indexes }) {
         .sort((a, b) => a[0] - b[0])
         .map(([, c]) => c);
     }
-    const byName = (a, b) => a.name.localeCompare(b.name, "en", { numeric: true });
-    const order = {
-      name: byName,
-      "size-desc": (a, b) => longest(b) - longest(a),
-      "size-asc": (a, b) => (longest(a) < 0) - (longest(b) < 0) || longest(a) - longest(b),
-      "tris-desc": (a, b) => b.triangles - a.triangles,
-      "tris-asc": (a, b) => (a.triangles < 0) - (b.triangles < 0) || a.triangles - b.triangles,
-    }[sort];
-    return list.sort(order);
-  }, [ofType, group, theme, heroKey, size, animated, filter, sort, similar, meaning]);
+    return list;
+  }, [ofType, group, theme, heroKey, size, animated, query, similar, meaning]);
 
   // The grid sits under the header in the same scroll: its width sets the columns, its top the
   // virtual list's margin
@@ -192,7 +195,7 @@ export default function ModelsPage({ catalog, indexes }) {
   useEffect(() => {
     if (first.current) return void (first.current = false);
     if (window.scrollY > top - 130) window.scrollTo({ top: Math.max(0, top - 130) });
-  }, [type, group, theme, heroKey, size, animated, filter, sort, similar]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [type, group, theme, heroKey, size, animated, query, sort, similar]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const findByMeaning = async () => {
     const words = filter.trim();

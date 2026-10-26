@@ -6,4 +6,6 @@ import tailwindcss from "@tailwindcss/vite";
 export default defineConfig({
   base: process.env.BASE_PATH || "/dota2-files/",
   plugins: [react(), tailwindcss()],
+  // the search by look's worker loads the CLIP library on demand: a module worker can split it off
+  worker: { format: "es" },
 });
