@@ -1,5 +1,5 @@
 import { useDeferredValue, useEffect, useMemo, useRef, useState } from "react";
-import { ArrowRight, Box, ClockFading, CornerDownLeft, FolderOpen, Gem, Gift, Layers, Music, Package, Search, Shirt, Sparkles, Users, X } from "lucide-react";
+import { ArrowRight, Box, ClockFading, CornerDownLeft, FolderOpen, Gem, Gift, Layers, Music, Package, Search, Shirt, Sparkles, Users, X, Sticker } from "lucide-react";
 import { DATASETS, DOTADEX } from "../datasets.js";
 import { imageUrl, prefabTitle } from "../lib/catalog.js";
 import { searchNames } from "../lib/smart.js";
@@ -14,6 +14,7 @@ const PLACES = [
   ["/sets", "Sets", Shirt, "Every set on its hero"],
   ["/bundles", "Bundles", Package, "Items sold as one"],
   ["/cosmetics/treasures", "Treasures", Gift, "Chests and what drops from them"],
+  ["/cosmetics/capsules", "Capsules", Sticker, "Sticker capsules and the stickers inside"],
   ["/music", "Music", Music, "Every music pack, to play and download"],
   ["/3d", "3D Models", Box, "Every model, by type, theme and size"],
   ["/files", "Files", FolderOpen, "The raw datasets by folder"],

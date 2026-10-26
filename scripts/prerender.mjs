@@ -15,7 +15,7 @@ const HF = "https://huggingface.co/datasets/Sqls1";
 const SITE_NAME = "Dotadex Files";
 
 // Kinds of item that are not things to download (tools, tickets, recipes): no page of their own
-const SKIP_PREFABS = new Set(["tool", "league", "sticker", "sticker_capsule", "player_card", "dynamic_recipe", "key", "socket_gem", "emoticon_tool"]);
+const SKIP_PREFABS = new Set(["tool", "league", "sticker", "player_card", "dynamic_recipe", "key", "socket_gem", "emoticon_tool"]);
 
 const DATASETS = [
   ["images", "Images", "Every picture of the Dota 2 interface: hero portraits, item icons, ability icons, loading screens, emoticons."],
@@ -198,11 +198,18 @@ for (const [prefab, its] of byPrefab) {
 }
 
 {
-  const its = [...byPrefab.entries()].filter(([p]) => ["treasure_chest", "retired_treasure_chest", "sticker_capsule"].includes(p)).flatMap(([, l]) => l);
+  const its = [...byPrefab.entries()].filter(([p]) => ["treasure_chest", "retired_treasure_chest"].includes(p)).flatMap(([, l]) => l);
+  const capsules = byPrefab.get("sticker_capsule") || [];
+  page("/cosmetics/capsules", {
+    crumbs: [["/cosmetics", "Cosmetics"], ["/cosmetics/capsules", "Capsules"]],
+    title: "Every Dota 2 sticker capsule, and the stickers inside",
+    description: `All ${capsules.length} Dota 2 sticker capsules with every team and player sticker they hold, to download.`,
+    body: `<h1>Sticker capsules</h1>${list(capsules.map(([id, it]) => [`/item/${id}`, it.name]))}`,
+  });
   page("/cosmetics/treasures", {
     crumbs: [["/cosmetics", "Cosmetics"], ["/cosmetics/treasures", "Treasures"]],
-    title: "Every Dota 2 treasure and capsule, and what drops from it",
-    description: `All ${its.length} Dota 2 treasures, chests and capsules with their contents and rare bonus drops, by year.`,
+    title: "Every Dota 2 treasure, and what drops from it",
+    description: `All ${its.length} Dota 2 treasure chests, open and retired, with their contents and rare bonus drops, by year.`,
     body: `<h1>Treasures</h1>${list(its.slice(0, 1000).map(([id, it]) => [`/item/${id}`, it.name]))}`,
   });
 }

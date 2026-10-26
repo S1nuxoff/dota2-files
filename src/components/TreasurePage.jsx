@@ -73,7 +73,7 @@ export default function TreasurePage({ item, catalog, indexes, withCopies, route
   const kind = item.prefab === "sticker_capsule" ? "Sticker capsule" : item.prefab === "retired_treasure_chest" ? "Retired treasure" : "Treasure";
   const rarity = catalog.rarities[item.rarity];
   const everyone = drops.every((id) => catalog.items[id].prefab === "sticker");
-  const crumbs = [["/cosmetics", "Cosmetics"], ["/cosmetics/treasures", "Treasures"], ["", item.name]];
+  const crumbs = [["/cosmetics", "Cosmetics"], item.prefab === "sticker_capsule" ? ["/cosmetics/capsules", "Capsules"] : ["/cosmetics/treasures", "Treasures"], ["", item.name]];
 
   return (
     <Page>

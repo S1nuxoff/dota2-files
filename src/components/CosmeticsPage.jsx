@@ -16,7 +16,7 @@ const PAGE = 60;
 // later lands in Other until it gets a place here
 const SECTIONS = [
   ["Hero items", ["wearable", "taunt", "default_item"]],
-  ["Treasures", ["treasures", "treasure_chest", "retired_treasure_chest", "sticker_capsule", "key"]],
+  ["Treasures", ["treasures", "treasure_chest", "retired_treasure_chest", "capsules", "key"]],
   ["Couriers and wards", ["courier", "courier_wearable", "courier_effect", "ward"]],
   ["Screens and interface", ["loading_screen", "hud_skin", "cursor_pack", "versus_screen", "emblem", "emoticon_tool", "player_card"]],
   ["Music and voices", ["announcer"]],
@@ -58,10 +58,11 @@ const TITLES = {
   socket_gem: "Gems",
   showcase_decoration: "Showcase Decorations",
   treasures: "All treasures",
+  capsules: "Sticker Capsules",
 };
 const titleOf = (prefab) => TITLES[prefab] || prefabTitle(prefab);
-// Kinds shown together as one: every treasure and capsule, what they give inside
-const MERGED = { treasures: ["treasure_chest", "retired_treasure_chest", "sticker_capsule"] };
+// Kinds shown together as one: every treasure chest, open or retired; the sticker capsules apart
+const MERGED = { treasures: ["treasure_chest", "retired_treasure_chest"], capsules: ["sticker_capsule"] };
 // An event's page: /cosmetics/event-international_2026 (EVENT_ID_INTERNATIONAL_2026)
 export const eventKind = (id) => `event-${id.replace(/^EVENT_ID_/, "").toLowerCase()}`;
 const eventOf = (prefab) => (prefab.startsWith("event-") ? `EVENT_ID_${prefab.slice(6).toUpperCase()}` : "");
@@ -76,7 +77,7 @@ const SORTS = [
 
 // Every item of a kind (couriers, wards, loading screens...), or the kinds to pick from
 export default function CosmeticsPage({ prefab, catalog }) {
-  if (!catalog) return prefab ? <LoadingList title={prefab === "treasures" ? "Treasures" : titleOf(prefab)} /> : <LoadingList title="Cosmetics" grid={GRID.tile} ratio="aspect-[16/9]" count={12} tabs={<CosmeticsTabs current="/cosmetics" />} />;
+  if (!catalog) return prefab ? <LoadingList title={titleOf(prefab)} /> : <LoadingList title="Cosmetics" grid={GRID.tile} ratio="aspect-[16/9]" count={12} tabs={<CosmeticsTabs current="/cosmetics" />} />;
   if (prefab) return <Kind key={prefab} prefab={prefab} catalog={catalog} />;
   return <Kinds catalog={catalog} />;
 }
@@ -90,6 +91,7 @@ const HUB = [
   ["/sets", "Sets"],
   ["/bundles", "Bundles"],
   ["/cosmetics/treasures", "Treasures"],
+  ["/cosmetics/capsules", "Capsules"],
   ["/music", "Music"],
 ];
 export function CosmeticsTabs({ current, className = "mt-7" }) {
@@ -353,7 +355,7 @@ export function Kind({ prefab, catalog, title, sub, tab }) {
   const more = useMore(() => setLimit((l) => l + PAGE), limit < shown.length, limit);
   let left = limit;
   const none = { hero: "Without a hero", slot: "Without a slot", type: "Without a type", rarity: "Without a rarity", year: "Without a date", prefab: "Other", event: "Without an event" }[group];
-  if (prefab === "treasures") tab = "/cosmetics/treasures";
+  if (prefab === "treasures" || prefab === "capsules") tab = `/cosmetics/${prefab}`;
   const name = title || (eventOf(prefab) ? catalog.events?.[eventOf(prefab)] || eventOf(prefab) : titleOf(prefab));
   const filtered = filter || heroKey || rarity;
 
