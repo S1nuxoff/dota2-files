@@ -62,6 +62,7 @@ export default function HeroViewer({ models, bare = false, showcase = false, tur
   const [status, setStatus] = useState("loading");
   const [clips, setClips] = useState([]);
   const [clip, setClip] = useState("");
+  const [zoomHint, setZoomHint] = useState(false);
 
   // The renderer, camera, lights and floor, once
   useEffect(() => {
@@ -83,6 +84,17 @@ export default function HeroViewer({ models, bare = false, showcase = false, tur
     controls.enableDamping = true;
     controls.enablePan = false;
     if (showcase) controls.enabled = false;
+    // The wheel scrolls the page; it zooms only with Ctrl held (a trackpad pinch sends that too).
+    // Caught on the host before the canvas, so the controls never see a plain wheel
+    let hintTimer = 0;
+    const onWheel = (e) => {
+      if (e.ctrlKey || e.metaKey || showcase) return;
+      e.stopPropagation();
+      setZoomHint(true);
+      clearTimeout(hintTimer);
+      hintTimer = setTimeout(() => setZoomHint(false), 1200);
+    };
+    el.addEventListener("wheel", onWheel, { capture: true, passive: true });
 
     const key = new THREE.DirectionalLight(0xfff4e8, 2.4);
     key.castShadow = true;
@@ -117,6 +129,8 @@ export default function HeroViewer({ models, bare = false, showcase = false, tur
     return () => {
       renderer.setAnimationLoop(null);
       ro.disconnect();
+      el.removeEventListener("wheel", onWheel, { capture: true });
+      clearTimeout(hintTimer);
       if (s.root) dispose(s.root);
       controls.dispose();
       pmrem.dispose();
@@ -213,6 +227,13 @@ export default function HeroViewer({ models, bare = false, showcase = false, tur
       {status !== "ready" && !showcase && (
         <div className="pointer-events-none absolute inset-0 flex items-center justify-center text-sm text-ink-400">
           {status === "loading" ? <LoaderCircle size={18} className="animate-spin" /> : status}
+        </div>
+      )}
+      {!showcase && (
+        <div
+          className={`pointer-events-none absolute top-3 left-1/2 z-10 -translate-x-1/2 rounded-full bg-black/55 px-4 py-1.5 text-[0.8rem] text-ink-100 backdrop-blur-md transition-opacity duration-300 ${zoomHint ? "opacity-100" : "opacity-0"}`}
+        >
+          Ctrl + scroll to zoom
         </div>
       )}
       {clips.length > 0 && !showcase && (
