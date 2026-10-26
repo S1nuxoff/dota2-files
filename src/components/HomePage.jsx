@@ -137,8 +137,13 @@ function HeroArc({ heroes }) {
       />
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute left-1/2 h-[calc(var(--r)*1.8)] w-[calc(var(--r)*1.8)] -translate-x-1/2 rounded-full border-[1.5px] border-transparent border-t-[rgba(255,150,115,0.95)] [mask-image:linear-gradient(to_right,transparent_8%,black_36%,black_64%,transparent_92%)]"
-        style={{ top: `calc(${centre} - var(--r) * 0.9)` }}
+        className="pointer-events-none absolute left-1/2 h-[calc(var(--r)*1.8)] w-[calc(var(--r)*1.8)] -translate-x-1/2 rounded-full border-transparent [mask-image:linear-gradient(to_right,transparent_8%,black_36%,black_64%,transparent_92%)] blur-[6px]"
+        style={{ top: `calc(${centre} - var(--r) * 0.9)`, borderWidth: "8px", borderTopColor: "rgba(229,70,46,0.7)" }}
+      />
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute left-1/2 h-[calc(var(--r)*1.8)] w-[calc(var(--r)*1.8)] -translate-x-1/2 rounded-full border-transparent [mask-image:linear-gradient(to_right,transparent_8%,black_36%,black_64%,transparent_92%)] "
+        style={{ top: `calc(${centre} - var(--r) * 0.9)`, borderWidth: "3px", borderTopColor: "rgba(255,150,115,0.95)" }}
       />
       <div className="anim-turn absolute left-1/2 h-0 w-0 group-hover:[animation-play-state:paused]" style={{ top: centre, "--turn": "260s" }}>
         {picks.map((hero, i) => (
