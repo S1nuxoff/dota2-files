@@ -59,9 +59,9 @@ export function PageHead({ crumbs, title, sub, search, actions, children, classN
 
 // The front page's light at the top of a page: the red of the Dotadex mark from above, fading down.
 // Put inside a relative, isolated parent
-export const TOP_LIGHT = "bg-[radial-gradient(50%_60%_at_50%_0%,rgba(229,70,46,0.16),rgba(150,30,18,0.05)_50%,transparent_78%)]";
+export const TOP_LIGHT = "bg-[radial-gradient(70%_75%_at_50%_0%,rgba(229,70,46,0.22),rgba(150,30,18,0.08)_50%,transparent_80%)]";
 export function HeadGlow() {
-  return <div aria-hidden="true" className={`anim-fade pointer-events-none absolute inset-x-0 top-0 -z-10 h-[42rem] ${TOP_LIGHT}`} />;
+  return <div aria-hidden="true" className={`anim-fade pointer-events-none absolute inset-x-0 top-0 -z-10 h-[56rem] ${TOP_LIGHT}`} />;
 }
 
 // Is the element scrolled past the top bar: a sticky bar takes its own background from then on

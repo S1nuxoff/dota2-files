@@ -76,7 +76,7 @@ function Opening({ catalog, stats }) {
   return (
     <section className="relative -mt-14 flex min-h-[min(100svh,64rem)] flex-col overflow-hidden pt-14">
       {/* the red of the Dotadex mark, as a light from above */}
-      <div aria-hidden="true" className={`anim-fade pointer-events-none absolute inset-x-0 top-0 h-[42rem] ${TOP_LIGHT}`} />
+      <div aria-hidden="true" className={`anim-fade pointer-events-none absolute inset-x-0 top-0 h-[56rem] ${TOP_LIGHT}`} />
       <div className="relative z-10 page-x flex flex-col items-center pt-[max(3rem,calc(50svh-18rem))] text-center">
         <h1 style={{ animationDelay: "70ms" }} className="anim-card max-w-4xl text-[clamp(2.5rem,6.4vw,5.6rem)] leading-[0.98] font-semibold tracking-[-0.055em] text-balance">
           Every file of Dota&nbsp;2
