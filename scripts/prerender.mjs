@@ -278,19 +278,19 @@ for (const [id, title, description] of DATASETS) {
   page(`/${id}`, { crumbs: [["/files", "Files"], [`/${id}`, title]], title: `Dota 2 ${title.toLowerCase()}: download by folder`, description, body: `<h1>${esc(title)}</h1><p>${esc(description)}</p>` });
 }
 
-// sitemap.xml (one file holds up to 50,000 addresses; more go to several, listed by an index)
-const today = new Date().toISOString().slice(0, 10);
+// sitemap.xml (one file holds up to 50,000 addresses; more go to several, listed by an index). No lastmod:
+// a build does not change every page, and a date that always reads today teaches search engines to ignore it
 const chunks = [];
 for (let i = 0; i < pages.length; i += 45000) chunks.push(pages.slice(i, i + 45000));
 const urlset = (ps) =>
-  `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${ps.map((p) => `<url><loc>${esc(url(p))}</loc><lastmod>${today}</lastmod></url>`).join("\n")}\n</urlset>\n`;
+  `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${ps.map((p) => `<url><loc>${esc(url(p))}</loc></url>`).join("\n")}\n</urlset>\n`;
 if (chunks.length === 1) {
   fs.writeFileSync(path.join(DIST, "sitemap.xml"), urlset(chunks[0]));
 } else {
   chunks.forEach((ps, i) => fs.writeFileSync(path.join(DIST, `sitemap-${i + 1}.xml`), urlset(ps)));
   fs.writeFileSync(
     path.join(DIST, "sitemap.xml"),
-    `<?xml version="1.0" encoding="UTF-8"?>\n<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${chunks.map((_, i) => `<sitemap><loc>${esc(url(`/sitemap-${i + 1}.xml`))}</loc><lastmod>${today}</lastmod></sitemap>`).join("\n")}\n</sitemapindex>\n`
+    `<?xml version="1.0" encoding="UTF-8"?>\n<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${chunks.map((_, i) => `<sitemap><loc>${esc(url(`/sitemap-${i + 1}.xml`))}</loc></sitemap>`).join("\n")}\n</sitemapindex>\n`
   );
 }
 // Search engines read robots.txt only at a domain's root: it takes effect once the site has a domain of its own
