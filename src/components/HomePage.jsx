@@ -329,7 +329,7 @@ function Browse({ catalog, stats, indexes, n }) {
         <a data-reveal href={link("/3d")} className={`${tile} min-h-[17rem] lg:col-span-6`}>
           <div className="grid grid-cols-3 gap-px bg-white/[0.04] sm:grid-cols-6 lg:grid-cols-3 xl:grid-cols-6">
             {models.map(([item, url]) => (
-              <div key={item.id} className="stage flex aspect-square items-center justify-center p-3">
+              <div key={item.id} className="stage relative flex aspect-square items-center justify-center p-3">
                 <img src={url} alt="" loading="lazy" onError={(e) => (e.currentTarget.style.visibility = "hidden")} className="h-full w-full object-contain transition-transform duration-700 group-hover:scale-110" />
               </div>
             ))}

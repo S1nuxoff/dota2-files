@@ -190,6 +190,33 @@ model-viewer {
   animation: sheet 0.38s var(--ease-out-soft) both;
 }
 
+/* Pictures loaded lazily come in whole (main.jsx marks them is-loaded): until then nothing of them
+   shows and the place they stand in shimmers; then they ease in out of a light blur */
+img[loading="lazy"]:not(.is-loaded) {
+  opacity: 0;
+}
+img[loading="lazy"].is-loaded {
+  animation: picture-in 0.6s var(--ease-out-soft) both;
+}
+@keyframes picture-in {
+  from {
+    opacity: 0;
+    filter: blur(8px);
+  }
+  to {
+    opacity: 1;
+  }
+}
+.stage:has(img[loading="lazy"]:not(.is-loaded))::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(100deg, transparent 30%, rgb(255 255 255 / 0.05) 50%, transparent 70%);
+  background-size: 250% 100%;
+  animation: shimmer 1.6s ease-in-out infinite;
+}
+
 /* Blocks showing as they scroll in */
 [data-reveal] {
   opacity: 0;
