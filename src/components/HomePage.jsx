@@ -163,8 +163,8 @@ function HeroArc({ heroes }) {
       <div ref={wheel} className="absolute left-1/2 h-0 w-0 will-change-transform" style={{ top: centre }}>
       <div className="anim-roll h-0 w-0" style={{ animationDelay: "350ms" }}>
       <div className="anim-turn h-0 w-0 will-change-transform group-hover:[animation-play-state:paused]" style={{ "--turn": "260s" }}>
-        {/* the line of light, turning with the wheel: a faint ring the whole way round, and brighter
-            strokes of different lengths along it, glowing, so its turning shows */}
+        {/* the line of light, turning with the wheel: one stroke whose brightness flows along it, bright
+            reaches easing into dim ones, so its turning shows */}
         <svg
           aria-hidden="true"
           viewBox="0 0 1000 1000"
@@ -179,10 +179,19 @@ function HeroArc({ heroes }) {
                 <feMergeNode in="SourceGraphic" />
               </feMerge>
             </filter>
+            {/* brightness flowing along the ring: soft bright reaches easing into dim ones */}
+            <linearGradient id="arc-light" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0" stopColor="#ff8c64" stopOpacity="0.25" />
+              <stop offset="0.18" stopColor="#ffb08a" stopOpacity="1" />
+              <stop offset="0.36" stopColor="#ff8c64" stopOpacity="0.3" />
+              <stop offset="0.52" stopColor="#ffc2a0" stopOpacity="1" />
+              <stop offset="0.68" stopColor="#ff8c64" stopOpacity="0.28" />
+              <stop offset="0.84" stopColor="#ffa47c" stopOpacity="0.9" />
+              <stop offset="1" stopColor="#ff8c64" stopOpacity="0.25" />
+            </linearGradient>
           </defs>
-          <circle cx="500" cy="500" r="499" fill="none" stroke="rgba(255,140,105,0.28)" strokeWidth="1.2" />
-          <circle cx="500" cy="500" r="499" fill="none" stroke="rgba(229,70,46,0.55)" strokeWidth="6" strokeDasharray="420 180 90 240 560 260 150 330 260 220 70 310" strokeLinecap="round" style={{ filter: "blur(6px)" }} />
-          <circle cx="500" cy="500" r="499" fill="none" stroke="rgba(255,175,140,0.95)" strokeWidth="2" strokeDasharray="420 180 90 240 560 260 150 330 260 220 70 310" strokeLinecap="round" filter="url(#arc-glow)" />
+          <circle cx="500" cy="500" r="499" fill="none" stroke="url(#arc-light)" strokeWidth="7" opacity="0.55" style={{ filter: "blur(6px)" }} />
+          <circle cx="500" cy="500" r="499" fill="none" stroke="url(#arc-light)" strokeWidth="2.4" filter="url(#arc-glow)" />
         </svg>
         {picks.map((hero, i) => (
           <a
