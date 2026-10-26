@@ -35,7 +35,7 @@ export function DetailTop({ crumbs, stage, left, children }) {
 export function SideTitle({ icon, title, line, tags }) {
   return (
     <header>
-      <div className="flex flex-col gap-3 max-lg:items-center">
+      <div className="flex flex-col items-start gap-3 max-lg:items-center">
         {icon}
         <div className="min-w-0">
           <h1 className="text-[clamp(2.4rem,4.4vw,4.8rem)] leading-[0.96] font-semibold tracking-[-0.05em] text-balance [text-shadow:0_2px_24px_rgb(0_0_0/0.7)]">{title}</h1>

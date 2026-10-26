@@ -1,14 +1,12 @@
 import { useMemo } from "react";
 import { Download, FolderOpen } from "lucide-react";
 import { datasetById, fileUrl } from "../datasets.js";
-import { imageUrl } from "../lib/catalog.js";
+import { baseMap, imageUrl, isWholeMap, terrainMap } from "../lib/catalog.js";
 import { formatSize } from "../lib/format.js";
 import { link } from "../lib/route.js";
 import { Button, Card, GRID, LoadingList, Page, PageHead, Section } from "./ui.jsx";
 
 const MAPS = datasetById("maps");
-// A map of the game: a .glb straight under scenes/ (the scenes of the menus and events sit in folders)
-const isMap = (path) => /^scenes\/[^/]+\.glb$/.test(path);
 const fileName = (path) => path.slice(path.lastIndexOf("/") + 1);
 
 // The game's map, whole, as glb: the one every match is played on, each terrain the game sells
@@ -18,17 +16,12 @@ export default function MapPage({ catalog, indexes }) {
   const index = indexes.maps;
   const view = useMemo(() => {
     if (!catalog || !index) return null;
-    const maps = new Map(index.entries.filter((e) => isMap(e.path) && !e.copy).map((e) => [e.path, e]));
-    const terrains = Object.entries(catalog.items)
-      .filter(([, it]) => it.prefab === "terrain")
-      .map(([id, it]) => ({ id, item: it, maps: (it.refs.maps || []).filter((p) => maps.has(p)) }));
-    // The base map: the one most terrains name; a terrain's own map is the other one it names
-    const named = new Map();
-    for (const t of terrains) for (const p of t.maps) named.set(p, (named.get(p) || 0) + 1);
-    const base = [...named].sort((a, b) => b[1] - a[1])[0]?.[0];
+    const maps = new Map(index.entries.filter((e) => isWholeMap(e) && !e.copy).map((e) => [e.path, e]));
+    const base = baseMap(catalog);
     // a terrain without a map of its own (the default one) wears the base map and stands first
-    for (const t of terrains) t.map = maps.get(t.maps.find((p) => p !== base) || base);
-    const shown = terrains
+    const shown = Object.entries(catalog.items)
+      .filter(([, it]) => it.prefab === "terrain")
+      .map(([id, it]) => ({ id, item: it, map: maps.get(terrainMap(it, catalog)) }))
       .filter((t) => t.map)
       .sort((a, b) => (b.map.path === base) - (a.map.path === base) || (a.item.date || "").localeCompare(b.item.date || ""));
     const used = new Set([base, ...shown.map((t) => t.map.path)]);

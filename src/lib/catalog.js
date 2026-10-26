@@ -67,6 +67,29 @@ export function useCatalog() {
 export const heroPortrait = (hero) => fileUrl(datasetById("images"), `panorama/images/heroes/${hero.id}_png.png`);
 export const imageUrl = (path) => (path ? fileUrl(datasetById("images"), path) : "");
 
+// A whole map of the game: scenes/<name>.glb in dota2-maps (the scenes of the menus and events sit
+// in folders), a few hundred MB
+export const isWholeMap = (e) => e.ds === "maps" && /^scenes\/[^/]+\.glb$/.test(e.path);
+
+// The map the terrains are laid over: the whole map most terrain items name
+const bases = new WeakMap();
+export function baseMap(catalog) {
+  if (!bases.has(catalog)) {
+    const named = new Map();
+    for (const it of Object.values(catalog.items))
+      if (it.prefab === "terrain") for (const p of it.refs.maps || []) if (isWholeMap({ ds: "maps", path: p })) named.set(p, (named.get(p) || 0) + 1);
+    bases.set(catalog, [...named].sort((a, b) => b[1] - a[1])[0]?.[0] || "");
+  }
+  return bases.get(catalog);
+}
+
+// A terrain's whole map: its own, else (the default terrain) the base map
+export function terrainMap(item, catalog) {
+  if (item.prefab !== "terrain") return "";
+  const base = baseMap(catalog);
+  return (item.refs.maps || []).find((p) => p !== base && isWholeMap({ ds: "maps", path: p })) || base;
+}
+
 // A set's files: every file of every item of it
 export function setFiles(set, catalog, indexes, withCopies) {
   const out = new Map();

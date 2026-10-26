@@ -1,7 +1,7 @@
 import { lazy, Suspense, useMemo, useState } from "react";
 import { Download, FileArchive, Image as ImageIcon, LoaderCircle, Package } from "lucide-react";
 import { DATASETS, DOTADEX, datasetById, fileUrl } from "../datasets.js";
-import { imageUrl, itemDotadexPath, itemFiles, prefabTitle } from "../lib/catalog.js";
+import { imageUrl, isWholeMap, itemDotadexPath, itemFiles, prefabTitle, terrainMap } from "../lib/catalog.js";
 import { formatSize } from "../lib/format.js";
 import { startJob } from "../lib/jobs.js";
 import FileTable, { Row } from "./FileTable.jsx";
@@ -42,12 +42,15 @@ export default function ItemPage({ itemId, catalog, indexes, withCopies, route }
   const rarity = catalog.rarities[item.rarity || "common"];
   const heroes = item.heroes.map((id) => catalog.heroById.get(id)).filter(Boolean);
   const set = item.set && catalog.sets[item.set];
-  const models = files.filter((e) => e.ext === "glb");
+  // a terrain names whole maps of a few hundred MB: they are downloaded on their own, not shown
+  const models = files.filter((e) => e.ext === "glb" && !isWholeMap(e));
+  const wholeMap = terrainMap(item, catalog);
+  const wholeMapEntry = wholeMap && indexes.maps?.entries.find((e) => e.path === wholeMap);
   const model = models[Math.min(style, models.length - 1)];
   const textures = files.filter((e) => e.ds === "textures");
   const sounds = files.filter((e) => e.ds === "sounds");
   // An item that is only an effect (ambient effects, a courier's): seen in the game's look, on its hero
-  const effectOnly = !files.some((e) => e.ext === "glb") && files.some((e) => e.ds === "particles");
+  const effectOnly = !models.length && files.some((e) => e.ds === "particles");
   // The item's pictures but its icon (a loading screen, a HUD's art, cursors), the largest on the stage
   const pictures = files.filter((e) => e.kind === "image" && e.ds !== "textures" && e.path !== item?.icon);
   const poster = pictures.reduce((best, e) => (!best || e.size > best.size ? e : best), null);
@@ -56,8 +59,9 @@ export default function ItemPage({ itemId, catalog, indexes, withCopies, route }
   const sorted = [...files].sort((a, b) => order[a.ds] - order[b.ds] || a.path.localeCompare(b.path));
   const others = set ? set.items.filter((id) => id !== item.id && catalog.items[id]) : [];
   const name = item.name.replace(/[\\/:*?"<>|]/g, "");
-  const bytes = files.reduce((n, e) => n + e.size, 0);
-  const asDownload = files.map((e) => ({ ds: e.ds, path: e.path, size: e.size, name: `${datasetById(e.ds).repo}/${e.path}` }));
+  const bundled = files.filter((e) => !isWholeMap(e));
+  const bytes = bundled.reduce((n, e) => n + e.size, 0);
+  const asDownload = bundled.map((e) => ({ ds: e.ds, path: e.path, size: e.size, name: `${datasetById(e.ds).repo}/${e.path}` }));
   const kind = item.type || prefabTitle(item.prefab);
   const crumbs = heroes[0]
     ? [["/heroes", "Heroes"], [`/hero/${heroes[0].key}`, heroes[0].name], ["", item.name]]
@@ -152,9 +156,14 @@ export default function ItemPage({ itemId, catalog, indexes, withCopies, route }
             )
           }
         >
+          {wholeMapEntry && (
+            <Button as="a" href={fileUrl(datasetById("maps"), wholeMapEntry.path, true)} className="col-span-2">
+              <Download size={16} /> Whole map glb <span className="font-normal text-ink-400">{formatSize(wholeMapEntry.size)}</span>
+            </Button>
+          )}
           {model && (
-            <Button as="a" href={fileUrl(datasetById("models"), model.path, true)} className="col-span-2">
-              <Download size={16} /> Model glb <span className="font-normal text-ink-400">{formatSize(model.size)}</span>
+            <Button as="a" href={fileUrl(datasetById(model.ds), model.path, true)} className="col-span-2">
+              <Download size={16} /> {wholeMapEntry ? "Preview glb" : "Model glb"} <span className="font-normal text-ink-400">{formatSize(model.size)}</span>
             </Button>
           )}
         </SideActions>
