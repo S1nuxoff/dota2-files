@@ -237,10 +237,10 @@ export function FigureCard({ href, src, fallback, alt = "", title, meta, mark, c
 
 // The grid cards stand in: as many columns as fit, two at the least on a phone
 export const GRID = {
-  tall: "grid grid-cols-2 gap-3 sm:grid-cols-[repeat(auto-fill,minmax(13.5rem,1fr))] sm:gap-4",
-  item: "grid grid-cols-2 gap-3 sm:grid-cols-[repeat(auto-fill,minmax(12rem,1fr))] sm:gap-4",
-  tile: "grid grid-cols-1 gap-3 xs:grid-cols-2 sm:grid-cols-[repeat(auto-fill,minmax(16rem,1fr))] sm:gap-4",
-  small: "grid grid-cols-3 gap-2 sm:grid-cols-[repeat(auto-fill,minmax(9.5rem,1fr))]",
+  tall: "grid grid-cols-2 gap-3 sm:grid-cols-[repeat(auto-fit,minmax(13.5rem,17rem))] sm:justify-center sm:gap-4",
+  item: "grid grid-cols-2 gap-3 sm:grid-cols-[repeat(auto-fit,minmax(12rem,15rem))] sm:justify-center sm:gap-4",
+  tile: "grid grid-cols-1 gap-3 xs:grid-cols-2 sm:grid-cols-[repeat(auto-fit,minmax(16rem,20rem))] sm:justify-center sm:gap-4",
+  small: "grid grid-cols-3 gap-2 sm:grid-cols-[repeat(auto-fit,minmax(9.5rem,12rem))] sm:justify-center",
 };
 
 export function Spinner({ text }) {
