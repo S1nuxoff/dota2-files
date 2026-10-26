@@ -46,8 +46,8 @@ export default function TopBar({ route }) {
         scrolled ? "border-white/[0.05] bg-ink-950/55 backdrop-blur-xl" : "border-transparent bg-transparent"
       }`}
     >
-      <nav aria-label="Main" className="page-x flex h-14 items-center gap-3 md:gap-6 lg:grid lg:grid-cols-[1fr_minmax(16rem,26rem)_1fr]">
-        <div className="flex min-w-0 flex-1 items-center gap-3 md:gap-6 lg:gap-8">
+      <nav aria-label="Main" className="page-x flex h-14 items-center gap-3 md:gap-5">
+        <div className="flex shrink-0 items-center gap-3 md:gap-5 xl:gap-8">
           <a href={link("/")} className="flex shrink-0 items-center py-2" aria-label="Dotadex Files, home">
             <img src={`${import.meta.env.BASE_URL}logo.png`} alt="Dotadex" width="875" height="113" className="h-3.5 w-auto" />
             <span className="ml-2.5 hidden text-[0.86rem] font-medium text-ink-400 sm:inline">Files</span>
@@ -60,34 +60,35 @@ export default function TopBar({ route }) {
                   <a
                     href={link(path)}
                     aria-current={active ? "page" : undefined}
-                    className={`relative flex h-8 items-center rounded-lg px-3 text-[0.9rem] transition-colors ${active ? "text-ink-100" : "text-ink-400 hover:bg-white/[0.05] hover:text-ink-100"}`}
+                    className={`relative flex h-8 items-center rounded-lg px-2.5 text-[0.9rem] whitespace-nowrap transition-colors xl:px-3 ${active ? "text-ink-100" : "text-ink-400 hover:bg-white/[0.05] hover:text-ink-100"}`}
                   >
                     {title}
-                    {active && <span aria-hidden="true" className="absolute inset-x-3 -bottom-[0.6rem] h-px bg-gradient-to-r from-transparent via-ink-100/70 to-transparent" />}
+                    {active && <span aria-hidden="true" className="absolute inset-x-2.5 -bottom-[0.6rem] xl:inset-x-3 h-px bg-gradient-to-r from-transparent via-ink-100/70 to-transparent" />}
                   </a>
                 </li>
               );
             })}
-            <li className="hidden xl:block">
+            <li className="hidden 2xl:block">
               <a href={DOTADEX} target="_blank" rel="noreferrer" title="Heroes and items as the game shows them" className="flex h-8 items-center gap-1 rounded-lg px-3 text-[0.9rem] text-ink-400 transition-colors hover:bg-white/[0.05] hover:text-ink-100">
                 Dotadex <ArrowUpRight size={13} className="text-ember" />
               </a>
             </li>
           </ul>
         </div>
-        {/* the front page has its own large search: the bar keeps the middle free there */}
-        {home ? (
-          <div className="hidden lg:block" />
-        ) : (
+        {/* the search in the room between the parts and the links out, where there is enough of it
+            (a button on the right otherwise); the front page has its own large search */}
+        <div className="flex min-w-0 flex-1 justify-center">
+          {!home && (
           <button
             onClick={() => openPalette()}
-            className="hidden h-9 w-60 items-center gap-2.5 lg:w-full rounded-xl border border-white/[0.08] bg-white/[0.04] pr-2 pl-3 text-[0.88rem] text-ink-500 backdrop-blur-xl transition-colors hover:border-white/[0.16] hover:bg-white/[0.07] hover:text-ink-300 md:flex"
+            className="hidden h-9 w-full max-w-[26rem] items-center gap-2.5 rounded-xl border border-white/[0.08] bg-white/[0.04] pr-2 pl-3 text-[0.88rem] text-ink-500 backdrop-blur-xl transition-colors hover:border-white/[0.16] hover:bg-white/[0.07] hover:text-ink-300 xl:flex"
           >
             <Search size={15} className="text-ink-400" />
             <span className="flex-1 text-left">Search everything</span>
             <kbd className="rounded-md border border-white/10 px-1.5 py-0.5 font-sans text-[0.7rem] text-ink-400">{SEARCH_KEY}</kbd>
           </button>
-        )}
+          )}
+        </div>
         <div className="flex items-center justify-end gap-1">
           <div className="hidden items-center gap-1 lg:flex">
             <a href={DATASETS_URL} target="_blank" rel="noreferrer" title="The Hugging Face datasets every file comes from" aria-label="Datasets on Hugging Face" className="flex h-9 w-9 items-center justify-center rounded-lg text-ink-400 transition-colors hover:bg-white/[0.05] hover:text-ink-100">
@@ -106,9 +107,9 @@ export default function TopBar({ route }) {
             className="group flex h-9 items-center gap-1.5 rounded-xl px-2.5 text-[0.86rem] text-ink-200 transition-colors hover:bg-white/[0.06] sm:border sm:border-white/[0.08] sm:px-3"
           >
             <Heart size={15} className="text-ember transition-transform group-hover:scale-110" />
-            <span className="hidden sm:inline">Support</span>
+            <span className="hidden lg:inline">Support</span>
           </a>
-          <button onClick={() => openPalette()} aria-label="Search" className={`-mr-1 h-10 w-10 items-center justify-center rounded-xl text-ink-200 transition-colors hover:bg-white/[0.06] md:hidden ${home ? "hidden" : "flex"}`}>
+          <button onClick={() => openPalette()} aria-label="Search" className={`-mr-1 h-10 w-10 items-center justify-center rounded-xl text-ink-200 transition-colors hover:bg-white/[0.06] xl:hidden ${home ? "hidden" : "flex"}`}>
             <Search size={19} />
           </button>
         </div>
