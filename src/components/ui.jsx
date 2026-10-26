@@ -60,8 +60,15 @@ export function PageHead({ crumbs, title, sub, search, actions, children, classN
 // The front page's light at the top of a page: the red of the Dotadex mark from above, fading down.
 // Put inside a relative, isolated parent
 export const TOP_LIGHT = "bg-[radial-gradient(90%_95%_at_50%_0%,rgba(229,70,46,0.3),rgba(150,30,18,0.11)_52%,transparent_82%)]";
-export function HeadGlow() {
-  return <div aria-hidden="true" className={`anim-fade pointer-events-none absolute inset-x-0 top-0 -z-10 h-[70rem] ${TOP_LIGHT}`} />;
+export function HeadGlow({ className = "-z-10" }) {
+  return (
+    <div aria-hidden="true" className={`anim-fade pointer-events-none absolute inset-x-0 top-0 h-[70rem] overflow-hidden ${className}`}>
+      <div className={`absolute inset-0 ${TOP_LIGHT}`} />
+      {/* the light shimmers: a warmer and a deeper red drifting slowly to each side, at their own pace */}
+      <div className="anim-sway absolute top-[-12rem] left-[18%] h-[34rem] w-[42%] rounded-[50%] bg-[radial-gradient(closest-side,rgba(255,128,64,0.16),transparent)] blur-3xl" style={{ "--sway": "9%", animationDuration: "19s" }} />
+      <div className="anim-sway absolute top-[-10rem] right-[16%] h-[32rem] w-[40%] rounded-[50%] bg-[radial-gradient(closest-side,rgba(205,36,84,0.14),transparent)] blur-3xl" style={{ "--sway": "-10%", animationDuration: "23s", animationDelay: "-7s" }} />
+    </div>
+  );
 }
 
 // Is the element scrolled past the top bar: a sticky bar takes its own background from then on
