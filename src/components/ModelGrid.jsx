@@ -70,7 +70,7 @@ export default function ModelGrid({ files, catalog, indexes, heroName = "", rout
             <Progressive
               items={list}
               step={24}
-              className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-[repeat(auto-fit,minmax(12rem,15rem))] sm:justify-center sm:gap-4"
+              className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-[repeat(auto-fill,minmax(12rem,1fr))] sm:gap-4"
               render={(i, n) => (
                 <div key={cards[i].key} className="anim-card" style={{ animationDelay: `${Math.min(n % 24, 24) * 20}ms` }}>
                   <ModelTile card={cards[i]} onOpen={() => setOpen(i)} />

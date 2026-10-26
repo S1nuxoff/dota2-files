@@ -120,7 +120,7 @@ export default function HeroAbout({ about, hero, catalog, sounds = [], particles
                     <h3 className="text-[1.1rem] font-medium">{p.name}</h3>
                     <p className="mt-1 text-[0.86rem] text-ink-400">{ids.length} items of its own</p>
                     {ids.length > 0 && (
-                      <div className="mt-4 grid grid-cols-3 gap-2 sm:grid-cols-[repeat(auto-fit,minmax(9.5rem,12rem))] sm:justify-center">
+                      <div className="mt-4 grid grid-cols-3 gap-2 sm:grid-cols-[repeat(auto-fill,minmax(9.5rem,1fr))]">
                         {ids.map((id, i) => (
                           <ItemCard key={id} item={catalog.items[id]} rarities={catalog.rarities} delay={Math.min(i, 12) * 20} list={ids} />
                         ))}

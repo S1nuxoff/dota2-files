@@ -39,7 +39,7 @@ export default function ImageGroups({ files, route }) {
           <Progressive
             items={list}
             step={60}
-            className="mt-4 grid grid-cols-3 gap-2 sm:grid-cols-[repeat(auto-fit,minmax(9.5rem,12rem))] sm:justify-center"
+            className="mt-4 grid grid-cols-3 gap-2 sm:grid-cols-[repeat(auto-fill,minmax(9.5rem,1fr))]"
             render={(e) => <Cell key={keyOf(e)} e={e} active={route.file === keyOf(e)} onOpen={() => navigate({ ...route, file: keyOf(e) })} />}
           />
         </section>
