@@ -125,11 +125,11 @@ function Opening({ catalog, stats }) {
 // Heroes standing on a great wheel that turns slowly, only its top showing, tilted along it; a line
 // of light runs under them. The wheel stops under the pointer; each hero opens its page
 function HeroArc({ heroes }) {
-  const picks = useMemo(() => daily(heroes, 36), [heroes]);
+  const picks = useMemo(() => daily(heroes, 28), [heroes]);
   const step = 360 / picks.length;
-  // The wheel's middle: its radius below the top card's centre, which stands half a card (3 : 4 of
-  // a card 0.13 of the radius wide) and a gap below the top of the band, so no card is cut there
-  const centre = "calc(var(--r) * 1.087 + 2rem)";
+  // The wheel's middle: its radius below the top card's centre, which stands half a card (1 : 1.1 of
+  // a card 0.14 of the radius wide) and a gap below the top of the band, so no card is cut there
+  const centre = "calc(var(--r) * 1.077 + 2rem)";
   // The wheel turns on with the page's scroll, a degree for every 14 px, easing after it
   const wheel = useRef(null);
   useEffect(() => {
@@ -195,15 +195,18 @@ function HeroArc({ heroes }) {
             key={hero.id}
             href={link(`/hero/${hero.key}`)}
             title={hero.name}
-            className="arc-card absolute top-0 left-0 block w-[calc(var(--r)*0.13)] overflow-hidden rounded-xl bg-ink-900 shadow-[0_20px_40px_-18px_rgba(0,0,0,0.9)] transition-[box-shadow] duration-300 hover:shadow-[0_0_40px_-6px_rgba(229,70,46,0.6)]"
+            className="arc-card absolute top-0 left-0 block aspect-[1/1.1] w-[calc(var(--r)*0.14)] overflow-hidden rounded-xl bg-[radial-gradient(90%_70%_at_50%_35%,#2a2a30,#141416_75%)] shadow-[0_20px_40px_-18px_rgba(0,0,0,0.9)] transition-[box-shadow] duration-300 hover:shadow-[0_0_40px_-6px_rgba(229,70,46,0.6)]"
             style={{ transform: `translate(-50%, -50%) rotate(${i * step}deg) translateY(calc(var(--r) * -1))` }}
           >
+            {/* the hero whole, as the game's set pages show it (448 x 678, empty above and below):
+                its rows 55 to 545 fill the card, head to feet; the cards on top of the wheel load first */}
             <img
-              src={heroSelection(hero)}
+              src={heroCard(hero)}
               alt={hero.name}
               decoding="async"
-              onError={(e) => e.currentTarget.src !== heroCard(hero) && (e.currentTarget.src = heroCard(hero))}
-              className="aspect-[3/4] w-full object-cover object-top"
+              fetchPriority={Math.min(i, picks.length - i) < 5 ? "high" : "low"}
+              onError={(e) => e.currentTarget.src !== heroSelection(hero) && (e.currentTarget.src = heroSelection(hero))}
+              className="absolute top-[-11.2%] left-0 w-full max-w-none"
             />
           </a>
         ))}
