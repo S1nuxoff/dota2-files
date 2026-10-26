@@ -195,18 +195,19 @@ function HeroArc({ heroes }) {
             key={hero.id}
             href={link(`/hero/${hero.key}`)}
             title={hero.name}
-            className="arc-card absolute top-0 left-0 block aspect-[1/1.1] w-[calc(var(--r)*0.17)] overflow-hidden rounded-xl bg-[radial-gradient(90%_70%_at_50%_35%,#2a2a30,#141416_75%)] shadow-[0_20px_40px_-18px_rgba(0,0,0,0.9)] transition-[box-shadow] duration-300 hover:shadow-[0_0_40px_-6px_rgba(229,70,46,0.6)]"
+            className="arc-card group/card absolute top-0 left-0 block aspect-[1/1.1] w-[calc(var(--r)*0.17)] overflow-hidden"
             style={{ transform: `translate(-50%, -50%) rotate(${i * step}deg) translateY(calc(var(--r) * -1))` }}
           >
-            {/* the hero whole, as the game's set pages show it (448 x 678, empty above and below):
-                its rows 55 to 545 fill the card, head to feet; the cards on top of the wheel load first */}
+            {/* the hero whole, as the game's set pages show it (448 x 678, empty above and below), on no
+                card of its own: its rows 55 to 545 fill the place, head to feet, the sides the render cut
+                fading out; the ones on top of the wheel load first */}
             <img
               src={heroCard(hero)}
               alt={hero.name}
               decoding="async"
               fetchPriority={Math.min(i, picks.length - i) < 5 ? "high" : "low"}
               onError={(e) => e.currentTarget.src !== heroSelection(hero) && (e.currentTarget.src = heroSelection(hero))}
-              className="absolute top-[-11.2%] left-0 w-full max-w-none"
+              className="absolute top-[-11.2%] left-0 w-full max-w-none transition-[filter] duration-300 [mask-composite:intersect] [mask-image:linear-gradient(to_right,transparent,black_12%,black_88%,transparent),linear-gradient(to_bottom,black_80%,transparent_86%)] group-hover/card:drop-shadow-[0_0_18px_rgba(229,70,46,0.7)]"
             />
           </a>
         ))}
