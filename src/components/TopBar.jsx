@@ -80,7 +80,7 @@ export default function TopBar({ route }) {
         ) : (
           <button
             onClick={() => openPalette()}
-            className="hidden h-9 w-60 items-center gap-2.5 lg:w-full rounded-xl border border-white/[0.08] bg-ink-900/80 pr-2 pl-3 text-[0.88rem] text-ink-500 transition-colors hover:border-white/[0.16] hover:text-ink-300 md:flex"
+            className="hidden h-9 w-60 items-center gap-2.5 lg:w-full rounded-xl border border-white/[0.08] bg-white/[0.04] pr-2 pl-3 text-[0.88rem] text-ink-500 backdrop-blur-xl transition-colors hover:border-white/[0.16] hover:bg-white/[0.07] hover:text-ink-300 md:flex"
           >
             <Search size={15} className="text-ink-400" />
             <span className="flex-1 text-left">Search everything</span>
