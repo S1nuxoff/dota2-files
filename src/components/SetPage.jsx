@@ -79,7 +79,7 @@ export default function SetPage({ setKey, catalog, indexes, withCopies, route })
         }
       >
         <SideBlock title="In this set">
-          <ul className="overflow-hidden rounded-xl border border-white/[0.07] bg-ink-900">
+          <ul className="overflow-hidden rounded-xl border border-white/[0.07] frost">
             {set.items.map((id) => {
               const it = catalog.items[id];
               return (
@@ -142,7 +142,7 @@ export default function SetPage({ setKey, catalog, indexes, withCopies, route })
         )}
 
         <Section title="Every file" count={files.length} sub="Models, textures, icons and effects of its items">
-          <div className="overflow-hidden rounded-2xl border border-white/[0.06] bg-ink-900 p-1.5 sm:p-2">
+          <div className="overflow-hidden rounded-2xl border border-white/[0.06] frost p-1.5 sm:p-2">
             <FileTable entries={sorted} route={route} height={`${Math.min(36, Math.max(1, sorted.length) * 2.75 + 0.5)}rem`} />
           </div>
         </Section>

@@ -70,7 +70,7 @@ export default function HeroAbout({ about, hero, catalog, sounds = [], particles
           {about.hype && <p className="text-[1.15rem] leading-relaxed text-ink-100">{about.hype}</p>}
           {about.bio && <p className="leading-relaxed whitespace-pre-line text-ink-300">{about.bio}</p>}
         </div>
-        <div className="h-fit rounded-2xl border border-white/[0.06] bg-ink-900 p-5">
+        <div className="h-fit rounded-2xl border border-white/[0.06] frost p-5">
           <dl className="space-y-2.5 text-[0.9rem]">
             {STATS.filter(([k]) => about.stats[k]).map(([k, label]) => {
               const v = about.stats[k];
@@ -139,7 +139,7 @@ export default function HeroAbout({ about, hero, catalog, sounds = [], particles
           <h2 className="text-[1.35rem] font-semibold tracking-[-0.02em]">Abilities</h2>
           <div className="mt-5 grid gap-4 md:grid-cols-2">
             {about.abilities.map((a) => (
-              <div key={a.id} className="flex gap-4 rounded-2xl border border-white/[0.06] bg-ink-900 p-5">
+              <div key={a.id} className="flex gap-4 rounded-2xl border border-white/[0.06] frost p-5">
                 {a.icon ? <img src={imageUrl(a.icon)} alt="" loading="lazy" className="h-16 w-16 shrink-0 rounded-xl" /> : <div className="h-16 w-16 shrink-0 rounded-xl bg-ink-800" />}
                 <div className="min-w-0">
                   <h3 className="font-medium">{a.name}</h3>

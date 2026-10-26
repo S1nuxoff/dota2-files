@@ -114,7 +114,7 @@ export function Toolbar({ children, className = "", below, gap = true }) {
 export function SearchField({ value, onChange, placeholder, icon: Icon = Search, right, onEnter, onFocus, big = false, className = "", inputRef }) {
   return (
     <label
-      className={`group flex w-full min-w-0 items-center gap-2.5 rounded-xl border border-white/[0.08] bg-ink-900 pr-1.5 pl-3.5 transition-colors focus-within:border-white/20 focus-within:bg-ink-850 hover:border-white/[0.12] ${
+      className={`group flex w-full min-w-0 items-center gap-2.5 rounded-xl border border-white/[0.08] frost pr-1.5 pl-3.5 transition-colors focus-within:border-white/20 focus-within:bg-white/[0.06] hover:border-white/[0.12] ${
         big ? "h-12" : "h-10"
       } ${className}`}
     >
@@ -185,7 +185,7 @@ export function Card({ href, onClick, picture, ratio = "aspect-[4/3.4]", badge, 
       href={href}
       onClick={onClick}
       style={style}
-      className={`group relative flex cursor-pointer flex-col overflow-hidden rounded-2xl border border-white/[0.06] bg-ink-900 transition-[border-color,transform,box-shadow] duration-300 ease-[var(--ease-out-soft)] hover:-translate-y-0.5 hover:border-white/[0.14] hover:shadow-[0_18px_40px_-24px_rgb(0_0_0/0.9)] ${className}`}
+      className={`group relative flex cursor-pointer flex-col overflow-hidden rounded-2xl border border-white/[0.06] frost transition-[border-color,transform,box-shadow] duration-300 ease-[var(--ease-out-soft)] hover:-translate-y-0.5 hover:border-white/[0.14] hover:shadow-[0_18px_40px_-24px_rgb(0_0_0/0.9)] ${className}`}
     >
       <div className={`stage relative ${ratio} overflow-hidden`}>
         {picture}
@@ -209,7 +209,7 @@ export function FigureCard({ href, src, fallback, alt = "", title, meta, mark, c
     <a
       href={href}
       style={style}
-      className={`group flex flex-col overflow-hidden rounded-2xl border border-white/[0.06] bg-ink-900 transition-[border-color,box-shadow] duration-500 hover:border-white/[0.14] hover:shadow-[0_22px_44px_-30px_rgb(0_0_0/0.95)] ${className}`}
+      className={`group flex flex-col overflow-hidden rounded-2xl border border-white/[0.06] frost transition-[border-color,box-shadow] duration-500 hover:border-white/[0.14] hover:shadow-[0_22px_44px_-30px_rgb(0_0_0/0.95)] ${className}`}
     >
       <div className="relative aspect-[1/1.02] overflow-hidden bg-[radial-gradient(80%_70%_at_50%_30%,#26262b_0%,#18181b_55%,#121214_100%)]">
         <div aria-hidden="true" className="absolute inset-x-[12%] bottom-[6%] h-[22%] rounded-[50%] bg-[radial-gradient(closest-side,rgba(229,70,46,0.22),transparent)] opacity-60 blur-md transition-opacity duration-500 group-hover:opacity-100" />
@@ -319,7 +319,7 @@ export function Segmented({ items, value, onChange, variant = "pill", className 
       ref={row}
       role="tablist"
       aria-label={label}
-      className={`no-bar relative flex max-w-full overflow-x-auto ${line ? "gap-1 border-b border-white/[0.07]" : "gap-0.5 rounded-xl border border-white/[0.06] bg-ink-900 p-1"} ${className}`}
+      className={`no-bar relative flex max-w-full overflow-x-auto ${line ? "gap-1 border-b border-white/[0.07]" : "gap-0.5 rounded-xl border border-white/[0.06] frost p-1"} ${className}`}
     >
       {mark && (
         <span
@@ -376,7 +376,7 @@ export function Dropdown({ value, onChange, options, className = "", up = false,
         aria-label={label}
         className={
           buttonClass ||
-          "flex h-10 w-full items-center gap-2 rounded-xl border border-white/[0.08] bg-ink-900 pr-3 pl-3.5 text-[0.88rem] text-ink-100 transition-colors hover:border-white/[0.14] sm:min-w-[9.5rem]"
+          "flex h-10 w-full items-center gap-2 rounded-xl border border-white/[0.08] frost pr-3 pl-3.5 text-[0.88rem] text-ink-100 transition-colors hover:border-white/[0.14] sm:min-w-[9.5rem]"
         }
       >
         <span className="flex-1 truncate text-left">{current}</span>

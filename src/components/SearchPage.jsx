@@ -180,7 +180,7 @@ export default function SearchPage({ route, catalog, indexes, withCopies }) {
                     ))}
                   </div>
                 ) : (
-                  <div className="overflow-hidden rounded-2xl border border-white/[0.06] bg-ink-900 p-2">
+                  <div className="overflow-hidden rounded-2xl border border-white/[0.06] frost p-2">
                     {list.map((e) => (
                       <Row key={key(e)} e={e} active={route.file === key(e)} onOpen={() => open(e)} />
                     ))}

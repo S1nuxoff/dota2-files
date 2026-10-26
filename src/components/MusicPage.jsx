@@ -48,7 +48,7 @@ function Pack({ pack, catalog, indexes, withCopies, route, open, onToggle, delay
   const bytes = tracks.reduce((n, e) => n + e.size, 0);
   const event = pack.event && catalog.events?.[pack.event];
   return (
-    <div className={`anim-card overflow-hidden rounded-2xl border bg-ink-900 transition-colors ${open ? "border-white/[0.14]" : "border-white/[0.06] hover:border-white/[0.11]"}`} style={{ animationDelay: `${delay}ms` }}>
+    <div className={`anim-card overflow-hidden rounded-2xl border frost transition-colors ${open ? "border-white/[0.14]" : "border-white/[0.06] hover:border-white/[0.11]"}`} style={{ animationDelay: `${delay}ms` }}>
       <div className="flex flex-wrap items-center gap-3 p-3 sm:flex-nowrap sm:gap-5 sm:pr-4">
         <button onClick={onToggle} aria-expanded={open} className="flex min-w-0 flex-1 items-center gap-4 text-left sm:gap-5">
           <div className="relative h-16 w-24 shrink-0 overflow-hidden rounded-xl bg-ink-850 sm:h-20 sm:w-28">
